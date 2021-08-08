@@ -1,0 +1,8 @@
+//Query to find applications that have had application permissions granted to them
+AuditLogs
+| where OperationName has "Add app role assignment to service principal"
+| extend UpdatedPermission = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[1].newValue)))
+| extend AppName = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[4].newValue)))
+| extend User = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| extend AppId = tostring(TargetResources[1].id)
+| project TimeGenerated, OperationName, UpdatedPermission, AppName, AppId, User
