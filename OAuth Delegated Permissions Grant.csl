@@ -1,0 +1,7 @@
+//Query to find applications that have had delegated permissions granted to them
+AuditLogs
+| where Category == "ApplicationManagement"
+| where OperationName has "Add delegated permission grant"
+| extend UpdatedPermissions = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[0].newValue))) 
+| extend AppId = tostring(TargetResources[1].id)
+| project TimeGenerated, UpdatedPermissions, OperationName, AppId
