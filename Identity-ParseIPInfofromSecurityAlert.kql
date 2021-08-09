@@ -1,0 +1,11 @@
+//Query to parse IP information from Security Alerts
+SecurityAlert
+| where AlertName in ("Impossible travel activity","Atypical Travel","Anonymous IP address","Anomalous Token")
+| parse Entities with * 'AadUserId": "' aadid_ '",' *
+| extend ep_ = parse_json(ExtendedProperties)
+| extend s = tostring(ep_["IP Addresses"])
+| extend ipv4_ = extract_all(@"(([\d]{1,3}\.){3}[\d]{1,3})",dynamic([1]), s)
+| extend ipv4Add_ = translate('["]','',tostring(ipv4_))
+| extend ipv6_ = extract_all(@"(([\d|\w]{1,4}\:){7}[\d|\w]{1,4})",dynamic([1]), s)
+| extend ipv6Add_ = translate('["]','',tostring(ipv6_))
+| project TimeGenerated, AlertName, ipv4Add_, ipv6Add_, CompromisedEntity
