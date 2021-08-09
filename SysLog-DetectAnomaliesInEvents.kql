@@ -1,4 +1,4 @@
-//Detect protention anomalous increase in syslog volume, adjust time frames to suit
+//Detect potential anomalous increase in syslog volume, adjust time frames to suit
 let Computers=Syslog_CL
 | where TimeGenerated >= ago(4d)
 | summarize EventCount=count() by Computer, bin(TimeGenerated,15m)
