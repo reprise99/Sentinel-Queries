@@ -1,0 +1,9 @@
+//Query to find when users are added to roles outside of Azure AD PIM
+AuditLogs
+| where OperationName startswith "Add member to role outside of PIM"
+| extend AADRoleDisplayName = tostring(TargetResources[0].displayName)
+| extend AADRoleId = tostring(AdditionalDetails[0].value)
+| extend AADUserAdded = tostring(TargetResources[2].displayName)
+| extend AADObjectId = tostring(TargetResources[2].id)
+| extend UserWhoAdded = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| project TimeGenerated, OperationName, AADRoleDisplayName, AADRoleId, AADUserAdded, AADObjectId, UserWhoAdded
