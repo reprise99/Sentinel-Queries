@@ -1,0 +1,13 @@
+//Query to find users who have access to an application but haven't signed in for 90 days
+let signins=
+SigninLogs
+| where TimeGenerated > ago (90d)
+| where AppDisplayName has "Application Name"
+| project TimeGenerated, UserPrincipalName, AppDisplayName;
+IdentityInfo
+| where TimeGenerated > ago (21d)
+| summarize arg_max(TimeGenerated, *) by AccountUPN
+| extend UserPrincipalName = AccountUPN
+| where GroupMembership contains "Group that gives access to Application"
+| join kind=leftanti signins on UserPrincipalName
+| project UserPrincipalName

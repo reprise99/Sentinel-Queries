@@ -1,0 +1,6 @@
+//Query to find public IP addresses associated to AWS instances
+AWSCloudTrail
+| where EventName has "AllocateAddress"
+| extend IPAssigned = tostring(parse_json(ResponseElements).publicIp)
+| extend AllocationID = tostring(parse_json(ResponseElements).allocationId)
+| project TimeGenerated, UserIdentityArn, UserIdentityAccountId, IPAssigned, AllocationID
