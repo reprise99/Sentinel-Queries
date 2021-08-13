@@ -1,0 +1,19 @@
+//Returns any machines with a significant increase in syslog events over the last 5 days in every 30 minutes of data
+let starttime = 5d;
+let timeframe = 30m;
+let Computers=Syslog
+| where TimeGenerated >= ago(starttime)
+| summarize EventCount=count() by Computer, bin(TimeGenerated,timeframe)
+| where EventCount > 1500
+| order by TimeGenerated
+| summarize EventCount=make_list(EventCount),TimeGenerated=make_list(TimeGenerated) by Computer
+| extend outliers=series_decompose_anomalies(EventCount,2)
+| mv-expand TimeGenerated, EventCount, outliers
+| where outliers == 1
+| distinct Computer
+;
+Syslog
+| where TimeGenerated >= ago(starttime)
+| where Computer in (Computers)
+| summarize EventCount=count() by Computer, bin(TimeGenerated, timeframe)
+| render timechart 
