@@ -1,0 +1,45 @@
+//Searches OfficeActivity table for anomalies in download actions and then retrives all USB file copy events by those users over the last week
+let starttime = 7d;
+let timeframe = 30m;
+let operations = dynamic(["FileSyncDownloadedFull","FileDownloaded"]);
+let outlierusers=
+OfficeActivity
+| where TimeGenerated > ago(starttime)
+| where Operation in (['operations'])
+| extend UserPrincipalName = UserId
+| project TimeGenerated, UserPrincipalName
+| order by TimeGenerated
+| summarize Events=count()by UserPrincipalName, bin(TimeGenerated, timeframe)
+| summarize EventCount=make_list(Events),TimeGenerated=make_list(TimeGenerated) by UserPrincipalName
+| extend outliers=series_decompose_anomalies(EventCount,3)
+| mv-expand TimeGenerated, EventCount, outliers
+| where outliers == 1
+| distinct UserPrincipalName;
+let id=
+IdentityInfo
+| where AccountUPN in (outlierusers)
+| where TimeGenerated > ago (21d)
+| summarize arg_max(TimeGenerated, *) by AccountName
+| extend LoggedOnUser = AccountName
+| project LoggedOnUser, AccountUPN, JobTitle, EmployeeId, Country, City
+| join kind=inner (
+DeviceInfo
+| where TimeGenerated > ago (21d)
+| summarize arg_max(TimeGenerated, *) by DeviceName
+| extend LoggedOnUser = tostring(LoggedOnUsers[0].UserName)
+) on LoggedOnUser
+| project LoggedOnUser, AccountUPN, JobTitle, Country, DeviceName, EmployeeId;
+DeviceEvents
+| where TimeGenerated > ago(7d)
+| join kind=inner id on DeviceName
+| where ActionType == "UsbDriveMounted"
+| extend DriveLetter = tostring(todynamic(AdditionalFields).DriveLetter)
+| join kind=inner (DeviceFileEvents
+| where TimeGenerated > ago(7d)
+| extend FileCopyTime = TimeGenerated
+| where ActionType == "FileCreated"
+| parse FolderPath with DriveLetter '\\' *
+| extend DriveLetter = tostring(DriveLetter)
+) on DeviceId, DriveLetter
+| extend FileCopied = FileName1
+| distinct DeviceName, DriveLetter, FileCopied, LoggedOnUser, AccountUPN, JobTitle, EmployeeId, Country
