@@ -1,0 +1,33 @@
+//Top 20 departments copying file data to USB drives by file count
+let id=
+IdentityInfo
+| where TimeGenerated > ago (21d)
+| summarize arg_max(TimeGenerated, *) by AccountName
+| extend LoggedOnUser = AccountName
+| project LoggedOnUser, AccountUPN, JobTitle, EmployeeId, Country, City, Department, AccountDisplayName
+| join kind=inner (
+DeviceInfo
+| where TimeGenerated > ago (21d)
+| summarize arg_max(TimeGenerated, *) by DeviceName
+| extend LoggedOnUser = tostring(LoggedOnUsers[0].UserName)
+) on LoggedOnUser
+| project LoggedOnUser, AccountUPN, JobTitle, Country, DeviceName, EmployeeId, Department, AccountDisplayName;
+DeviceEvents
+| where TimeGenerated > ago(7d)
+| join kind=inner id on DeviceName
+| where ActionType == "UsbDriveMounted"
+| extend Type = tostring(AdditionalFields.Manufacturer)
+| extend DriveLetter = tostring(todynamic(AdditionalFields).DriveLetter)
+| join kind=inner (DeviceFileEvents
+| where TimeGenerated > ago(7d)
+| extend FileCopyTime = TimeGenerated
+| where ActionType == "FileCreated"
+| parse FolderPath with DriveLetter '\\' *
+| extend DriveLetter = tostring(DriveLetter)
+) on DeviceId, DriveLetter
+| extend FileSizeGB = FileSize/1024/1024/1000
+| project TimeGenerated, DeviceName, DriveLetter, FileName1, FileSizeGB, LoggedOnUser, AccountUPN, JobTitle,EmployeeId, Country, Department, Type, AccountDisplayName
+| summarize CopyCount=count()by Department
+| order by CopyCount
+| take 20
+| render columnchart 

@@ -22,7 +22,8 @@ IdentityInfo
 | summarize arg_max(TimeGenerated, *) by AccountName
 | extend LoggedOnUser = AccountName
 | project LoggedOnUser, AccountUPN, JobTitle, EmployeeId, Country, City
-| join kind=inner (
+| join kind=inner 
+(
 DeviceInfo
 | where TimeGenerated > ago (21d)
 | summarize arg_max(TimeGenerated, *) by DeviceName
