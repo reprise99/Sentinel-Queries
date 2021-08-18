@@ -30,6 +30,4 @@ DeviceFileEvents
 on DeviceId, DriveLetter
 | extend FileCopied = FileName1
 | extend User = AccountName1
-| extend TimeDelta = abs(DownloadTime - FileCopyTime)
-| where TimeDelta < 15m
 | distinct DeviceName, DriveLetter, FileCopied, User
