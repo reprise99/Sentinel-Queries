@@ -1,14 +1,14 @@
 //This query will hunt for real time risk events flagged as medium or high that aren't confirmed safe by Microsoft and then enrich that data with information from the IdentityInfo table
 let id=
-IdentityInfo
-| summarize arg_max(TimeGenerated, *) by AccountUPN;
+    IdentityInfo
+    | summarize arg_max(TimeGenerated, *) by AccountUPN;
 let signin=
-SigninLogs
-| where TimeGenerated > ago (14d)
-| where RiskLevelDuringSignIn in ('high','medium')
-| join kind=inner id on $left.UserPrincipalName == $right.AccountUPN
-| extend SigninTime = TimeGenerated
-| where RiskEventTypes_V2 != "[]";
+    SigninLogs
+    | where TimeGenerated > ago (14d)
+    | where RiskLevelDuringSignIn in ('high', 'medium')
+    | join kind=inner id on $left.UserPrincipalName == $right.AccountUPN
+    | extend SigninTime = TimeGenerated
+    | where RiskEventTypes_V2 != "[]";
 AADUserRiskEvents
 | where TimeGenerated > ago (14d)
 | extend RiskTime = TimeGenerated
@@ -16,4 +16,14 @@ AADUserRiskEvents
 | where RiskDetail !has "aiConfirmedSigninSafe"
 | join kind=inner signin on CorrelationId
 | extend TimeDelta = abs(SigninTime - RiskTime)
-| project SigninTime, UserPrincipalName, RiskTime, TimeDelta, RiskEventTypes, RiskLevelDuringSignIn, City, Country, EmployeeId, AssignedRoles
+| project
+    SigninTime,
+    UserPrincipalName,
+    RiskTime,
+    TimeDelta,
+    RiskEventTypes,
+    RiskLevelDuringSignIn,
+    City,
+    Country,
+    EmployeeId,
+    AssignedRoles

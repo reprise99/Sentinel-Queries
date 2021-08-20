@@ -1,28 +1,39 @@
 //Lookup members of a specific group and find any USB file copies completed by those users
 let id=
-IdentityInfo
-| where GroupMembership has "Group Name"
-| where TimeGenerated > ago (21d)
-| summarize arg_max(TimeGenerated, *) by AccountName
-| extend LoggedOnUser = AccountName
-| project LoggedOnUser, AccountUPN, JobTitle, EmployeeId, Country, City
-| join kind=inner (
-DeviceInfo
-| where TimeGenerated > ago (21d)
-| summarize arg_max(TimeGenerated, *) by DeviceName
-| extend LoggedOnUser = tostring(LoggedOnUsers[0].UserName)
-) on LoggedOnUser
-| project LoggedOnUser, AccountUPN, JobTitle, Country, DeviceName, EmployeeId;
+    IdentityInfo
+    | where GroupMembership has "Group Name"
+    | where TimeGenerated > ago (21d)
+    | summarize arg_max(TimeGenerated, *) by AccountName
+    | extend LoggedOnUser = AccountName
+    | project LoggedOnUser, AccountUPN, JobTitle, EmployeeId, Country, City
+    | join kind=inner (
+        DeviceInfo
+        | where TimeGenerated > ago (21d)
+        | summarize arg_max(TimeGenerated, *) by DeviceName
+        | extend LoggedOnUser = tostring(LoggedOnUsers[0].UserName)
+        )
+        on LoggedOnUser
+    | project LoggedOnUser, AccountUPN, JobTitle, Country, DeviceName, EmployeeId;
 DeviceEvents
 | where TimeGenerated > ago(30d)
 | join kind=inner id on DeviceName
 | where ActionType == "UsbDriveMounted"
 | extend DriveLetter = tostring(todynamic(AdditionalFields).DriveLetter)
 | join kind=inner (DeviceFileEvents
-| where TimeGenerated > ago(30d)
-| extend FileCopyTime = TimeGenerated
-| where ActionType == "FileCreated"
-| parse FolderPath with DriveLetter '\\' *
-| extend DriveLetter = tostring(DriveLetter)
-) on DeviceId, DriveLetter
-| distinct TimeGenerated, DeviceName, DriveLetter, FileName1, LoggedOnUser, AccountUPN, JobTitle,EmployeeId, Country
+    | where TimeGenerated > ago(30d)
+    | extend FileCopyTime = TimeGenerated
+    | where ActionType == "FileCreated"
+    | parse FolderPath with DriveLetter '\\' *
+    | extend DriveLetter = tostring(DriveLetter)
+    )
+    on DeviceId, DriveLetter
+| distinct
+    TimeGenerated,
+    DeviceName,
+    DriveLetter,
+    FileName1,
+    LoggedOnUser,
+    AccountUPN,
+    JobTitle,
+    EmployeeId,
+    Country

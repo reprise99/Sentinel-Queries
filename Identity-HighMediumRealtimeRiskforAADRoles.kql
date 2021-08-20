@@ -1,14 +1,14 @@
 //Query to find high or medium real time risk events for users who have an assigned Azure AD role
 let id=
-IdentityInfo
-| summarize arg_max(TimeGenerated, *) by AccountUPN;
+    IdentityInfo
+    | summarize arg_max(TimeGenerated, *) by AccountUPN;
 let signin=
-SigninLogs
-| where TimeGenerated > ago (14d)
-| where RiskLevelDuringSignIn in ('high','medium')
-| join kind=inner id on $left.UserPrincipalName == $right.AccountUPN
-| extend SigninTime = TimeGenerated
-| where RiskEventTypes_V2 != "[]";
+    SigninLogs
+    | where TimeGenerated > ago (14d)
+    | where RiskLevelDuringSignIn in ('high', 'medium')
+    | join kind=inner id on $left.UserPrincipalName == $right.AccountUPN
+    | extend SigninTime = TimeGenerated
+    | where RiskEventTypes_V2 != "[]";
 AADUserRiskEvents
 | where TimeGenerated > ago (14d)
 | extend RiskTime = TimeGenerated
@@ -17,4 +17,14 @@ AADUserRiskEvents
 | join kind=inner signin on CorrelationId
 | where AssignedRoles != "[]"
 | extend TimeDelta = abs(SigninTime - RiskTime)
-| project SigninTime, UserPrincipalName, RiskTime, TimeDelta, RiskEventTypes, RiskLevelDuringSignIn, City, Country, EmployeeId, AssignedRoles
+| project
+    SigninTime,
+    UserPrincipalName,
+    RiskTime,
+    TimeDelta,
+    RiskEventTypes,
+    RiskLevelDuringSignIn,
+    City,
+    Country,
+    EmployeeId,
+    AssignedRoles

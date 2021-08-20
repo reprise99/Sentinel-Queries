@@ -1,23 +1,36 @@
 //Query to identity Security Alerts where they were triggered by a new user agent not seen for the previous 7 days. Update known IP Addresses from "1.1.1" to your corporate IP addresses to exclude
 let IPs=
-SecurityAlert
-| project TimeGenerated, Status, AlertName,CompromisedEntity,ExtendedProperties, ProviderName
-| where TimeGenerated > ago (1h)
-| where ProviderName in ('MCAS', 'IPC')
-| where AlertName in ('Impossible travel activity','Multiple failed login attempts','Unfamiliar sign-in properties','Anonymous IP address','Atypical travel')
-| where Status contains "New"
-| extend Properties = tostring(parse_json(ExtendedProperties))
-| extend UserPrincipalName = CompromisedEntity
-| extend ipv4Addresses = extract_all(@"(([\d]{1,3}\.){3}[\d]{1,3})", dynamic([1]), Properties)
-| extend ipv4Add = translate('["]','',tostring(ipv4Addresses))
-| extend ipv4Split =split(ipv4Add , ",")
-| mv-expand ipv4Split
-| extend ipv4Split_s = tostring(ipv4Split);
+    SecurityAlert
+    | project
+        TimeGenerated,
+        Status,
+        AlertName,
+        CompromisedEntity,
+        ExtendedProperties,
+        ProviderName
+    | where TimeGenerated > ago (1h)
+    | where ProviderName in ('MCAS', 'IPC')
+    | where AlertName in ('Impossible travel activity', 'Multiple failed login attempts', 'Unfamiliar sign-in properties', 'Anonymous IP address', 'Atypical travel')
+    | where Status contains "New"
+    | extend Properties = tostring(parse_json(ExtendedProperties))
+    | extend UserPrincipalName = CompromisedEntity
+    | extend ipv4Addresses = extract_all(@"(([\d]{1,3}\.){3}[\d]{1,3})", dynamic([1]), Properties)
+    | extend ipv4Add = translate('["]', '', tostring(ipv4Addresses))
+    | extend ipv4Split =split(ipv4Add, ",")
+    | mv-expand ipv4Split
+    | extend ipv4Split_s = tostring(ipv4Split);
 SigninLogs
-| project TimeGenerated, UserPrincipalName, IPAddress, AppDisplayName, ResultType, UserAgent, Location
+| project
+    TimeGenerated,
+    UserPrincipalName,
+    IPAddress,
+    AppDisplayName,
+    ResultType,
+    UserAgent,
+    Location
 | where TimeGenerated > ago(7d)
 | where IPAddress !startswith "1.1.1."
 | where ResultType == 0 or ResultType == 50158
-| join kind=inner IPs on UserPrincipalName ,$left.IPAddress==$right.ipv4Split_s
+| join kind=inner IPs on UserPrincipalName, $left.IPAddress == $right.ipv4Split_s
 | summarize AgentCount = count()by UserPrincipalName, UserAgent
 | where AgentCount == 1

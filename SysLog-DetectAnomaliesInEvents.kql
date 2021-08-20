@@ -1,14 +1,14 @@
 //Detect potential anomalous increase in syslog volume, adjust time frames to suit
 let Computers=Syslog_CL
-| where TimeGenerated >= ago(4d)
-| summarize EventCount=count() by Computer, bin(TimeGenerated,15m)
-| where EventCount >= 1000
-| order by TimeGenerated
-| summarize EventCount=make_list(EventCount),TimeGenerated=make_list(TimeGenerated) by Computer
-| extend outliers=series_decompose_anomalies(EventCount,2)
-| mv-expand TimeGenerated, EventCount, outliers
-| where outliers == 1
-| distinct Computer
+    | where TimeGenerated >= ago(4d)
+    | summarize EventCount=count() by Computer, bin(TimeGenerated, 15m)
+    | where EventCount >= 1000
+    | order by TimeGenerated
+    | summarize EventCount=make_list(EventCount), TimeGenerated=make_list(TimeGenerated) by Computer
+    | extend outliers=series_decompose_anomalies(EventCount, 2)
+    | mv-expand TimeGenerated, EventCount, outliers
+    | where outliers == 1
+    | distinct Computer
 ;
 Syslog_CL
 | where TimeGenerated >= ago(4d)

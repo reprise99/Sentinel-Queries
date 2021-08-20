@@ -1,22 +1,30 @@
 //Query to find OAuth applications where permissions were added and removed within 10 minutes
 let PermissionAddedAlert=
-AuditLogs
-| where OperationName has "Add app role assignment to service principal"
-| extend UserWhoAdded = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
-| extend PermissionAdded = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[1].newValue)))
-| extend AppId = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[5].newValue)))
-| extend TimeAdded = TimeGenerated
-| project UserWhoAdded, PermissionAdded, AppId, TimeAdded;
+    AuditLogs
+    | where OperationName has "Add app role assignment to service principal"
+    | extend UserWhoAdded = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+    | extend PermissionAdded = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[1].newValue)))
+    | extend AppId = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[5].newValue)))
+    | extend TimeAdded = TimeGenerated
+    | project UserWhoAdded, PermissionAdded, AppId, TimeAdded;
 let PermissionRemovedAlert=
-AuditLogs
-| where OperationName has "Remove app role assignment from service principal"
-| extend UserWhoRemoved = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
-| extend PermissionRemoved = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[1].oldValue)))
-| extend AppId = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[5].newValue)))
-| extend TimeRemoved = TimeGenerated
-| project UserWhoRemoved, PermissionRemoved, AppId, TimeRemoved;
+    AuditLogs
+    | where OperationName has "Remove app role assignment from service principal"
+    | extend UserWhoRemoved = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+    | extend PermissionRemoved = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[1].oldValue)))
+    | extend AppId = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[5].newValue)))
+    | extend TimeRemoved = TimeGenerated
+    | project UserWhoRemoved, PermissionRemoved, AppId, TimeRemoved;
 PermissionAddedAlert
 | join kind=inner PermissionRemovedAlert on AppId
-| where abs(datetime_diff('minute', TimeAdded, TimeRemoved)) <=10
+| where abs(datetime_diff('minute', TimeAdded, TimeRemoved)) <= 10
 | extend TimeDiff = TimeAdded - TimeRemoved
-| project TimeAdded, UserWhoAdded, PermissionAdded, AppId, TimeRemoved, UserWhoRemoved, PermissionRemoved, TimeDiff
+| project
+    TimeAdded,
+    UserWhoAdded,
+    PermissionAdded,
+    AppId,
+    TimeRemoved,
+    UserWhoRemoved,
+    PermissionRemoved,
+    TimeDiff

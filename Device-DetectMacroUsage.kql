@@ -1,17 +1,18 @@
 //Lookup Identity info table to find the most recent device a user has logged onto and any macro usage from that device and return identity info
 let id=
-IdentityInfo
-| where TimeGenerated > ago (21d)
-| summarize arg_max(TimeGenerated, *) by AccountName
-| extend LoggedOnUser = AccountName
-| project LoggedOnUser, AccountUPN, JobTitle, EmployeeId, Country, City
-| join kind=inner (
-DeviceInfo
-| where TimeGenerated > ago (21d)
-| summarize arg_max(TimeGenerated, *) by DeviceName
-| extend LoggedOnUser = tostring(LoggedOnUsers[0].UserName)
-) on LoggedOnUser
-| project LoggedOnUser, AccountUPN, JobTitle, Country, DeviceName, EmployeeId;
+    IdentityInfo
+    | where TimeGenerated > ago (21d)
+    | summarize arg_max(TimeGenerated, *) by AccountName
+    | extend LoggedOnUser = AccountName
+    | project LoggedOnUser, AccountUPN, JobTitle, EmployeeId, Country, City
+    | join kind=inner (
+        DeviceInfo
+        | where TimeGenerated > ago (21d)
+        | summarize arg_max(TimeGenerated, *) by DeviceName
+        | extend LoggedOnUser = tostring(LoggedOnUsers[0].UserName)
+        )
+        on LoggedOnUser
+    | project LoggedOnUser, AccountUPN, JobTitle, Country, DeviceName, EmployeeId;
 DeviceProcessEvents
 | join kind=inner id on DeviceName
 | where TimeGenerated > ago (21d)
@@ -19,4 +20,14 @@ DeviceProcessEvents
 | where InitiatingProcessCommandLine contains ".xlsm" or InitiatingProcessCommandLine contains ".xltm"
 | extend Process = InitiatingProcessFileName
 | extend Command = InitiatingProcessCommandLine
-| project TimeGenerated, DeviceName, LoggedOnUser, AccountUPN, Process, Command, JobTitle, EmployeeId, SHA1, SHA256
+| project
+    TimeGenerated,
+    DeviceName,
+    LoggedOnUser,
+    AccountUPN,
+    Process,
+    Command,
+    JobTitle,
+    EmployeeId,
+    SHA1,
+    SHA256

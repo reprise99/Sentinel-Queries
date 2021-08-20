@@ -1,33 +1,36 @@
 //Detects a user that downloaded a file from O365 and then wrote the same file to USB, matches on both filename and the user
 let filedownloads=
-OfficeActivity
-| where TimeGenerated > ago(1d)
-| extend DownloadTime = TimeGenerated
-| where Operation in ('FileSyncDownloadedFull','FileDownloaded')
-| project DownloadTime, UserId, SourceFileName
-| join kind=inner
-(
-IdentityInfo
-| where TimeGenerated > ago (21d)
-| summarize arg_max(TimeGenerated, *) by AccountUPN) 
-on $left.UserId == $right.AccountUPN
-| project DownloadTime, SourceFileName, UserId, AccountName
+    OfficeActivity
+    | where TimeGenerated > ago(1d)
+    | extend DownloadTime = TimeGenerated
+    | where Operation in ('FileSyncDownloadedFull', 'FileDownloaded')
+    | project DownloadTime, UserId, SourceFileName
+    | join kind=inner
+        (
+        IdentityInfo
+        | where TimeGenerated > ago (21d)
+        | summarize arg_max(TimeGenerated, *) by AccountUPN) 
+        on $left.UserId == $right.AccountUPN
+    | project DownloadTime, SourceFileName, UserId, AccountName
 ;
 DeviceEvents
 | where TimeGenerated > ago(1d)
 | where ActionType == "UsbDriveMounted"
 | extend DriveLetter = tostring(todynamic(AdditionalFields).DriveLetter)
 | join kind=inner 
-(
-DeviceFileEvents
-| where TimeGenerated > ago(1d)
-| extend FileCopyTime = TimeGenerated
-| where ActionType == "FileCreated"
-| join kind=inner filedownloads on $left.FileName == $right.SourceFileName, $left.RequestAccountName == $right.AccountName
-| parse FolderPath with DriveLetter '\\' *
-| extend DriveLetter = tostring(DriveLetter)
-) 
-on DeviceId, DriveLetter
+    (
+    DeviceFileEvents
+    | where TimeGenerated > ago(1d)
+    | extend FileCopyTime = TimeGenerated
+    | where ActionType == "FileCreated"
+    | join kind=inner filedownloads
+        on
+        $left.FileName == $right.SourceFileName,
+        $left.RequestAccountName == $right.AccountName
+    | parse FolderPath with DriveLetter '\\' *
+    | extend DriveLetter = tostring(DriveLetter)
+    ) 
+    on DeviceId, DriveLetter
 | extend FileCopied = FileName1
 | extend User = AccountName1
 | distinct DeviceName, DriveLetter, FileCopied, User

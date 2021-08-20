@@ -1,12 +1,12 @@
 //Query to find security alerts for users who have privileged Azure AD roles
-let PrivRoles = dynamic(["Global Administrator","Security Administrator","Teams Administrator"]);
+let PrivRoles = dynamic(["Global Administrator", "Security Administrator", "Teams Administrator"]);
 let identityinfo=
-IdentityInfo
-| summarize arg_max(TimeGenerated, *) by AccountUPN
-| where AssignedRoles has_any (PrivRoles)
-| extend TargetUserName = AccountName
-| extend UserPrincipalName = AccountUPN
-| project TargetUserName, UserPrincipalName, AssignedRoles;
+    IdentityInfo
+    | summarize arg_max(TimeGenerated, *) by AccountUPN
+    | where AssignedRoles has_any (PrivRoles)
+    | extend TargetUserName = AccountName
+    | extend UserPrincipalName = AccountUPN
+    | project TargetUserName, UserPrincipalName, AssignedRoles;
 SecurityAlert
 | where TimeGenerated >= ago(5d)
 | extend AlertTime = TimeGenerated

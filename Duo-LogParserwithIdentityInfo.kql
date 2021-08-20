@@ -1,10 +1,10 @@
 //Parser for Duo data sent to a custom table and join to identity info to correlate legacy usernames with userprincipalname
 let id=
-IdentityInfo
-| where TimeGenerated > ago(21d)
-| summarize arg_max(TimeGenerated, *) by AccountUPN
-| extend DuoUserName = AccountName
-| project AccountUPN, DuoUserName;
+    IdentityInfo
+    | where TimeGenerated > ago(21d)
+    | summarize arg_max(TimeGenerated, *) by AccountUPN
+    | extend DuoUserName = AccountName
+    | project AccountUPN, DuoUserName;
 DuoLogs_CL
 | where TimeGenerated > ago(1d)
 | extend logs = split(SyslogMessage_s, "|")
@@ -21,5 +21,12 @@ DuoLogs_CL
 | extend DuoOutcome = extract("outcome=(.*?) r", 1, SyslogMessage_s)
 | parse SyslogMessage_s with * "duser=" DuoUserName
 | join kind=inner id on DuoUserName
-| project DuoTime, DuoUserName, AccountUPN, DuoIPAddr, DuoApplication, DuoOutcome, DuoMethod
+| project
+    DuoTime,
+    DuoUserName,
+    AccountUPN,
+    DuoIPAddr,
+    DuoApplication,
+    DuoOutcome,
+    DuoMethod
 | sort by DuoTime desc
