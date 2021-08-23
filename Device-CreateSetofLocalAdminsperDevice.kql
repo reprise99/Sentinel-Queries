@@ -1,0 +1,13 @@
+// Searches device info table for non server operating systems then return any users who have logged on interactively as an admin as a set per device. Can add exclusions for known IT admin accounts
+let devices=
+    DeviceInfo
+    | where TimeGenerated > ago(30d)
+    | where OSPlatform !contains "Server"
+    | summarize arg_max(TimeGenerated, *) by DeviceName
+    | project DeviceName;
+DeviceLogonEvents
+| where LogonType == "Interactive"
+| where IsLocalAdmin == true
+| join kind=inner devices on DeviceName
+| where AccountName !contains "admin"
+| summarize make_set(AccountName) by DeviceName
