@@ -1,0 +1,11 @@
+//Create a set of users external to your organization who have accessed Office files after being shared. Events are grouped by the user who shared the document, and what activities were performed against it and by which external account.
+OfficeActivity
+| project LinkCreatedTime=TimeGenerated, Operation, UserWhoShared=UserId, OfficeObjectId
+| where Operation in ('AddedToSecureLink', 'SecureLinkCreated', 'SecureLinkUpdated', 'SharingInvitationCreated')
+| join kind=inner
+    (OfficeActivity
+    | project LinkClickedTime=TimeGenerated, Operation, UserWhoAccessed=UserId, OfficeObjectId)
+    on OfficeObjectId
+| where UserWhoAccessed !endswith "yourdomain.com" and UserWhoAccessed != "app@sharepoint"
+| extend ExternalOperation=Operation1
+| summarize ExternalUsers=make_set(UserWhoAccessed) by UserWhoShared, OfficeObjectId, ExternalOperation
