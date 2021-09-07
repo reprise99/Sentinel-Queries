@@ -1,0 +1,41 @@
+//Searches for access by users who have not previously accessed an Azure Key Vault in the last 30 days and returns all actions by those users
+let operationlist = dynamic(["SecretGet", "KeyGet", "VaultGet"]);
+let starttime = 30d;
+let endtime = 1d;
+let detection=
+    AzureDiagnostics
+    | where TimeGenerated between (ago(starttime) .. ago(endtime))
+    | where ResourceType == "VAULTS"
+    | where ResultType == "Success"
+    | where OperationName in (operationlist)
+    | where isnotempty(identity_claim_http_schemas_xmlsoap_org_ws_2005_05_identity_claims_upn_s)
+    | project-rename KeyVaultName=Resource, UserPrincipalName=identity_claim_appid_g
+    | distinct KeyVaultName, UserPrincipalName
+    | join kind=rightanti  (
+        AzureDiagnostics
+        | where TimeGenerated > ago(endtime)
+        | where ResourceType == "VAULTS"
+        | where ResultType == "Success"
+        | where OperationName in (operationlist)
+        | where isnotempty(identity_claim_http_schemas_xmlsoap_org_ws_2005_05_identity_claims_upn_s)
+        | project-rename
+            KeyVaultName=Resource,
+            UserPrincipalName=identity_claim_http_schemas_xmlsoap_org_ws_2005_05_identity_claims_upn_s
+        | distinct KeyVaultName, UserPrincipalName)
+        on KeyVaultName, UserPrincipalName;
+AzureDiagnostics
+| where TimeGenerated > ago(endtime)
+| where ResourceType == "VAULTS"
+| where ResultType == "Success"
+| project-rename
+    KeyVaultName=Resource,
+    UserPrincipalName=identity_claim_http_schemas_xmlsoap_org_ws_2005_05_identity_claims_upn_s
+| join kind=inner detection on KeyVaultName, UserPrincipalName
+| project
+    TimeGenerated,
+    UserPrincipalName,
+    ResourceGroup,
+    SubscriptionId,
+    KeyVaultName,
+    KeyVaultTarget=id_s,
+    OperationName

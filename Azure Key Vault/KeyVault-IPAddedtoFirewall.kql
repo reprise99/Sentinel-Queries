@@ -1,0 +1,13 @@
+// Detects when an IP address has been added to an Azure Key Vault firewall allow list
+AzureDiagnostics
+| where ResourceType == "VAULTS"
+| where OperationName == "VaultPatch"
+| where ResultType == "Success"
+| where isnotempty(addedIpRule_Value_s)
+| project
+    TimeGenerated,
+    VaultName=Resource,
+    SubscriptionId,
+    IPAddressofActor=CallerIPAddress,
+    Actor=identity_claim_http_schemas_xmlsoap_org_ws_2005_05_identity_claims_upn_s,
+    IPRangeAdded=addedIpRule_Value_s

@@ -1,0 +1,18 @@
+// Detects when an Azure Key Vault firewall is set to allow all by default
+AzureDiagnostics
+| where ResourceType == "VAULTS"
+| where OperationName == "VaultPatch"
+| where ResultType == "Success"
+| project-rename ACL=properties_networkAcls_defaultAction_s
+| where isnotempty(ACL)
+| sort by TimeGenerated desc  
+| project
+    TimeGenerated,
+    VaultName=Resource,
+    SubscriptionId,
+    IPAddressofActor=CallerIPAddress,
+    Actor=identity_claim_http_schemas_xmlsoap_org_ws_2005_05_identity_claims_upn_s,
+    ACL
+| extend prevACL = next(ACL), prevVault = next(VaultName)
+| where prevACL == "Deny" and ACL == "Allow"
+| where prevVault == VaultName
