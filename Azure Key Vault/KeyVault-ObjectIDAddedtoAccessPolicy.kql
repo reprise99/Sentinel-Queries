@@ -3,15 +3,10 @@ AzureDiagnostics
 | where ResourceType == "VAULTS"
 | where OperationName == "VaultPatch"
 | where ResultType == "Success"
-| extend AddedKeyPolicy = addedAccessPolicy_Permissions_keys_s
-| extend AddedSecretPolicy = addedAccessPolicy_Permissions_secrets_s
-| extend AddedCertPolicy = addedAccessPolicy_Permissions_certificates_s
+| project-rename ServicePrincipalAdded=addedAccessPolicy_ObjectId_g, Actor=identity_claim_http_schemas_xmlsoap_org_ws_2005_05_identity_claims_name_s, AddedKeyPolicy = addedAccessPolicy_Permissions_keys_s, AddedSecretPolicy = addedAccessPolicy_Permissions_secrets_s,AddedCertPolicy = addedAccessPolicy_Permissions_certificates_s
 | where isnotempty(AddedKeyPolicy)
     or isnotempty(AddedSecretPolicy)
     or isnotempty(AddedCertPolicy)
-| project-rename
-    ServicePrincipalAdded=addedAccessPolicy_ObjectId_g,
-    Actor=identity_claim_http_schemas_xmlsoap_org_ws_2005_05_identity_claims_name_s
 | project
     TimeGenerated,
     KeyVaultName=Resource,
