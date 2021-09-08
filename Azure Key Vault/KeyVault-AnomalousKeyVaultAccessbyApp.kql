@@ -1,0 +1,41 @@
+//Searches for access by applications that have not previously accessed an Azure Key Vault in the last 30 days and returns all actions by those applications
+let operationlist = dynamic(["SecretGet", "KeyGet", "VaultGet"]);
+let starttime = 30d;
+let endtime = 1d;
+let detection=
+    AzureDiagnostics
+    | where TimeGenerated between (ago(starttime) .. ago(endtime))
+    | where ResourceType == "VAULTS"
+    | where ResultType == "Success"
+    | where OperationName in (operationlist)
+    | where isnotempty(identity_claim_appid_g)
+    | project-rename KeyVaultName=Resource, AppId=identity_claim_appid_g
+    | distinct KeyVaultName, AppId
+    | join kind=rightanti  (
+        AzureDiagnostics
+        | where TimeGenerated > ago(endtime)
+        | where ResourceType == "VAULTS"
+        | where ResultType == "Success"
+        | where OperationName in (operationlist)
+        | where isnotempty(identity_claim_appid_g)
+        | project-rename
+            KeyVaultName=Resource,
+            AppId=identity_claim_appid_g
+        | distinct KeyVaultName, AppId)
+        on KeyVaultName, AppId;
+AzureDiagnostics
+| where TimeGenerated > ago(endtime)
+| where ResourceType == "VAULTS"
+| where ResultType == "Success"
+| project-rename
+    KeyVaultName=Resource,
+    AppId=identity_claim_appid_g
+| join kind=inner detection on KeyVaultName, AppId
+| project
+    TimeGenerated,
+    AppId,
+    ResourceGroup,
+    SubscriptionId,
+    KeyVaultName,
+    KeyVaultTarget=id_s,
+    OperationName

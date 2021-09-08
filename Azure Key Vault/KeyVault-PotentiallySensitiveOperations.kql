@@ -1,0 +1,14 @@
+// Detects Key Vault operations that could be malicious
+let operationlist = dynamic(
+    ["VaultDelete", "KeyDelete", "SecretDelete", "SecretPurge", "KeyPurge", "SecretBackup", "KeyBackup", "SecretListDeleted", "CertificateCreate", "CertificatePurge"]);
+AzureDiagnostics
+| where ResourceType == "VAULTS" and ResultType == "Success" 
+| where OperationName in (operationlist)
+| project TimeGenerated,
+    ResourceGroup,
+    SubscriptionId,
+    KeyVaultName=Resource,
+    KeyVaultTarget=id_s,
+    Actor=identity_claim_upn_s,
+    IPAddressofActor=CallerIPAddress,
+    OperationName
