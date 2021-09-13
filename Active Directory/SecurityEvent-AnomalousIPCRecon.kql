@@ -1,0 +1,32 @@
+//Use series_decompose_anomalies to detect potentially anomalous IPC$ recon events. Configure start time as your anomaly learning period and timeframe as your detection period.
+// Detection threshold determines the sensitivity, the higher the threshold value the higher the anomaly required to detect
+let starttime = 7d;
+let timeframe = 30m;
+let detectionthreshold = 2;
+let outliers = 
+SecurityEvent
+| project TimeGenerated, Account, Computer, EventID, ShareName
+| where TimeGenerated > ago(starttime)
+// Exclude known Accounts that often connect to various machines, such as Defender for ID or vulnerability management software
+| where Account !in ("DOMAIN\\Account1")
+| where EventID == "5140"
+| where ShareName == "\\\\*\\IPC$"
+| order by TimeGenerated
+| summarize Events=count()by Account, bin(TimeGenerated, timeframe)
+| summarize EventCount=make_list(Events),TimeGenerated=make_list(TimeGenerated) by Account
+| extend outliers=series_decompose_anomalies(EventCount, detectionthreshold)
+| mv-expand TimeGenerated, EventCount, outliers
+| where outliers == 1
+| distinct Account;
+SecurityEvent
+| project TimeGenerated, Account, Computer, EventID, ShareName, IpAddress
+| where TimeGenerated > ago(timeframe)
+| where EventID == "5140"
+| where ShareName == "\\\\*\\IPC$"
+// Exclude computer objects connecting to themselves by parsing DOMAIN\Computer$ objects and Computer.DOMAIN.COM objects and excluding matches
+| parse Account with * "\\" AccountParse "$"
+| parse Computer with ComputerParse "." * 
+| where AccountParse != ComputerParse
+// Find remaining outliers and make a set
+| where Account in (outliers)
+| summarize AccountActivity=make_set(Computer) by Account
