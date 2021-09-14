@@ -1,0 +1,32 @@
+// Searche for local admin log on events and then on process events that require full token elevation, query returns users who have logged on as an admin but not required admin access for 30 days
+// Exclude a list of known processes in your environment that require TokenElevationTypeFull such as conhost, DismHost
+let process = dynamic(["conhost.exe", "DismHost.exe", "git.exe", "HPUpdate.exe"]);
+let devices =
+    DeviceInfo
+    | where TimeGenerated > ago(30d)
+    | where OSPlatform !contains "Server"
+    | summarize arg_max(TimeGenerated, *) by DeviceName
+    | project DeviceName
+    | join kind=inner ( 
+        DeviceLogonEvents
+        | where TimeGenerated > ago (14d)
+        | where LogonType == "Interactive"
+// Exclude accounts such as service desk users who log on to complete admin work
+        | where AccountName !contains "admin"
+        | where IsLocalAdmin == true
+        )
+        on DeviceName
+    | summarize arg_max (TimeGenerated, *) by DeviceName
+    | project DeviceName, AccountName;
+DeviceProcessEvents
+| project
+    TimeGenerated,
+    DeviceName,
+    AccountName,
+    FileName,
+    InitiatingProcessFileName,
+    InitiatingProcessTokenElevation
+| where TimeGenerated > ago(30d)
+| where InitiatingProcessTokenElevation == "TokenElevationTypeFull"
+| where FileName !in (process)
+| join kind=rightanti devices on DeviceName, AccountName
