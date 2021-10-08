@@ -1,0 +1,13 @@
+// Find users who are assigned a privileged role in Azure AD but haven't activated a role in the last 45 days
+IdentityInfo
+| where TimeGenerated > ago(21d)
+| where isnotempty(AssignedRoles)
+| where AssignedRoles != "[]"
+| summarize arg_max(TimeGenerated, *) by AccountUPN
+| join kind=leftanti  (
+    AuditLogs
+    | where TimeGenerated > ago(45d)
+    | where OperationName == "Add member to role completed (PIM activation)"
+    | extend AccountUPN = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+    | summarize arg_max(TimeGenerated, *) by AccountUPN)
+    on AccountUPN
