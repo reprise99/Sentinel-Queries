@@ -1,0 +1,28 @@
+//Visualises potentially anomalous download activities in your Office tenant over the set period. Time frames can be adjusted to suit. 
+//Starttime and timeframe = how many days of data to look at and in what grouping, i.e 7 days of data over 1 hour periods.
+//Threshold = the amount of total downloads required to be included in anomaly calculations. Reduces noise from low level anomalies, e.g going from 1 download to 3 downloads total.
+//sensitivity = adjust to make the query more or less sensitive, the higher the value, the greater the anomaly required to be detected.
+let starttime = 7d;
+let timeframe = 1h;
+let threshold = 30;
+let sensitivity = 2;
+let operations = dynamic(["FileSyncDownloadedFull","FileDownloaded"]);
+let outlierusers=
+OfficeActivity
+| where TimeGenerated > ago(starttime)
+| where Operation in (['operations'])
+| project TimeGenerated, UserId
+| order by TimeGenerated
+| summarize Events=count()by UserId, bin(TimeGenerated, timeframe)
+| where Events > threshold
+| summarize EventCount=make_list(Events),TimeGenerated=make_list(TimeGenerated) by UserId
+| extend outliers=series_decompose_anomalies(EventCount,sensitivity)
+| mv-expand TimeGenerated, EventCount, outliers
+| where outliers == 1
+| distinct UserId;
+OfficeActivity
+| where TimeGenerated > ago(starttime)
+| where Operation in (['operations'])
+| where UserId in (outlierusers)
+| summarize DownloadCount=count()by UserId, bin(TimeGenerated, timeframe)
+| render timechart
