@@ -1,0 +1,9 @@
+// Detects when a service principal has been added to an Azure AD role
+AuditLogs
+| where OperationName == "Add member to role"
+| where TargetResources[0].type == "ServicePrincipal"
+| extend ServicePrincipalObjectID = tostring(TargetResources[0].id)
+| extend AppDisplayName = tostring(TargetResources[0].displayName) 
+| extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| extend RoleAdded = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[1].newValue)))
+| project TimeGenerated, Actor, RoleAdded, ServicePrincipalObjectID, AppDisplayName
