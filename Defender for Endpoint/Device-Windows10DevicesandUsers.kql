@@ -1,0 +1,16 @@
+//Finds Windows 10 devices enrolled in Defender for Endpoint and the last user who logged on interactively
+DeviceInfo
+| where TimeGenerated > ago(60d)
+| where isnotempty( OSPlatform)
+| summarize arg_max(TimeGenerated, *) by DeviceName
+| extend OSBuildString = tostring(OSBuild)
+| where OSPlatform == "Windows11" or OSBuildString startswith "22" or OSBuildString startswith "21"
+| project DeviceName, OSBuild, OSPlatform, OSVersion
+|join kind=inner (
+DeviceLogonEvents
+| where LogonType == "Interactive"
+| where ActionType == "LogonSuccess"
+| where InitiatingProcessCommandLine == "lsass.exe"
+| summarize arg_max(TimeGenerated, *) by DeviceName
+) on DeviceName
+| project DeviceName, AccountName, OSBuild, OSPlatform, OSVersion
