@@ -1,7 +1,0 @@
-// Detects Chrome loading developer mode
-DeviceEvents
-| where TimeGenerated > ago(1d)
-| where InitiatingProcessFileName == "chrome.exe"
-| where InitiatingProcessCommandLine startswith '"chrome.exe" --type=renderer --cross-origin-webassembly'
-| sort by TimeGenerated desc 
-| project TimeGenerated, DeviceName, PersonToSendToJail=InitiatingProcessAccountName, InitiatingProcessFileName, InitiatingProcessCommandLine
