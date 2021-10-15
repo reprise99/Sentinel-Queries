@@ -1,0 +1,7 @@
+// Detects Chrome loading developer mode
+DeviceEvents
+| where TimeGenerated > ago(1d)
+| where InitiatingProcessFileName == "chrome.exe"
+| where InitiatingProcessCommandLine startswith '"chrome.exe" --type=renderer --cross-origin-webassembly-module-sharing-allowed --display-capture-permissions-policy-allowed --origin-trial-disabled-features=SecurePaymentConfirmation' and InitiatingProcessCommandLine contains "--no-v8-untrusted-code-mitigations"
+| sort by TimeGenerated desc 
+| distinct DeviceName, InitiatingProcessAccountName
