@@ -1,0 +1,10 @@
+//Visualizes conditional access policy failures over time by policy
+let start = now(-90d);
+let end = now();
+let timeframe= 12h;
+SigninLogs
+| project TimeGenerated, ResultType, ConditionalAccessPolicies
+| where ResultType == 53003
+| extend FailedPolicy = tostring(ConditionalAccessPolicies[0].displayName)
+| make-series FailureCount = count() default=0 on TimeGenerated in range(start,end, timeframe) by FailedPolicy
+| render timechart 
