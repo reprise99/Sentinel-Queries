@@ -1,0 +1,15 @@
+//When a Defender for Endpoint alert is triggered, searches for the most recent interactive logon to the device prior to the alert and detects if they are a local admin on that device
+let timeframe = 48h
+SecurityAlert
+| where ProviderName == "MDATP"
+| project AlertTime=TimeGenerated,DeviceName=CompromisedEntity, AlertName
+| join kind=inner (
+DeviceLogonEvents
+| project TimeGenerated, LogonType, ActionType, InitiatingProcessCommandLine, IsLocalAdmin, AccountName, DeviceName
+| where LogonType in ("Interactive","RemoteInteractive")
+| where ActionType == "LogonSuccess"
+| where InitiatingProcessCommandLine == "lsass.exe"
+) on DeviceName
+| where (AlertTime - TimeGenerated) between (0min .. timeframe)
+| summarize arg_max(TimeGenerated, *) by DeviceName
+| project LogonTime=TimeGenerated, AlertTime, AlertName, DeviceName, AccountName, IsLocalAdmin
