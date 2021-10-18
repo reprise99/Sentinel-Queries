@@ -1,4 +1,5 @@
-//Tracks privileged events on your Azure AD applications, such as secrets being generated, permissions being added or an admin consenting.
+//Tracks privileged events on your Azure AD applications, such as secrets being generated, permissions being added or an admin consenting. 
+//The data structure for these activites changed around August 2021 in Azure Sentinel so the query is accurate for applications created after that date.
 //Events are then summarized by operation and time. Add a specific Application ID to track events for that one app.
 let timeframe=90d;
 let AppAdded=
