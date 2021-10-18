@@ -1,0 +1,16 @@
+//Detects users who have accessed Azure AD Management interfaces who have not accessed in the previous timeframe
+let timeframe = startofday(ago(60d));
+let applications = dynamic(["Azure Active Directory PowerShell", "Microsoft Azure PowerShell", "Graph Explorer", "ACOM Azure Website"]);
+SigninLogs
+| where TimeGenerated > timeframe and TimeGenerated < startofday(now())
+| where AppDisplayName in (applications)
+| project UserPrincipalName, AppDisplayName
+| join kind=rightanti
+    (
+    SigninLogs
+    | where TimeGenerated > startofday(now())
+    | where AppDisplayName in (applications)
+    )
+    on UserPrincipalName, AppDisplayName
+| where ResultType == 0
+| project TimeGenerated, UserPrincipalName, ResultType, AppDisplayName, IPAddress, Location, UserAgent
