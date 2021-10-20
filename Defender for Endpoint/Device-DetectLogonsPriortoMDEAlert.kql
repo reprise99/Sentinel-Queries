@@ -1,5 +1,5 @@
 //When a Defender for Endpoint alert is triggered, searches for the most recent interactive logon to the device prior to the alert and detects if they are a local admin on that device
-let timeframe = 48h
+let timeframe = 48h;
 SecurityAlert
 | where ProviderName == "MDATP"
 | project AlertTime=TimeGenerated,DeviceName=CompromisedEntity, AlertName
