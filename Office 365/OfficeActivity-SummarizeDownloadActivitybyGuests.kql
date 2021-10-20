@@ -1,0 +1,14 @@
+//Summarize the total count and the list of files downloaded by guests in your Office 365 tenant
+let timeframe=30d;
+IdentityInfo
+| where TimeGenerated > ago(21d)
+| where UserType == "Guest"
+| summarize arg_max(TimeGenerated, *) by AccountUPN
+| project UserId=tolower(AccountUPN)
+| join kind=inner (
+    OfficeActivity
+    | where TimeGenerated > ago(timeframe)
+    | where Operation in ("FileSyncDownloadedFull", "FileDownloaded")
+    )
+    on UserId
+| summarize DownloadCount=count(), DownloadList=make_set(OfficeObjectId) by UserId
