@@ -1,0 +1,39 @@
+//Alerts on users being added to roles on your Azure Sentinel log analytics workspace.
+//Uses a lookup to a GitHub gist to match Azure role ids to friendly role names and the IdentityInfo to retrieve identity details
+let workspaceid="your Sentinel workspace id";
+let timeframe=1d;
+let AZRoles = externaldata(Name: string, Id: string) [@"https://gist.githubusercontent.com/reprise99/363eee70938c9a3d662e3f6da4610fe4/raw/b25b2d7a626396684ab578363888a0e360e7b287/.csv"] with(ignoreFirstRecord=true, format="csv");
+let accesschange =AzureActivity
+    | where TimeGenerated > ago(timeframe)
+    | where OperationName == "Create role assignment"
+    | where TenantId == workspaceid
+    | extend TargetAADUserId = tostring(parse_json(tostring(parse_json(tostring(parse_json(Properties).requestbody)).Properties)).PrincipalId)
+    | extend RoleDefinitionId = tostring(parse_json(tostring(parse_json(tostring(parse_json(Properties).requestbody)).Properties)).RoleDefinitionId)
+    | parse RoleDefinitionId with * '/roleDefinitions/' AzureRoleId
+    | where ActivityStatus == "Started"
+    | project
+        AccessChangeTime=TimeGenerated,
+        Actor=Caller,
+        ActorIPAddress=CallerIpAddress,
+        ResourceGroup,
+        WorkspaceId=TenantId,
+        AzureRoleId,
+        TargetAADUserId
+    | join kind=inner (AZRoles 
+        )
+        on $left.AzureRoleId == $right.Id
+    | project-away Id;
+IdentityInfo
+| where TimeGenerated > ago(21d)
+| summarize arg_max(TimeGenerated, *) by AccountUPN
+| join kind=inner accesschange on $left.AccountObjectId == $right.TargetAADUserId
+| project
+    AccessChangeTime=TimeGenerated,
+    Actor,
+    ActorIPAddress,
+    ResourceGroup,
+    WorkspaceId=TenantId,
+    AzureRoleId,
+    AzureRoleName=Name,
+    TargetAADUserId,
+    AccountUPN
