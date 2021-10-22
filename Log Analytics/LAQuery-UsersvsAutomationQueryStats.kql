@@ -1,0 +1,6 @@
+//Visualizes queries against your log analytics workspace categorized by users and service principals
+let timeframe=45d;
+LAQueryLogs
+| where TimeGenerated > ago (timeframe)
+| summarize Users=countif(isnotempty(AADEmail)), Playbooks=countif(isempty(AADEmail)) by bin(TimeGenerated, 24h)
+| render columnchart with (kind=unstacked, ytitle="Queries Run",title="Queries Run - Users vs Playbooks") 
