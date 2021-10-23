@@ -1,0 +1,8 @@
+//Visualize which playbooks are interacting with security incidents
+let timeframe=45d;
+SecurityIncident
+| where TimeGenerated > ago (timeframe)
+| where ModifiedBy startswith "Playbook"
+| summarize PlaybookRuns=count() by ModifiedBy
+| sort by PlaybookRuns desc 
+| render piechart   
