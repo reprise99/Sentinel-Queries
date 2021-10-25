@@ -1,0 +1,8 @@
+//Detects when unconstrained kerberos delegation is enabled on a computer object
+SecurityEvent
+| where EventID == "4742"
+| parse EventData with * 'NewUacValue">' NewUacValue '</Data>' *
+| parse EventData with * 'TargetUserName">' ComputerName '</Data>' *
+| parse EventData with * 'SubjectUserName">' Actor '</Data>' *
+| where NewUacValue == "0x2080"
+| project TimeGenerated, Activity, ComputerName, Actor
