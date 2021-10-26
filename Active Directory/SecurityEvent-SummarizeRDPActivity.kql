@@ -1,0 +1,8 @@
+//Creates a list of computers that your users have connected to via RDP
+let timerange=14d;
+SecurityEvent
+| where TimeGenerated > ago(timerange)
+| where EventID == "4624"
+| where LogonType == 10
+| project TimeGenerated, Username=tolower(Account), Computer, Activity
+| summarize LogonComputers=make_set(Computer) by Username
