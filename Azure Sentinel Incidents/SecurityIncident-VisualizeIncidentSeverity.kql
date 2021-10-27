@@ -1,0 +1,6 @@
+let timerange=30d;
+SecurityIncident
+| where TimeGenerated > ago(timerange)
+| where Status == "New"
+| summarize count()by Severity, bin(TimeGenerated, 1d)
+| render columnchart with (kind=unstacked, title="Azure Sentinel Incident Severity") 

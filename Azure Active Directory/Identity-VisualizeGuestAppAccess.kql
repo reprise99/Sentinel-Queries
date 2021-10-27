@@ -1,0 +1,11 @@
+//Visualize the most popular enterprise applications accessed by guest accounts
+let timeframe=45d;
+SigninLogs
+| where TimeGenerated > ago(timeframe)
+| where UserType == "Guest" or UserPrincipalName contains "#ext#"
+| where ResultType == 0
+// Exclude Microsoft management applications
+| where AppDisplayName !in ("Microsoft Invitation Acceptance Portal", "My Apps", "Microsoft App Access Panel", "Microsoft Authentication Broker")
+| summarize AppCount=count()by AppDisplayName
+| sort by AppCount desc 
+| render piechart with (title="Most Popular Apps Accessed by Guests")
