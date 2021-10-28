@@ -1,0 +1,3 @@
+//Microsoft Graph query to find idle guest accounts. Change le date as required. Query will find all users with last sign in activity prior to that date.
+
+https://graph.microsoft.com/beta/users?$filter=UserType eq 'Guest'&$filter=signInActivity/lastSignInDateTime le 2021-08-01T00:00:00Z&$select=displayName,UserType,signInActivity
