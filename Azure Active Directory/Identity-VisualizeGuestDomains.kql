@@ -1,0 +1,15 @@
+//Visualize the breadkdown of domains for guest users who have redeemed their invites. Configure the timeframe and threshold.
+//Timeframe is the amount of data to retrieve and threshold is the minimum amount of invites from a particular domain to be included
+let timeframe=45d;
+let threshold=5;
+AuditLogs
+| where TimeGenerated > ago(timeframe)
+| where OperationName == "Redeem external user invite"
+| extend GuestEmail = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| extend UserDomain = tostring(split(GuestEmail, "@")[1])
+| where isnotempty(UserDomain)
+| project UserDomain
+| summarize DomainCount=count()by UserDomain
+| sort by DomainCount desc 
+| where DomainCount > threshold
+| render piechart 
