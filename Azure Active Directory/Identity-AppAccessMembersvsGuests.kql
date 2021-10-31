@@ -1,0 +1,11 @@
+//Creates a list of your applications and summarizes successful signins by members vs guests
+let timerange=30d;
+SigninLogs
+| where TimeGenerated > ago(timerange)
+| project TimeGenerated, UserType, ResultType, AppDisplayName
+| where ResultType == 0
+| summarize
+    MemberSignins=countif(UserType == "Member"),
+    GuestSignins=countif(UserType == "Guest")
+    by AppDisplayName
+| sort by AppDisplayName  
