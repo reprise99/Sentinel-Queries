@@ -1,0 +1,7 @@
+//Summarize the last time your service principals signed in, grouped by month
+AADServicePrincipalSignInLogs
+| project TimeGenerated, AppId, ResultType
+| where TimeGenerated > ago (360d)
+| where ResultType == 0
+| summarize arg_max(TimeGenerated, *) by AppId
+| summarize LastAppAccess=make_set(AppId) by startofmonth(TimeGenerated)
