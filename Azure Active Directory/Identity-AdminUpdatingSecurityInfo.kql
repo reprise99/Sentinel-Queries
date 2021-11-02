@@ -1,0 +1,8 @@
+//Detects an admin changing authentication phone details for another user
+AuditLogs
+| where OperationName == "Admin updated security info"
+| extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| extend Target = tostring(TargetResources[0].userPrincipalName)
+| extend NewPhoneNumber = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[2].newValue)))
+| extend OldPhoneNumber = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[2].oldValue)))
+| project TimeGenerated, Actor, Target, NewPhoneNumber, OldPhoneNumber
