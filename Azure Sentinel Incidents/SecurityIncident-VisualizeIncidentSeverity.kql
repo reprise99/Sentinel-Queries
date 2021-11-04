@@ -3,4 +3,4 @@ let timerange=365d;
 SecurityIncident
 | where TimeGenerated > ago(timerange)
 | summarize IncidentSeverity=dcount(IncidentNumber)by Severity, startofmonth(TimeGenerated)
-| render columnchart with (kind=unstacked, title="Azure Sentinel Incident Severity", xtitle="Month") 
+| render columnchart with (kind=unstacked, title="Microsoft Sentinel Incident Severity", xtitle="Month") 
