@@ -1,0 +1,12 @@
+//Detects successful TeamViewer connections from internal to external IP addresses
+DeviceNetworkEvents
+| where InitiatingProcessFileName contains "teamviewer.exe"
+| where ActionType == "ConnectionSuccess"
+| where LocalIPType == "Private"
+| where RemoteIPType == "Public"
+| project TimeGenerated,
+    DeviceName,
+    InitiatingProcessAccountName,
+    InitiatingProcessFileName,
+    LocalIP,
+    RemoteIP
