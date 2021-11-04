@@ -1,0 +1,6 @@
+let timerange=360d;
+SecurityIncident
+| where TimeGenerated > ago(timerange)
+| where Status == "New"
+| summarize IncidentSeverity=count()by Severity, startofmonth(TimeGenerated)
+| render columnchart with (kind=unstacked, title="Azure Sentinel Incident Severity", xtitle="Month") 
