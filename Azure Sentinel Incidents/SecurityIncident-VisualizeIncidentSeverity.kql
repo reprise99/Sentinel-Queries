@@ -1,3 +1,4 @@
+//Visualize the severity of your security incidents per month
 let timerange=360d;
 SecurityIncident
 | where TimeGenerated > ago(timerange)
