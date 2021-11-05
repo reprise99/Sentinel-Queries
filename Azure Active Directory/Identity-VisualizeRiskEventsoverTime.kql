@@ -1,0 +1,6 @@
+//Visualizes risk events per month over the timerange
+AADUserRiskEvents
+| where TimeGenerated > ago (180d)
+| where isnotempty(RiskEventType)
+| summarize RiskCount=count()by RiskEventType, startofmonth(TimeGenerated)
+| render columnchart with (kind=unstacked, title="Risk Events Over Time", xtitle="Month")
