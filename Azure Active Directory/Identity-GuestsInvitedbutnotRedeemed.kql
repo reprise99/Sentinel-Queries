@@ -1,0 +1,18 @@
+//Lists guests who have been invited but not yet redeemed their invites. Excludes newly invited guests (last 30 days).
+let timerange=180d;
+let timeframe=30d;
+AuditLogs
+| where TimeGenerated between (ago(timerange) .. ago(timeframe)) 
+| where OperationName == "Invite external user"
+| extend GuestUPN = tolower(tostring(TargetResources[0].userPrincipalName))
+| project TimeGenerated, GuestUPN
+| join kind=leftanti  (
+    AuditLogs
+    | where TimeGenerated > ago (timerange)
+    | where OperationName == "Redeem external user invite"
+    | where CorrelationId <> "00000000-0000-0000-0000-000000000000"
+    | extend d = tolower(tostring(TargetResources[0].displayName))
+    | parse d with * "upn: " GuestUPN "," *
+    | project TimeGenerated, GuestUPN)
+    on GuestUPN
+| distinct GuestUPN
