@@ -1,0 +1,6 @@
+//Finds machines that have vulnerabilities listed in the CISA guidance - https://www.cisa.gov/known-exploited-vulnerabilities-catalog
+//Produces a list of each CVE and which machines are vulnerable
+let cisacve = externaldata(CVE: string, Vendor: string, Product: string, Name: string) [@"https://gist.githubusercontent.com/reprise99/28bb25eb712bdf7f33047ebe8ca92496/raw/264adf88d88b610710fe46ab1e1f3426d480d493/cisa-cve"] with(ignoreFirstRecord=true, format="csv");
+DeviceTvmSoftwareVulnerabilities
+| join kind=inner cisacve on $left.CveId == $right.CVE
+| summarize DeviceVulns=make_set(DeviceName) by CveId
