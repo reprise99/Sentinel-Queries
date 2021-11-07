@@ -1,0 +1,13 @@
+//Finds agents that haven't sent a heartbeat in the specified timeframe and retrieve last heartbeat time
+let timerange=365d;
+let timeframe=30d;
+Heartbeat
+| where TimeGenerated > ago(timerange)
+| summarize arg_max(TimeGenerated, *) by Computer
+| project Computer, TimeGenerated
+| join kind=leftanti (
+    Heartbeat
+    | where TimeGenerated > ago(timeframe)
+    | summarize arg_max(TimeGenerated, *) by Computer)
+    on Computer
+| project Computer, LastHeartbeat=TimeGenerated
