@@ -1,0 +1,5 @@
+//Visualize how many machines you are onboarding or offboarding to Sentinel per month
+Heartbeat
+| where TimeGenerated > ago(365d)
+| summarize Count=dcount(Computer)by startofmonth(TimeGenerated)
+| render columnchart with (title="Unique Monthly Computers Onboarded")
