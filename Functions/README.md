@@ -15,3 +15,5 @@ Then you can run your saved function using a single line query.
 ![Run function](https://github.com/reprise99/Sentinel-Queries/blob/main/Functions/ReadmeImages/function3.png?raw=true)
 
 You can then query within the function as you would a normal query.
+
+![Run function query](https://github.com/reprise99/Sentinel-Queries/blob/main/Functions/ReadmeImages/function4.png?raw=true)
