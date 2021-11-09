@@ -1,0 +1,13 @@
+// Save as a function in your workspace then invoke via its name, i.e if you save as SigninRisk
+// SigninRisk | where TimeGenerated > ago(30d) | where UserPrincipalName == "user@yourdomain.com"
+// SigninRisk | where TimeGenerated > ago(30d) | where AssignedRoles contains "Global Administrator"
+// This will join the users identity information, sign in data and any risky signins for your query
+IdentityInfo
+| where TimeGenerated > ago (21d)
+| summarize arg_max(TimeGenerated,*) by AccountUPN
+| join kind=inner(
+SigninLogs) on $left.AccountUPN==$right.UserPrincipalName
+| project SigninTime=TimeGenerated1, UserPrincipalName, AppDisplayName, ResultType, AssignedRoles, Location, UserAgent, AuthenticationRequirement, Country, City, CorrelationId
+| join kind=inner (
+AADUserRiskEvents) on CorrelationId
+| project SigninTime, UserPrincipalName, AppDisplayName, ResultType, DetectionTimingType, RiskState, RiskLevel, Location, AssignedRoles, UserAgent, AuthenticationRequirement, Country, City
