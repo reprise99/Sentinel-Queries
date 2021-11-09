@@ -13,3 +13,5 @@ Then name your function, this will be the same name you then query Microsoft Sen
 Then you can run your saved function using a single line query.
 
 ![Run function](readmeimages/function3.png)
+
+You can then query within the function as you would a normal query.
