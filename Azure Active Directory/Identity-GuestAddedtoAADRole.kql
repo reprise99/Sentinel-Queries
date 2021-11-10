@@ -1,0 +1,8 @@
+//Detects when an Azure AD guest is added to an Azure AD role
+AuditLogs
+| where OperationName == "Add member to role"
+| extend Target = tostring(TargetResources[0].userPrincipalName)
+| extend RoleAdded = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[1].newValue)))
+| extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| where Target contains "#ext#"
+| project TimeGenerated, OperationName, Actor, Target, RoleAdded
