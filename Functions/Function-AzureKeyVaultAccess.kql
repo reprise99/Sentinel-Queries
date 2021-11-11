@@ -1,0 +1,37 @@
+// Save as a function in your workspace then invoke via its name, i.e if you save as KeyVaultAccess
+// KeyVaultAccess | where TimeGenerated > ago(30d) | where Actor == "user@yourdomain.com" // will find actions taken by that user
+// KeyVaultAccess | where TimeGenerated > ago(30d) | where * contains "Delete" // will find when delete access is added or removed
+// This will parse the AzureActivity log for Azure Key Vault access changes.
+AzureDiagnostics
+| where ResourceType == "VAULTS"
+| where OperationName == "VaultPatch"
+| where ResultType == "Success"
+| project-rename
+    ServicePrincipalAdded=addedAccessPolicy_ObjectId_g,
+    Actor=identity_claim_http_schemas_xmlsoap_org_ws_2005_05_identity_claims_name_s,
+    AddedKeyPolicy = addedAccessPolicy_Permissions_keys_s,
+    AddedSecretPolicy = addedAccessPolicy_Permissions_secrets_s,
+    AddedCertPolicy = addedAccessPolicy_Permissions_certificates_s,
+    RemovedKeyPolicy = removedAccessPolicy_Permissions_keys_s,
+    RemovedSecretPolicy = removedAccessPolicy_Permissions_secrets_s,
+    RemovedCertPolicy = removedAccessPolicy_Permissions_certificates_s,
+    ServicePrincipalRemoved=removedAccessPolicy_ObjectId_g
+| project
+    TimeGenerated,
+    KeyVaultName=Resource,
+    ServicePrincipalAdded,
+    ServicePrincipalRemoved,
+    Actor,
+    IPAddressofActor=CallerIPAddress,
+    AddedSecretPolicy,
+    AddedKeyPolicy,
+    AddedCertPolicy,
+    RemovedSecretPolicy,
+    RemovedKeyPolicy,
+    RemovedCertPolicy
+| where isnotempty(AddedKeyPolicy)
+    or isnotempty(AddedSecretPolicy)
+    or isnotempty(AddedCertPolicy)
+    or isnotempty(RemovedKeyPolicy)
+    or isnotempty(RemovedSecretPolicy)
+    or isnotempty(RemovedCertPolicy)
