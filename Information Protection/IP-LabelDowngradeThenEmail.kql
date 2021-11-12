@@ -3,7 +3,7 @@
 let starttime=7d;
 let timeframe=4h;
 InformationProtectionEvents
-| where Time > ago(60d)
+| where Time > ago(starttime)
 | where Activity == "DowngradeLabel"
 | project LabelChangeTime=Time, User, FileName=ItemName
 | join kind=inner(
