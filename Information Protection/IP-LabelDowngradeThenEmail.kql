@@ -1,0 +1,34 @@
+// Detects when a user downgrades a label on a file and that file is then emailed outbound 
+// starttime = the amount of data to look back on, timeframe = the time between the label downgrade and email event
+let starttime=7d;
+let timeframe=4h;
+InformationProtectionEvents
+| where Time > ago(60d)
+| where Activity == "DowngradeLabel"
+| project LabelChangeTime=Time, User, FileName=ItemName
+| join kind=inner(
+    EmailEvents
+    | where EmailDirection == "Outbound"
+    | project
+        TimeGenerated,
+        SenderMailFromAddress,
+        RecipientEmailAddress,
+        EmailDirection,
+        NetworkMessageId
+    | join kind=inner (EmailAttachmentInfo) on NetworkMessageId
+    | project
+        TimeGenerated,
+        SenderMailFromAddress,
+        RecipientEmailAddress,
+        EmailDirection,
+        FileName
+    )
+    on FileName
+| project
+    LabelChangeTime,
+    EmailSendTime=TimeGenerated,
+    SenderMailFromAddress,
+    RecipientEmailAddress,
+    EmailDirection,
+    FileName
+| where (EmailSendTime - LabelChangeTime) between (0min .. timeframe)
