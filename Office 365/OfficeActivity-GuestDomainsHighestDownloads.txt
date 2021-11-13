@@ -1,0 +1,16 @@
+//Summarize the total count of files downloaded by each guest domain in your tenant
+let timeframe=30d;
+IdentityInfo
+| where TimeGenerated > ago(21d)
+| where UserType == "Guest"
+| summarize arg_max(TimeGenerated, *) by AccountUPN, MailAddress
+| project UserId=tolower(AccountUPN), MailAddress
+| join kind=inner (
+    OfficeActivity
+    | where TimeGenerated > ago(timeframe)
+    | where Operation in ("FileSyncDownloadedFull", "FileDownloaded")
+    )
+    on UserId
+| extend username = tostring(split(UserId,"#")[0])
+| parse MailAddress with * "@" userdomain 
+| summarize count() by userdomain
