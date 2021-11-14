@@ -1,0 +1,8 @@
+//Visualize uploads vs downloads in your Office 365 tenant per day
+let timerange=30d;
+OfficeActivity
+| where TimeGenerated > ago(timerange)
+| project TimeGenerated, Operation
+| where Operation in ("FileSyncDownloadedFull","FileSyncUploadedFull","FileDownloaded","FileUploaded")
+| summarize FilesDownloaded=countif(Operation in ("FileDownloaded","FileSyncDownloadedFull")),FilesUploaded=countif(Operation in ("FileSyncUploadedFull","FileUploaded")) by startofday(TimeGenerated)
+| render columnchart with (kind=unstacked, title="Downloads vs Uploads in Office 365", ytitle="Count", xtitle="Day")
