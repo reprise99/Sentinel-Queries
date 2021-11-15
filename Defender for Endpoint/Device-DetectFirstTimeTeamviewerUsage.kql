@@ -1,0 +1,24 @@
+//Detects first time internal to external Teamviewer access not seen for the previous timeframe
+let timeframe = startofday(ago(60d));
+DeviceNetworkEvents
+| where TimeGenerated > timeframe and TimeGenerated < startofday(now())
+| where InitiatingProcessFileName contains "teamviewer.exe"
+| where ActionType == "ConnectionSuccess"
+| where LocalIPType == "Private"
+| where RemoteIPType == "Public"
+| project TimeGenerated, DeviceName
+| join kind=rightanti
+    (
+    DeviceNetworkEvents
+    | where TimeGenerated > startofday(now())
+    | where InitiatingProcessFileName contains "teamviewer.exe"
+    | where ActionType == "ConnectionSuccess"
+    | where LocalIPType == "Private"
+    | where RemoteIPType == "Public")
+    on DeviceName
+| distinct
+    DeviceName,
+    InitiatingProcessAccountName,
+    InitiatingProcessFileName,
+    LocalIP,
+    RemoteIP
