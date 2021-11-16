@@ -1,0 +1,8 @@
+//Detects when a BitLocker key is read in Azure AD and retrieves the device and key ids
+AuditLogs
+| where OperationName == "Read BitLocker key"
+| extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| extend s = tostring(AdditionalDetails[0].value)
+| parse s with * "ID: '" KeyId "'" *
+| parse s with * "device: '" DeviceId "'"
+| project TimeGenerated, OperationName, Actor, KeyId, DeviceId
