@@ -1,0 +1,18 @@
+//Visualize Active Directory accounts created, disabled and deleted per day over the timerange
+let timerange=30d;
+SecurityEvent
+| where TimeGenerated > ago(timerange)
+| project TimeGenerated, Account, EventID, TargetAccount
+| where EventID in ("4720", "4725", "4726")
+| where TargetAccount !endswith "$"
+| summarize
+    AccountsCreated=countif(EventID == "4720"),
+    AccountsDeleted=countif(EventID == "4726"),
+    AccountsDisabled=countif(EventID == "4725")
+    by startofday(TimeGenerated)
+| render columnchart
+    with (
+    kind=unstacked,
+    xtitle="Count",
+    ytitle="Day",
+    title="Active Directory User Accounts Created, Disabled and Deleted per day")
