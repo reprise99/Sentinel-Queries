@@ -1,0 +1,14 @@
+//Detects when a user registers MFA details on their account and then completes self service password reset within the timeframe
+let timeframe=4h;
+AuditLogs
+| where OperationName in ("User changed default security info", "User registered all required security info", "User registered security info")
+| extend User = tostring(TargetResources[0].userPrincipalName)
+| project SecurityInfoTime=TimeGenerated, User, OperationName
+| join kind=inner (
+    AuditLogs
+    | where OperationName in ("Reset password (self-service)", "Change password (self-service)")
+    | where Result == "success"
+    | extend User = tostring(TargetResources[0].userPrincipalName)
+    | project PasswordResetTime=TimeGenerated, OperationName, User)
+    on User
+| where (PasswordResetTime - SecurityInfoTime) between (0min .. timeframe)
