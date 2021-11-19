@@ -2,12 +2,12 @@
 
 Some tips, tricks and examples for using KQL for Microsoft Sentinel.
 
-1. Introduction
-2. The Anatomy of a KQL Query
-3. The Basics
-    1. Time Basics
-    2. Where Basics
-    3. Project
+1. [Introduction](#introduction)
+2. [The Anatomy of a KQL Query](#the-anatomy-of-a-kql-query)
+3. [The Basics](#the-basics)
+    1. [Time Basics](#time-basics)
+    2. [Where Basics](#where-basics)
+    3. [Project Basics](#project-basics)
 
 ## Introduction
 
@@ -152,7 +152,6 @@ SigninLogs
 ```
 
 And between 14 minutes and 7 minutes ago.
-
 
 ### Where Basics
 
