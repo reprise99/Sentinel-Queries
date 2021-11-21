@@ -1,0 +1,24 @@
+//Visualize how much data is being copied to USB drives per day in your environment over the time range.
+let timerange=30d;
+DeviceEvents
+| where TimeGenerated > ago (timerange)
+| project TimeGenerated, ActionType, AdditionalFields, DeviceId, FileName
+| where ActionType == "UsbDriveMounted"
+| extend DriveLetter = tostring(todynamic(AdditionalFields).DriveLetter)
+| join kind=inner (DeviceFileEvents
+    | where TimeGenerated > ago (timerange)
+    | project TimeGenerated, ActionType, FolderPath, DeviceId, FileName, FileSize
+    | extend FileCopyTime = TimeGenerated
+    | where ActionType == "FileCreated"
+    | parse FolderPath with DriveLetter '\\' *
+    | extend DriveLetter = tostring(DriveLetter)
+    )
+    on DeviceId, DriveLetter
+| distinct FileCopyTime, FileName1, FileSize
+| summarize DataCopiedinGB=sum(FileSize / 1024 / 1024 / 1024) by startofday(FileCopyTime)
+| render columnchart
+    with (
+    kind=unstacked,
+    xtitle="Data Copied in GB",
+    ytitle="Day",
+    title="Data Copied to USB per day")
