@@ -1,0 +1,7 @@
+//Detect when a non system account changes the PowerShell execution policy on a device
+DeviceEvents
+| where ActionType == "PowerShellCommand"
+| where InitiatingProcessFileName == "powershell.exe"
+| where InitiatingProcessAccountName != "system"
+| where AdditionalFields.Command == "Set-ExecutionPolicy"
+| project TimeGenerated, DeviceName, InitiatingProcessAccountName
