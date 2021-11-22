@@ -8,6 +8,7 @@ Some tips, tricks and examples for using KQL for Microsoft Sentinel.
     1. [Time Basics](#time-basics)
     2. [Where Basics](#where-basics)
     3. [Project Basics](#project-basics)
+    4. [Summarize Basics](#summarize-basics)
 
 ## Introduction
 
@@ -304,3 +305,99 @@ SigninLogs
 ```
 
 In this query we remove UserAgent. Remember, if you remove a column you then can't access it later in your query.
+
+### Summarize Basics
+
+Summarize produces a table that aggregates the content of your query. Summarize has a number of underlying aggregation functions. If we again take our example query, we can manipulate the results in various ways using summarize.
+
+```kql
+SigninLogs
+| where TimeGenerated > ago(14d)
+| where UserPrincipalName == "reprise_99@testdomain.com"
+| where ResultType == "0"
+| summarize count() by AppDisplayName
+```
+
+This query will look up the SigninLogs table for any events in the last 14 days, for any matches for reprise_99@testdomain.com, where the result is a success (ResultType == 0) and then summarize those events by the application display name.
+
+You can optionally name the result column.
+
+```kql
+SigninLogs
+| where TimeGenerated > ago(14d)
+| where UserPrincipalName == "reprise_99@testdomain.com"
+| where ResultType == "0"
+| summarize AppCount=count() by AppDisplayName
+```
+
+This returns the same data but updates the name of the returned column to AppCount.
+
+Instead of a total count, you can summarize a distinct count.
+
+```kql
+SigninLogs
+| where TimeGenerated > ago(14d)
+| where UserPrincipalName == "reprise_99@testdomain.com"
+| where ResultType == "0"
+| summarize DistinctAppCount=dcount(AppDisplayName) by AppDisplayName
+```
+
+This will return a single record for each distinct application reprise_99@testdomain.com signed into.
+
+You can use the arg_max and arg_min functions to return either the newest or oldest record that matches your query.
+
+```kql
+SigninLogs
+| where TimeGenerated > ago(14d)
+| where UserPrincipalName == "reprise_99@testdomain.com"
+| where ResultType == "0"
+| summarize arg_max(TimeGenerated, *) by UserPrincipalName
+```
+
+This query looks for all signin logs over the last 14 days, that have reprise_99@testdomain.com as the UserPrincipalname, that are successful and then returns the latest record.
+
+```kql
+SigninLogs
+| where TimeGenerated > ago(14d)
+| where UserPrincipalName == "reprise_99@testdomain.com"
+| where ResultType == "0"
+| summarize arg_min(TimeGenerated, *) by UserPrincipalName
+```
+
+This is the same but returns the oldest record.
+
+You can use countif to provide logic to your summations.
+
+```kql
+SigninLogs
+| where TimeGenerated > ago(14d)
+| where UserPrincipalName == "reprise_99@testdomain.com"
+| where ResultType == "0"
+| summarize TeamsLogons=countif(AppDisplayName has "Teams"), SharePointLogons=countif(AppDisplayName has "SharePoint")
+```
+
+This summarizes the data into two new columns, TeamsLogons where the application display name has "Teams" and SharePointLogons where the application display name has "SharePoint"
+
+You can further manipulate your data by telling KQL to place your data into time 'bins'.
+
+```kql
+SigninLogs
+| where TimeGenerated > ago(14d)
+| where UserPrincipalName == "reprise_99@testdomain.com"
+| where ResultType == "0"
+| summarize AppCount=count() by AppDisplayName, bin(TimeGenerated, 1d)
+```
+
+This returns the same data as our first summarize example and then groups that data into 1d bins.
+
+You can combine these functions together where useful
+
+```kql
+SigninLogs
+| where TimeGenerated > ago(14d)
+| where UserPrincipalName == "reprise_99@testdomain.com"
+| where ResultType == "0"
+| summarize TeamsLogons=countif(AppDisplayName has "Teams"), SharePointLogons=countif(AppDisplayName has "SharePoint") by bin(TimeGenerated, 1d)
+```
+
+This is a combination of our countif and bin functions, where we summarize based on our application display name and also place the results into 1d bins.
