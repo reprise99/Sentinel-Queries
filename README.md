@@ -401,3 +401,27 @@ SigninLogs
 ```
 
 This is a combination of our countif and bin functions, where we summarize based on our application display name and also place the results into 1d bins.
+
+You can make a set of items within a query.
+
+```kql
+SigninLogs
+| where TimeGenerated > ago(14d)
+| where UserPrincipalName == "reprise_99@testdomain.com"
+| where ResultType == "0"
+| summarize AppList=make_set(AppDisplayName) by UserPrincipalName
+```
+
+This will output a list of applications that reprise_99@testdomain.com has signed into to a list called AppList.
+
+You can combine this with our time bin.
+
+```kql
+SigninLogs
+| where TimeGenerated > ago(14d)
+| where UserPrincipalName == "reprise_99@testdomain.com"
+| where ResultType == "0"
+| summarize AppList=make_set(AppDisplayName) by UserPrincipalName, bin(TimeGenerated, 1d)
+```
+
+This will make a list of applications that reprise_00@testdomain.com has signed into separated into one list per day.
