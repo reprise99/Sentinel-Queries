@@ -424,4 +424,4 @@ SigninLogs
 | summarize AppList=make_set(AppDisplayName) by UserPrincipalName, bin(TimeGenerated, 1d)
 ```
 
-This will make a list of applications that reprise_00@testdomain.com has signed into separated into one list per day.
+This will make a list of applications that reprise_99@testdomain.com has signed into separated into one list per day.
