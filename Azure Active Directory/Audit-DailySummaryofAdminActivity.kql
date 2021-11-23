@@ -13,4 +13,4 @@ IdentityInfo
     | where isnotempty(Actor)
     )
     on Actor
-| summarize AdminActivity = make_set(OperationName) by Actor, startofday(TimeGenerated)
+| summarize AdminActivity = make_list(OperationName) by Actor, startofday(TimeGenerated)
