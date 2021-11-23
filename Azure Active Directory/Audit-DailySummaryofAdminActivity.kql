@@ -1,0 +1,16 @@
+//Create a daily summary of activities completed by your Azure AD privileged users
+let timerange=30d;
+IdentityInfo
+| where TimeGenerated > ago(21d)
+| summarize arg_max(TimeGenerated, *) by AccountUPN
+| where isnotempty(AssignedRoles)
+| where AssignedRoles != "[]"
+| project Actor=AccountUPN
+| join kind=inner (
+    AuditLogs
+    | where TimeGenerated > ago(timerange)
+    | extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+    | where isnotempty(Actor)
+    )
+    on Actor
+| summarize AdminActivity = make_set(OperationName) by Actor, startofday(TimeGenerated)
