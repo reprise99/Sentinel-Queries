@@ -1,0 +1,20 @@
+//Find stale DNS domains that have not been queried in the last 30 days
+let domain="yourdomain.com";
+DnsEvents
+| where TimeGenerated > ago(180d)
+| where SubType == "LookupQuery"
+| where QueryType == "A"
+| where Name endswith domain
+| summarize LookupCount=count()by Name
+//Set a threshold for total lookups to be included, to account for typos and low volume queries
+| where LookupCount > 50
+| join kind=leftanti 
+    (
+    DnsEvents
+    | where TimeGenerated > ago(30d)
+    | where SubType == "LookupQuery"
+    | where QueryType == "A"
+    | where Name endswith domain
+    | summarize arg_max(TimeGenerated, Name) by Name
+    | project TimeGenerated, Name)
+    on Name
