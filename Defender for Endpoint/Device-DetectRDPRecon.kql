@@ -1,0 +1,12 @@
+//Search for devices connecting to multiple IP addresses via RDP witin a time window and alert when over a particular threshold
+let timerange=1d;
+let window=20m;
+let threshold=7;
+DeviceNetworkEvents
+| where TimeGenerated > ago(timerange)
+| where ActionType == "ConnectionSuccess"
+| where RemotePort == "3389"
+// Exclude Defender for Identity which uses RDP to map your network
+| where InitiatingProcessFileName <> "Microsoft.Tri.Sensor.exe"
+| summarize RDPConnections=make_set(RemoteIP) by bin(TimeGenerated, window), DeviceName
+| where array_length( RDPConnections) >= threshold
