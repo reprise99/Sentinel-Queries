@@ -1,0 +1,11 @@
+//Detect PIM activiations outside of working hours
+let timerange=30d;
+AuditLogs
+// extend LocalTime to your time zone
+| extend LocalTime=TimeGenerated + 5h
+| where LocalTime > ago(timerange)
+// Change hours of the day to suit your company, i.e this would find activations between 6pm and 6am
+| where hourofday(LocalTime) !between (6 .. 18)
+| where OperationName == "Add member to role completed (PIM activation)"
+| extend RoleName = tostring(TargetResources[0].displayName)
+| project LocalTime, OperationName, Identity, RoleName, ActivationReason=ResultReason
