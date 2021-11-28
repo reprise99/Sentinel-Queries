@@ -568,3 +568,17 @@ SigninLogs
 ```
 
 ![KQL Time Column Chart Unstacked Renamed](https://github.com/reprise99/Sentinel-Queries/blob/main/Diagrams/render-timecolumnchartnames.png?raw=true)
+
+You can combine logic in your summarize actions to build dynamic content for your render operator.
+
+```kql
+SigninLogs
+| where TimeGenerated > ago(14d)
+| where ResultType == "0"
+| summarize TeamsCount=countif(AppDisplayName has "Teams"), OneDrive=countif(AppDisplayName has "OneDrive"), SharePointCount=countif(AppDisplayName has "SharePoint") by bin(TimeGenerated, 1d)
+| render columnchart with (kind=unstacked, ytitle="Sign In Count", xtitle="Day", title="Teams vs OneDrive vs SharePoint Sign Ins Per Day")
+```
+
+This query searches all signins to your tenant, then counts three groups - one where the application display name has "Teams", one where the application display name has "OneDrive" and one where the application display name has "SharePoint" for each day over the last 14 days, then renders as an unstacked column chart.
+
+![KQL Time Column Chart Outlook, OneDrive, SharePoint](https://github.com/reprise99/Sentinel-Queries/blob/main/Diagrams/render-timecolumn-outlookonedrivesharepoint.png?raw=true)
