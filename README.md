@@ -563,8 +563,8 @@ SigninLogs
 | where TimeGenerated > ago(14d)
 | where UserPrincipalName == "reprise_99@testdomain.com"
 | where ResultType == "0"
-| summarize SigninCount=count() by bin(TimeGenerated, 1d)
-| render columnchart with (kind=unstacked, xtitle="Total Sign Ins", ytitle="Day", title="Application Signins Per Day")
+| summarize SigninCount=count() by AppDisplayName, bin(TimeGenerated, 1d)
+| render columnchart with (kind=unstacked, ytitle="Total Sign Ins", xtitle="Day", title="Application Signins Per Day")
 ```
 
 ![KQL Time Column Chart Unstacked Renamed](https://github.com/reprise99/Sentinel-Queries/blob/main/Diagrams/render-timecolumnchartnames.png?raw=true)
