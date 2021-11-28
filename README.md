@@ -9,6 +9,7 @@ Some tips, tricks and examples for using KQL for Microsoft Sentinel.
     2. [Where Basics](#where-basics)
     3. [Project Basics](#project-basics)
     4. [Summarize Basics](#summarize-basics)
+    5. [Render Basics](#render-basics)
 
 ## Introduction
 
@@ -425,3 +426,145 @@ SigninLogs
 ```
 
 This will make a list of applications that reprise_99@testdomain.com has signed into separated into one list per day.
+
+### Render Basics
+
+The render operator allows KQL to visualize data into different formats such as piecharts, time or areacharts and column and bar charts.
+
+If we use our same example from our Signinlogs table, we can see how we can visualize the data in various ways.
+
+```kql
+SigninLogs
+| where TimeGenerated > ago(14d)
+| where UserPrincipalName == "reprise_99@testdomain.com"
+| where ResultType == "0"
+| summarize AppCount=count()by AppDisplayName
+| render piechart
+```
+
+This query summarizes all the applications reprise_99@testdomain.com has signed into in the last 14 days, then renders the output as a piechart.
+
+![KQL Piechart](https://github.com/reprise99/Sentinel-Queries/blob/main/Diagrams/render-piechart.png?raw=true)
+
+You can also render as a column chart.
+
+```kql
+SigninLogs
+| where TimeGenerated > ago(14d)
+| where UserPrincipalName == "reprise_99@testdomain.com"
+| where ResultType == "0"
+| summarize AppCount=count()by AppDisplayName
+| render columnchart
+```
+
+![KQL Column Chart](https://github.com/reprise99/Sentinel-Queries/blob/main/Diagrams/render-columnchart.png?raw=true)
+
+Or a barchart.
+
+```kql
+SigninLogs
+| where TimeGenerated > ago(14d)
+| where UserPrincipalName == "reprise_99@testdomain.com"
+| where ResultType == "0"
+| summarize AppCount=count()by AppDisplayName
+| render barchart
+```
+
+![KQL Bar Chart](https://github.com/reprise99/Sentinel-Queries/blob/main/Diagrams/render-barchart.png?raw=true)
+
+For time data, you first summarize your data into time 'bins' as outlined in the summarize section, and you can then visualize your data over a time period.
+
+```kql
+SigninLogs
+| where TimeGenerated > ago(14d)
+| where UserPrincipalName == "reprise_99@testdomain.com"
+| where ResultType == "0"
+| summarize SigninCount=count() by bin(TimeGenerated, 1d)
+| render timechart
+```
+
+This visualizes all signins by reprise_99@testdomain.com per day over the last 14 days and displays it as a timechart.
+
+![KQL Timechart](https://github.com/reprise99/Sentinel-Queries/blob/main/Diagrams/render-timechart.png?raw=true)
+
+You can also use render as an areachart.
+
+```kql
+SigninLogs
+| where TimeGenerated > ago(14d)
+| where UserPrincipalName == "reprise_99@testdomain.com"
+| where ResultType == "0"
+| summarize SigninCount=count() by bin(TimeGenerated, 1d)
+| render areachart
+```
+
+![KQL Areachart](https://github.com/reprise99/Sentinel-Queries/blob/main/Diagrams/render-areachart.png?raw=true)
+
+Column charts and bar charts can also be used with time data. You will get a column or bar per time 'bin' over your larger time period.
+
+```kql
+SigninLogs
+| where TimeGenerated > ago(14d)
+| where UserPrincipalName == "reprise_99@testdomain.com"
+| where ResultType == "0"
+| summarize SigninCount=count() by bin(TimeGenerated, 1d)
+| render columnchart
+```
+
+This is the same query as our timechart, but rendered as a column chart with a column per day.
+
+![KQL Time Column Chart](https://github.com/reprise99/Sentinel-Queries/blob/main/Diagrams/render-timecolumnchart.png?raw=true)
+
+```kql
+SigninLogs
+| where TimeGenerated > ago(14d)
+| where UserPrincipalName == "reprise_99@testdomain.com"
+| where ResultType == "0"
+| summarize SigninCount=count() by bin(TimeGenerated, 1d)
+| render barchart
+```
+
+And a bar chart.
+
+![KQL Time Bar Chart](https://github.com/reprise99/Sentinel-Queries/blob/main/Diagrams/render-timebarchart.png?raw=true)
+
+With column or bar charts you can have them stacked together (which is the default).
+
+```kql
+SigninLogs
+| where TimeGenerated > ago(14d)
+| where UserPrincipalName == "reprise_99@testdomain.com"
+| where ResultType == "0"
+| summarize SigninCount=count() by AppDisplayName, bin(TimeGenerated, 1d)
+| render columnchart
+```
+
+This query finds all the signins for our account, counts the signins per application, then creates a single column for each day.
+
+![KQL Time Column Chart Stacked](https://github.com/reprise99/Sentinel-Queries/blob/main/Diagrams/render-timecolumnchartstacked.png?raw=true)
+
+If you want each application to have its own column you can set it to be unstacked.
+
+```kql
+SigninLogs
+| where TimeGenerated > ago(14d)
+| where UserPrincipalName == "reprise_99@testdomain.com"
+| where ResultType == "0"
+| summarize SigninCount=count() by bin(TimeGenerated, 1d)
+| render columnchart with (kind=unstacked)
+```
+
+![KQL Time Column Chart Unstacked](https://github.com/reprise99/Sentinel-Queries/blob/main/Diagrams/render-timecolumnchartunstacked.png?raw=true)
+
+You can also rename the axis and title of your chart in line with KQL.
+
+```kql
+SigninLogs
+| where TimeGenerated > ago(14d)
+| where UserPrincipalName == "reprise_99@testdomain.com"
+| where ResultType == "0"
+| summarize SigninCount=count() by bin(TimeGenerated, 1d)
+| render columnchart with (kind=unstacked, xtitle="Total Sign Ins", ytitle="Day", title="Application Signins Per Day")
+```
+
+![KQL Time Column Chart Unstacked Renamed](https://github.com/reprise99/Sentinel-Queries/blob/main/Diagrams/render-timecolumnchartnames.png?raw=true)
