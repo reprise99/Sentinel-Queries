@@ -1,0 +1,8 @@
+//Visualize the MFA types used by your users - phone sign in, mobile passcode, push or text message
+SigninLogs
+| where TimeGenerated > ago (180d)
+| where AuthenticationRequirement == "multiFactorAuthentication"
+| extend AuthMethod = tostring(parse_json(AuthenticationDetails)[0].authenticationMethod)
+| summarize count() by AuthMethod
+| where AuthMethod has_any ("Text message", "Mobile app notification", "OATH verification code", "Passwordless phone sign-in")
+| render piechart with (title="MFA Methods by Type")
