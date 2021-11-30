@@ -1,0 +1,17 @@
+//Find which users clicked on a phishing link after it was reported by Defender for Office 365
+SecurityAlert
+| where ProviderName == "OATP"
+| where AlertName == "Email messages containing malicious URL removed after delivery​"
+| extend x = todynamic(Entities)
+| mv-expand x
+| parse-where x with * '"Url":"' MaliciousURL '"' *
+| project PhishTime=TimeGenerated, MaliciousURL
+| join kind=inner (
+    DeviceEvents
+    | project TimeGenerated, ActionType, DeviceName, InitiatingProcessAccountName, RemoteUrl
+    | where ActionType == "BrowserLaunchedToOpenUrl"
+    | where RemoteUrl startswith "http")
+    on $left.MaliciousURL == $right.RemoteUrl
+| project-rename URLOpenTime=TimeGenerated
+| extend TimeDelta = abs(URLOpenTime - PhishTime)
+| project PhishTime, URLOpenTime, TimeDelta, ActionType, RemoteUrl, DeviceName, InitiatingProcessAccountName
