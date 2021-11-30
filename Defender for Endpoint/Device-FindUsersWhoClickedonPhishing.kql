@@ -1,4 +1,4 @@
-//Find which users clicked on a phishing link after it was reported by Defender for Office 365
+//Find which users clicked on a phishing link after it was detected by Defender for Office 365
 SecurityAlert
 | where ProviderName == "OATP"
 | where AlertName == "Email messages containing malicious URL removed after delivery​"
