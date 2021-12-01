@@ -1,0 +1,15 @@
+//Find devices that have stopped sending network events over the last 30 days, retrieve last event time and calculate the days since last event
+let timerange=365d;
+let timeframe=30d;
+DeviceNetworkEvents
+| project TimeGenerated, DeviceName
+| where TimeGenerated > ago(timerange)
+| summarize arg_max(TimeGenerated, DeviceName) by DeviceName
+| join kind=leftanti (
+    DeviceNetworkEvents
+    | project TimeGenerated, DeviceName
+    | where TimeGenerated > ago(timeframe)
+    | summarize arg_max(TimeGenerated, DeviceName) by DeviceName)
+    on DeviceName
+| extend DaysSinceLastEvent = datetime_diff('day', now(), TimeGenerated)
+| project DeviceName, DaysSinceLastEvent, LastEventTime=TimeGenerated
