@@ -1,0 +1,17 @@
+//Parse the IP information from Security Alerts and find other users who have successfully signed on from the same IP addresses
+SecurityAlert
+| where ProviderName in ("MCAS", "IPC")
+| extend x = todynamic(Entities)
+| mv-expand x
+| parse-where x with * '"Address":"' MaliciousIP '"' *
+//Exclude any corporate or trusted IP addresses
+| where MaliciousIP != "10.10.10.10"
+| project AlertTime=TimeGenerated, MaliciousIP, CompromisedEntity
+| join kind=inner
+    (
+    SigninLogs
+    | where ResultType in ("0","53003","50158")
+    )
+    on $left.MaliciousIP == $right.IPAddress
+| where CompromisedEntity != UserPrincipalName
+| distinct UserPrincipalName, AppDisplayName, IPAddress, UserAgent, ResultType, ResultDescription
