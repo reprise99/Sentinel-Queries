@@ -1,5 +1,7 @@
 //Create a daily report of users being added to on premise Active Directory groups, summarized by group name
+let timerange = 7d;
 SecurityEvent
+| where TimeGenerated > ago (timerange)
 | where EventID in ("4728", "4732", "4756", "4761", "4746", "4751")
 | where AccountType == "User"
 | parse-where kind = regex flags=i EventData with * '"MemberName">CN=' UserAdded ',' *
