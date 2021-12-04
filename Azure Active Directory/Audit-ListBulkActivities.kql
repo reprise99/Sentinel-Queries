@@ -1,0 +1,9 @@
+//List the bulk activities attempted by your privileged Azure AD users and parse the results
+AuditLogs
+| where OperationName endswith "finished (bulk)"
+| extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| project TimeGenerated, Actor, ResultDescription, OperationName
+| parse ResultDescription with * "Total activities count:" TotalActivityCount ";" *
+| parse ResultDescription with * "succeeded activities count" TotalSucceeded ";" *
+| parse ResultDescription with * "failed activities count" TotalFailed
+| project TimeGenerated, Actor, OperationName, TotalActivityCount, TotalSucceeded, TotalFailed
