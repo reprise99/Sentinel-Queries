@@ -1,0 +1,12 @@
+//Visualize the most popular weaponized domains in the phishing emails your users receive
+SecurityAlert
+| where TimeGenerated > ago(365d)
+| where ProviderName == "OATP"
+| where AlertName == "Email messages containing malicious URL removed after delivery​"
+| extend x = todynamic(Entities)
+| parse-where x with * '"Url":"' MaliciousURL '"' *
+| parse-where MaliciousURL with * "//" MaliciousDomain "/" *
+| project TimeGenerated, MaliciousDomain
+| summarize DomainCount=count() by MaliciousDomain
+| sort by DomainCount desc 
+| render piechart 
