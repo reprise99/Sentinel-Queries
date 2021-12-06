@@ -1,7 +1,7 @@
 //Find which users clicked on a phishing link after it was detected by Defender for Office 365
 SecurityAlert
 | where ProviderName == "OATP"
-| where AlertName == "Email messages containing malicious URL removed after delivery​"
+| where AlertName in ("Email messages containing malicious URL removed after delivery​","Email messages containing phish URLs removed after delivery")
 | extend x = todynamic(Entities)
 | mv-expand x
 | parse-where x with * '"Url":"' MaliciousURL '"' *

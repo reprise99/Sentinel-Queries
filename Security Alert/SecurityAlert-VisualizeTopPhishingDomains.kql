@@ -2,7 +2,7 @@
 SecurityAlert
 | where TimeGenerated > ago(365d)
 | where ProviderName == "OATP"
-| where AlertName == "Email messages containing malicious URL removed after delivery​"
+| where AlertName in ("Email messages containing malicious URL removed after delivery​","Email messages containing phish URLs removed after delivery")
 | extend x = todynamic(Entities)
 | parse-where x with * '"Url":"' MaliciousURL '"' *
 | parse-where MaliciousURL with * "//" MaliciousDomain "/" *
