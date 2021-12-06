@@ -1,0 +1,14 @@
+//When a domain is flagged by Defender for Cloud (Azure Security Center) as suspicious then find any other clients that have queried that domain in DNS events
+SecurityAlert
+| where AlertName startswith "Communication with suspicious random domain name"
+| extend x = todynamic(Entities)
+| mv-expand x
+| parse-where x with * '"DomainName":"' SuspiciousURL '"' *
+| project SuspiciousURL
+| join kind=inner (
+    DnsEvents
+    | where QueryType == "A"
+    | project Name, ClientIP
+    )
+    on $left.SuspiciousURL == $right.Name
+| summarize DNSResults=make_set(SuspiciousURL) by ClientIP
