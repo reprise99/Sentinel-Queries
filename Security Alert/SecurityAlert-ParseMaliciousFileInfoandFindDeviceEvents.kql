@@ -1,0 +1,22 @@
+//When Defender for Office 365 removes a malicious file from an email track down all device events with the same file hash
+let timerange=30d;
+SecurityAlert
+| where TimeGenerated > ago (timerange)
+| where ProviderName == "OATP"
+| where AlertName == "Email messages containing malicious file removed after delivery​"
+| extend x = todynamic(Entities)
+| mv-expand x
+| parse-where x with * '"Algorithm":"SHA256","Value":"' Hash '"' *
+| project FileHash=tolower(Hash)
+| distinct FileHash
+| join kind=inner (
+    DeviceFileEvents
+    | project
+        TimeGenerated,
+        ActionType,
+        FileName,
+        DeviceName,
+        SHA256,
+        InitiatingProcessAccountUpn 
+    )
+    on $left.FileHash == $right.SHA256
