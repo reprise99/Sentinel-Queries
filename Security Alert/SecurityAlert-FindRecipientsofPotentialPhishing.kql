@@ -1,0 +1,19 @@
+//When a user reports an email as potential phishing find all other users who received that email
+let timerange=30d;
+SecurityAlert
+| where TimeGenerated > ago(timerange)
+| where ProviderName == "OATP"
+| where AlertName == "Email reported by user as malware or phish"
+| extend x = todynamic(Entities)
+| mv-expand x
+| parse-where x with * 'Sender":"' SenderMailFromAddress '"' *
+| parse-where x with * 'Subject":"' Subject '"' *
+| where isnotempty(SenderMailFromAddress) and isnotempty(Subject)
+| distinct SenderMailFromAddress, Subject
+| join kind=inner(
+    EmailEvents
+    | where TimeGenerated > ago(timerange)
+    | project RecipientEmailAddress, SenderMailFromAddress, Subject
+    )
+    on SenderMailFromAddress, Subject
+| summarize Recipients=make_set(RecipientEmailAddress) by Subject, SenderMailFromAddress
