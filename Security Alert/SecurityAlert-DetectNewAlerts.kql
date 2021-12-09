@@ -1,0 +1,12 @@
+//List any new alert types found by the Defender product suite in the last week compared to the previous year
+SecurityAlert
+| where TimeGenerated > ago(365d) and TimeGenerated < ago(7d)
+// Exclude alerts from Sentinel itself
+| where ProviderName != "ASI Scheduled Alerts"
+| distinct AlertName
+| join kind=rightanti (
+    SecurityAlert
+    | where TimeGenerated > ago(7d)
+    | where ProviderName != "ASI Scheduled Alerts"
+    | distinct AlertName, ProviderName, ProductName)
+    on AlertName
