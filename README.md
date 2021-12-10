@@ -597,6 +597,10 @@ let ExampleText = datatable(TestData:string)
 ];
 ```
 
+This data is just a single string that looks like this.
+
+![Parse](https://github.com/reprise99/Sentinel-Queries/blob/main/Diagrams/parse.png?raw=true)
+
 We can parse out particular data matches with the following
 
 ```kql
