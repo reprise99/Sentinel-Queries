@@ -10,7 +10,7 @@ Some tips, tricks and examples for using KQL for Microsoft Sentinel.
     3. [Project Basics](#project-basics)
     4. [Summarize Basics](#summarize-basics)
     5. [Render Basics](#render-basics)
-    6. [Parse and Split Basics](#parsesplit-basics)
+    6. [Parse and Split Basics](#parse-and-split-basics)
 
 ## Introduction
 
