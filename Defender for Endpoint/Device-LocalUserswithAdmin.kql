@@ -1,0 +1,21 @@
+//Summarize all local user accounts per device which have logged on with administrative rights
+let timerange=30d;
+DeviceLogonEvents
+| where TimeGenerated > ago(timerange)
+| project
+    TimeGenerated,
+    AdditionalFields,
+    IsLocalAdmin,
+    LogonType,
+    DeviceName,
+    AccountDomain,
+    AccountName
+| extend LocalLogon = toboolean(AdditionalFields.IsLocalLogon)
+| where LocalLogon == true
+| where IsLocalAdmin == true
+| where LogonType == "Interactive"
+| distinct AccountDomain, AccountName, DeviceName
+//split domain from device name to match for local logons
+| extend Device = split(DeviceName, ".")[0]
+| where Device == AccountDomain
+| summarize LocalAccountAdmins=make_set(AccountName) by DeviceName
