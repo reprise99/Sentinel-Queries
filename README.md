@@ -10,6 +10,7 @@ Some tips, tricks and examples for using KQL for Microsoft Sentinel.
     3. [Project Basics](#project-basics)
     4. [Summarize Basics](#summarize-basics)
     5. [Render Basics](#render-basics)
+    6. [Parse and Split Basics](#parsesplit-basics)
 
 ## Introduction
 
@@ -582,3 +583,167 @@ SigninLogs
 This query searches all signins to your tenant, then counts three groups - one where the application display name has "Teams", one where the application display name has "OneDrive" and one where the application display name has "SharePoint" for each day over the last 14 days, then renders as an unstacked column chart.
 
 ![KQL Time Column Chart Outlook, OneDrive, SharePoint](https://github.com/reprise99/Sentinel-Queries/blob/main/Diagrams/render-timecolumn-outlookonedrivesharepoint.png?raw=true)
+
+### Parse and Split Basics
+
+Parse and split are two different ways to extend a string of data to multiple columns based on matches. A lot of logs ingested to Microsoft Sentinel may come in as a single long string (such as sysmon), parse and split allow you to manipulate them into readable data.
+
+For these examples, we will use the following test data
+
+```kql
+let ExampleText = datatable(TestData:string)
+[
+'Name=Reprise99,UPNSuffix=testdomain.com,AadTenantId=345c1234-a833-43e4-1d34-123440a5bcdd1,AadUserId=cf6f2df6-b754-48dc-b7bc-c8339caf211,DisplayName=Test User,Type=account'
+];
+```
+
+We can parse out particular data matches with the following
+
+```kql
+let ExampleText = datatable(TestData:string)
+[
+'Name=Reprise99,UPNSuffix=testdomain.com,AadTenantId=345c1234-a833-43e4-1d34-123440a5bcdd1,AadUserId=cf6f2df6-b754-48dc-b7bc-c8339caf211,DisplayName=Test User,Type=account'
+];
+ExampleText
+| parse TestData with * 'Name=' DisplayName ',' *
+| project DisplayName
+```
+
+This will parse all the data between Name= and , to a new column called 'DisplayName'.
+
+![Parse 1](https://github.com/reprise99/Sentinel-Queries/blob/main/Diagrams/parse1.png?raw=true)
+
+You can parse out multiple columns within the same command by matching along the string
+
+```kql
+let ExampleText = datatable(TestData:string)
+[
+'Name=Reprise99,UPNSuffix=testdomain.com,AadTenantId=345c1234-a833-43e4-1d34-123440a5bcdd1,AadUserId=cf6f2df6-b754-48dc-b7bc-c8339caf211,DisplayName=Test User,Type=account'
+];
+ExampleText
+| parse TestData with * 'Name=' DisplayName ',UPNSuffix=' DomainSuffix ',AadTenantId=' AzureADTenantId ',' *
+| project DisplayName, DomainSuffix, AzureADTenantId
+```
+
+This parses three new columns - DisplayName, DomainSuffix and AzureADTenantId
+
+![Parse 2](https://github.com/reprise99/Sentinel-Queries/blob/main/Diagrams/parse2.png?raw=true)
+
+Remembering that KQL runs its operations sequentially, once we parse we can then parse again on the newly created column.
+
+```kql
+let ExampleText = datatable(TestData:string)
+[
+'Name=Reprise99,UPNSuffix=testdomain.com,AadTenantId=345c1234-a833-43e4-1d34-123440a5bcdd1,AadUserId=cf6f2df6-b754-48dc-b7bc-c8339caf211,DisplayName=Test User,Type=account',
+];
+ExampleText
+| parse TestData with * 'Name=' DisplayName ',UPNSuffix=' DomainSuffix ',AadTenantId=' AzureADTenantId ',' *
+| project DisplayName, DomainSuffix, AzureADTenantId
+| parse DomainSuffix with * '.' TopLevelDomain
+| project DisplayName, DomainSuffix, TopLevelDomain, AzureADTenantId
+```
+
+This further parses our domain to find the top level domain, in this case a .com
+
+![Parse 3](https://github.com/reprise99/Sentinel-Queries/blob/main/Diagrams/parse3.png?raw=true)
+
+When using the parse operator, KQL will run through all your rows of data and return even results where there is no match. So depending on your data structure you could end up with many rows of empty data. If we expand our example data to include another row of data, with different names and run the same query you will see empty results.
+
+```kql
+let ExampleText = datatable(TestData:string)
+[
+'Name=Reprise99,UPNSuffix=testdomain.com,AadTenantId=345c1234-a833-43e4-1d34-123440a5bcdd1,AadUserId=cf6f2df6-b754-48dc-b7bc-c8339caf211,DisplayName=Test User,Type=account',
+'Display=Reprise99,UPN=testdomain.com,AadDirectoryId=345c1234-a833-43e4-1d34-123440a5bcdd1,AadObjectId=cf6f2df6-b754-48dc-b7bc-c8339caf211,Name=Test User,AccountType=account'
+]
+;
+ExampleText
+| parse TestData with * 'Name=' DisplayName ',UPNSuffix=' DomainSuffix ',AadTenantId=' AzureADTenantId ',' *
+| project DisplayName, DomainSuffix, AzureADTenantId
+| parse DomainSuffix with * '.' TopLevelDomain
+| project DisplayName, DomainSuffix, TopLevelDomain, AzureADTenantId
+```
+
+![Parse 4](https://github.com/reprise99/Sentinel-Queries/blob/main/Diagrams/parse4.png?raw=true)
+
+To combat this you can use the 'parse-where' operator, which only returns results where there are matches to your query.
+
+```kql
+let ExampleText = datatable(TestData:string)
+[
+'Name=Reprise99,UPNSuffix=testdomain.com,AadTenantId=345c1234-a833-43e4-1d34-123440a5bcdd1,AadUserId=cf6f2df6-b754-48dc-b7bc-c8339caf211,DisplayName=Test User,Type=account',
+'Display=Reprise99,UPN=testdomain.com,AadDirectoryId=345c1234-a833-43e4-1d34-123440a5bcdd1,AadObjectId=cf6f2df6-b754-48dc-b7bc-c8339caf211,Name=Test User,AccountType=account'
+]
+;
+ExampleText
+| parse-where TestData with * 'Name=' DisplayName ',UPNSuffix=' DomainSuffix ',AadTenantId=' AzureADTenantId ',' *
+| project DisplayName, DomainSuffix, AzureADTenantId
+| parse DomainSuffix with * '.' TopLevelDomain
+| project DisplayName, DomainSuffix, TopLevelDomain, AzureADTenantId
+```
+
+We can see we are back to a single result where we had a match on our parse.
+
+![Parse 5](https://github.com/reprise99/Sentinel-Queries/blob/main/Diagrams/parse5.png?raw=true)
+
+Split separates a string of text into an array based on a delimiter. If we go back to our original test data, we can split based on the comma sign.
+
+```kql
+let ExampleText = datatable(TestData:string)
+[
+'Name=Reprise99,UPNSuffix=testdomain.com,AadTenantId=345c1234-a833-43e4-1d34-123440a5bcdd1,AadUserId=cf6f2df6-b754-48dc-b7bc-c8339caf211,DisplayName=Test User,Type=account',
+]
+;
+ExampleText
+| extend SplitData = split(TestData,',')
+| project SplitData
+```
+
+We will be returned an array with our string split out.
+
+![Split 1](https://github.com/reprise99/Sentinel-Queries/blob/main/Diagrams/split1.png?raw=true)
+
+Split is index aware so if your data is in the same order, you can split directly into new columns.
+
+```kql
+let ExampleText = datatable(TestData:string)
+[
+'Name=Reprise99,UPNSuffix=testdomain.com,AadTenantId=345c1234-a833-43e4-1d34-123440a5bcdd1,AadUserId=cf6f2df6-b754-48dc-b7bc-c8339caf211,DisplayName=Test User,Type=account',
+]
+;
+ExampleText
+| extend Name = split(TestData,',')[0]
+| extend DomainSuffix = split(TestData,',')[1]
+| extend AzureADTenantId = split(TestData,',')[2]
+| extend AzureADUserId = split(TestData,',')[3]
+| extend DisplayName = split(TestData,',')[4]
+| extend AccountType = split(TestData,',')[5]
+| project Name, DomainSuffix, AzureADTenantId, AzureADUserId, DisplayName, AccountType
+```
+
+If we know our data location within the string then we can split it directly into named columns.
+
+![Split 2](https://github.com/reprise99/Sentinel-Queries/blob/main/Diagrams/split2.png?raw=true)
+
+Once we have split our data, we can query it as though it was structured from the outset. So if we add a second record to our data, then query on specifc matches we will find what we are after.
+
+```kql
+let ExampleText = datatable(TestData:string)
+[
+'Name=Reprise99,UPNSuffix=testdomain.com,AadTenantId=345c1234-a833-43e4-1d34-123440a5bcdd1,AadUserId=cf6f2df6-b754-48dc-b7bc-c8339caf211,DisplayName=Test User,Type=account',
+'Name=Reprise103,UPNSuffix=testdomain.com,AadTenantId=331c1234-a841-43e5-1d31-12220a5bcee1,AadUserId=cf6f2df6-b754-48dc-b7bc-c8339caf211,DisplayName=Test User 2,Type=account'
+]
+;
+ExampleText
+| extend Name = split(TestData,',')[0]
+| extend DomainSuffix = split(TestData,',')[1]
+| extend AzureADTenantId = split(TestData,',')[2]
+| extend AzureADUserId = split(TestData,',')[3]
+| extend DisplayName = split(TestData,',')[4]
+| extend AccountType = split(TestData,',')[5]
+| project Name, DomainSuffix, AzureADTenantId, AzureADUserId, DisplayName, AccountType
+| where Name contains "Reprise99"
+```
+
+We get only one hit, where Name contains "Reprise99", our second record where Name contains "Reprise103" isn't found.
+
+![Split 3](https://github.com/reprise99/Sentinel-Queries/blob/main/Diagrams/split3.png?raw=true)
