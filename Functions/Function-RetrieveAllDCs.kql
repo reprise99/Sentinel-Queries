@@ -23,5 +23,5 @@ IdentityDirectoryEvents
 // Exclude Azure AD Connect
 | where isnotempty( AccountName) and isnotempty( DestinationDeviceName)
 | distinct DestinationDeviceName;
-union SamrDC, DnsDC, SrvDC, directoryeventsDC
+union isfuzzy= true SamrDC, DnsDC, SrvDC, directoryeventsDC 
 | distinct DestinationDeviceName
