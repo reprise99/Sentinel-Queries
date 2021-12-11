@@ -1,0 +1,21 @@
+// Save as a function in your workspace then invoke via its name, i.e save as AllDCs
+let SamrDC=
+IdentityQueryEvents
+| where TimeGenerated > ago (30d)
+| where ActionType == "SAMR query"
+| distinct DestinationDeviceName;
+let DnsDC=
+DnsEvents
+| where TimeGenerated > ago (30d)
+| where Name startswith "_kerberos."
+| distinct Computer
+| extend DestinationDeviceName = tolower(Computer);
+let replDC=
+IdentityDirectoryEvents
+| where TimeGenerated > ago (30d)
+| where ActionType in ("Group Membership changed","Account Password changed","Directory Services replication")
+// Exclude Azure AD Connect
+| where isnotempty( AccountName) and isnotempty( DestinationDeviceName)
+| distinct DestinationDeviceName;
+union SamrDC, DnsDC, replDC
+| distinct DestinationDeviceName
