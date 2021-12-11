@@ -12,6 +12,7 @@ DnsEvents
 | extend DestinationDeviceName = tolower(Computer);
 let SrvDC=
 IdentityQueryEvents
+| where TimeGenerated > ago (30d)
 | where QueryType == "Srv"
 | where QueryTarget startswith "_kerberos."
 | distinct DestinationDeviceName;
