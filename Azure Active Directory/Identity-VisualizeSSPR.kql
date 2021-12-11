@@ -1,0 +1,14 @@
+//Visualize successful self service password resets and account unlocks over time
+let timerange=180d;
+AuditLogs
+| where TimeGenerated > ago (timerange)
+| where OperationName in ("Reset password (self-service)", "Unlock user account (self-service)")
+| summarize
+    PasswordReset=countif(OperationName == "Reset password (self-service)" and ResultDescription == "Successfully completed reset."),
+    AccountUnlock=countif(OperationName == "Unlock user account (self-service)" and ResultDescription == "Success")
+    by startofday(TimeGenerated)
+| render timechart
+    with (
+    ytitle="Count",
+    xtitle="Day",
+    title="Self Service Password Resets and Account Unlocks over time")
