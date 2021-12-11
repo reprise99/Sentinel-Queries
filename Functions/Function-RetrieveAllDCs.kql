@@ -1,3 +1,4 @@
+//Query several tables to retireve all your DCs - such as kerberos, DNS, replication events
 let SamrDC=
 IdentityQueryEvents
 | where TimeGenerated > ago (30d)
