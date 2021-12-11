@@ -1,4 +1,3 @@
-// Save as a function in your workspace then invoke via its name, i.e save as AllDCs
 let SamrDC=
 IdentityQueryEvents
 | where TimeGenerated > ago (30d)
@@ -10,12 +9,17 @@ DnsEvents
 | where Name startswith "_kerberos."
 | distinct Computer
 | extend DestinationDeviceName = tolower(Computer);
-let replDC=
+let SrvDC=
+IdentityQueryEvents
+| where QueryType == "Srv"
+| where QueryTarget startswith "_kerberos."
+| distinct DestinationDeviceName;
+let directoryeventsDC=
 IdentityDirectoryEvents
 | where TimeGenerated > ago (30d)
-| where ActionType in ("Group Membership changed","Account Password changed","Directory Services replication")
+| where ActionType in ("Directory Services replication")
 // Exclude Azure AD Connect
 | where isnotempty( AccountName) and isnotempty( DestinationDeviceName)
 | distinct DestinationDeviceName;
-union SamrDC, DnsDC, replDC
+union SamrDC, DnsDC, SrvDC, directoryeventsDC
 | distinct DestinationDeviceName
