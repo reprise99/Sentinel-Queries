@@ -1,0 +1,8 @@
+//Detect when an Azure AD service principal is created for a managed identity
+AuditLogs
+| where OperationName == "Add service principal"
+| extend Actor = tostring(parse_json(tostring(InitiatedBy.app)).displayName)
+| extend ServicePrincipalDisplayName = tostring(TargetResources[0].displayName)
+| extend ServicePrincipalId = tostring(TargetResources[0].id)
+| where Actor == "Managed Service Identity"
+| project TimeGenerated, OperationName, ServicePrincipalDisplayName, ServicePrincipalId
