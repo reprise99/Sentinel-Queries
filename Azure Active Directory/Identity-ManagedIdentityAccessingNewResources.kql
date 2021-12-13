@@ -1,0 +1,12 @@
+//Detect when an Azure AD managed identity accesses a resource for the first time, i.e an identity that previously only accessed storage accesses a key vault
+AADManagedIdentitySignInLogs
+| where TimeGenerated > ago (60d) and TimeGenerated < ago(1d)
+| where ResultType == "0"
+| distinct ServicePrincipalId, ResourceIdentity
+| join kind=rightanti (
+    AADManagedIdentitySignInLogs
+    | where TimeGenerated > ago (1d)
+    | where ResultType == "0"
+    )
+    on ServicePrincipalId, ResourceIdentity
+| distinct ServicePrincipalId, ServicePrincipalName, ResourceIdentity, ResourceDisplayName
