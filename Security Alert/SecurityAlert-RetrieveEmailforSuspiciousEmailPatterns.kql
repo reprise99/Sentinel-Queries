@@ -1,0 +1,18 @@
+//When a user is flagged for suspicious email sending patterns retrieve all the email they have sent around the time of the alert
+let timerange=30d;
+let timeframe=7d;
+SecurityAlert
+| where TimeGenerated > ago (timerange)
+| where ProviderName == "OATP"
+| where AlertName == "Suspicious email sending patterns detected"
+| extend x= todynamic(Entities)
+| mv-expand x
+| parse-where x with * '"MailboxPrimaryAddress":"' User '"' *
+| project AlertTime=TimeGenerated, SenderFromAddress=tolower(User)
+| join kind=inner (
+    EmailEvents
+    )
+    on SenderFromAddress
+| where EmailDirection == "Outbound"
+| where TimeGenerated between ((AlertTime - timespan(timeframe)) .. (AlertTime + timespan(timeframe)))
+| project TimeGenerated, Subject, AttachmentCount, RecipientEmailAddress
