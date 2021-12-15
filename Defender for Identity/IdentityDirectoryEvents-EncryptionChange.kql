@@ -1,0 +1,7 @@
+//Alert when the encryption types on a device are changed and parse the previous and current encryption types.
+//If you don't send Defender for Id logs to Sentinel you can use the query in M365 Advanced Hunting directly
+IdentityDirectoryEvents
+| where ActionType == "Account Supported Encryption Types changed"
+| parse AdditionalFields with * 'FROM AccountSupportedEncryptionTypes":"' PreviousEncryption '"' *
+| parse AdditionalFields with * 'TO AccountSupportedEncryptionTypes":"' CurrentEncryption '"' *
+| project TimeGenerated, TargetDeviceName, PreviousEncryption, CurrentEncryption
