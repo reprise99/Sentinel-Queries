@@ -1,0 +1,38 @@
+//When an anomalous token alert is flagged, join the event with both the AADUserRiskEvents and SigninLogs table to find the signins which generated the alert
+SecurityAlert
+| where AlertName == "Anomalous Token"
+| extend x = todynamic(Entities)
+| parse-where x with * '"SessionId":"' RequestId '"' *
+| project AlertTime=TimeGenerated, RequestId, CompromisedEntity, AlertName
+| join kind=inner (
+    AADUserRiskEvents)
+    on $left.CompromisedEntity == $right.UserPrincipalName, RequestId
+| project
+    RiskTime=TimeGenerated,
+    AlertTime,
+    AlertName,
+    RequestId,
+    RiskLevel,
+    RiskState,
+    DetectionTimingType,
+    UserPrincipalName,
+    CorrelationId
+| join kind=inner (
+    SigninLogs
+    | where TimeGenerated > ago(14d)
+    )
+    on CorrelationId
+| project
+    SigninTime=TimeGenerated,
+    RiskTime,
+    AlertName,
+    AlertTime,
+    UserPrincipalName,
+    AppDisplayName,
+    Location,
+    IPAddress,
+    RiskLevel,
+    RiskState,
+    DetectionTimingType, 
+    UserAgent,
+    ResultType
