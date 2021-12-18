@@ -4,4 +4,4 @@ AzureDiagnostics
 | where ResourceType == "APPLICATIONGATEWAYS"
 | summarize count()by action_s, bin(TimeGenerated, 1h)
 | where isnotempty(action_s)
-| render timechart with (ytitle="WAF Hit Count", title="Web Application Firewall traffic over time")
+| render timechart with (ytitle="WAF Hit Count", title="Web application firewall traffic over time")
