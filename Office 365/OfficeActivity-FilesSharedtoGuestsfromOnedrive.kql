@@ -1,0 +1,12 @@
+//Find when files are shares from OneDrive to third party guests
+let timerange=7d;
+OfficeActivity
+| where TimeGenerated > ago(timerange)
+| where OfficeWorkload == "OneDrive"
+| where Operation in ("SecureLinkCreated", "AddedToSecureLink")
+| where TargetUserOrGroupType == "Guest"
+| project
+    TimeGenerated,
+    UserWhoShared=UserId,
+    GuestWithAccess=TargetUserOrGroupName,
+    OfficeObjectId
