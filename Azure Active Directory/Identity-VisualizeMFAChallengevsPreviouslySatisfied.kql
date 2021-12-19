@@ -1,0 +1,16 @@
+//Visualize when your users are actively challenged for MFA vs when it was previously satisfied
+SigninLogs
+| where TimeGenerated > ago(90d)
+| where AuthenticationRequirement == "multiFactorAuthentication"
+| extend x=todynamic(AuthenticationDetails)
+| project TimeGenerated, x
+| extend MFAResultStep = tostring(x[0].authenticationStepResultDetail)
+| summarize
+    MFARequired=countif(MFAResultStep == "MFA completed in Azure AD"),
+    PreviouslySatisfied=countif(MFAResultStep == "MFA requirement satisfied by claim in the token")
+    by bin(TimeGenerated, 1d)
+| render timechart
+    with (
+    xtitle="Day",
+    ytitle="Count",
+    title="MFA challenges vs MFA previously satisfied over time")
