@@ -1,0 +1,17 @@
+//Alert when attack surface reduction rules are triggered while ASR is in audit mode
+let timerange=7d;
+DeviceEvents
+| where TimeGenerated > ago (timerange)
+| where ActionType startswith "Asr"
+| extend isAudit = tostring(AdditionalFields.IsAudit)
+| where isAudit = true
+| project
+    TimeGenerated,
+    ActionType,
+    DeviceName,
+    FileName,
+    InitiatingProcessAccountDomain,
+    InitiatingProcessAccountName,
+    InitiatingProcessCommandLine,
+    InitiatingProcessParentFileName,
+    ProcessTokenElevation
