@@ -1,0 +1,7 @@
+//Detect when a new Exchange admin role is created and parse the permissions
+OfficeActivity
+| where Operation == "New-RoleGroup"
+| where RecordType == "ExchangeAdmin"
+| parse Parameters with * 'Name","Value":"' RoleName '"' *
+| parse Parameters with * 'Roles","Value":"' PermissionsAdded '"' *
+| project TimeGenerated, Actor=UserId, RoleName, PermissionsAdded
