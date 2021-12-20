@@ -1,0 +1,13 @@
+//When Defender for Identity alerts on user and group reconnaissance, parse the relevant accounts, hosts and groups affected
+SecurityAlert
+| where AlertName == "User and group membership reconnaissance (SAMR)"
+| extend x = todynamic(Entities)
+| mv-expand x
+| parse x with * 'HostName":"' HostName '","Id' *
+| parse x with * 'FriendlyName":"' GroupName '","Type":"security-group"' *
+| parse x with * '"Name":"' AccountName '","Sid"' *
+| summarize
+    Accounts=make_list_if(AccountName, isnotempty(AccountName)),
+    Hosts=make_list_if(HostName, isnotempty(HostName)),
+    Groups=make_list_if(GroupName, isnotempty(GroupName))
+    by VendorOriginalId
