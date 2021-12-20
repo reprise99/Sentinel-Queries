@@ -1,0 +1,12 @@
+//Calculate how often your users are actively challenged for MFA vs when it was previously satisfied per day
+//Return users who are challenged over the threshold per day
+let threshold = 5;
+SigninLogs
+| where TimeGenerated > ago(90d)
+| where AuthenticationRequirement == "multiFactorAuthentication"
+| extend x=todynamic(AuthenticationDetails)
+| mv-expand x
+| project TimeGenerated, x, UserPrincipalName
+| extend MFAResultStep = tostring(x.authenticationStepResultDetail)
+| summarize MFARequired=countif(MFAResultStep == "MFA completed in Azure AD"), PreviouslySatisfied=countif(MFAResultStep == "MFA requirement satisfied by claim in the token") by UserPrincipalName, startofday(TimeGenerated)
+| where MFARequired >= threshold
