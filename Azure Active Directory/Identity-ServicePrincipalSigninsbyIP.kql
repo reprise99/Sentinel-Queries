@@ -1,0 +1,5 @@
+//Make a set of IP addresses that your Azure AD service principals have signed in from
+AADServicePrincipalSignInLogs
+| where TimeGenerated > ago(90d)
+| where ResultType == "0"
+| summarize IPAddresses=make_set(IPAddress) by ServicePrincipalName, AppId
