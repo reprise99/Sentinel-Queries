@@ -1,10 +1,11 @@
 //Visualize the MFA types used by your users - phone sign in, mobile passcode, push or text message, over time
 SigninLogs
-| where TimeGenerated > ago(90d)
+| where TimeGenerated > ago(180d)
 | where AuthenticationRequirement == "multiFactorAuthentication"
 | extend x=todynamic(AuthenticationDetails)
 | mv-expand x
 | project TimeGenerated, x
+| where x.RequestSequence != "1"
 | where x.authenticationStepRequirement == "Multi-factor authentication"
 | extend MFAMethod = tostring(x.authenticationMethod)
 | summarize MFAMethodCount=count() by MFAMethod, bin(TimeGenerated, 7d)
