@@ -1,0 +1,27 @@
+//Detect when an admin adds another user to the local administrators group on a device and optionally query IdentityInfo to return the UPN of the user added
+let timerange=30d;
+DeviceEvents
+| where TimeGenerated > ago(timerange)
+| where ActionType == "UserAccountAddedToLocalGroup"
+| where AdditionalFields.GroupName == "Administrators"
+// Exclude processes initiated by system as this detection is for end users adding groups
+| where InitiatingProcessAccountSid != "S-1-5-18"
+| project
+    TimeGenerated,
+    ActionType,
+    DeviceName,
+    AccountSid,
+    Actor=InitiatingProcessAccountName
+// If you don't use the IdentityInfo table you can remove everything below this line
+| join kind=inner  (
+    IdentityInfo
+    | where TimeGenerated > ago (21d)
+    | summarize arg_max (TimeGenerated, *) by AccountUPN)
+    on $left.AccountSid == $right.AccountSID
+| project
+    TimeGenerated,
+    ActionType,
+    DeviceName,
+    UserAdded=AccountUPN,
+    UserAddedSid=AccountSID,
+    UserWhoAdded=Actor
