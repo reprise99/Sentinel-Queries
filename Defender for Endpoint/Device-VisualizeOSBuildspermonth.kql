@@ -1,0 +1,13 @@
+//Visualize the OS build numbers of your Windows 10 and 11 devices per month over the last year
+DeviceInfo
+| where TimeGenerated > ago(365d)
+| where OSPlatform in ("Windows10", "Windows11")
+| extend OSBuildNumber=tostring(OSBuild)
+| summarize arg_max(TimeGenerated, *) by DeviceName, startofmonth(TimeGenerated)
+| summarize count()by OSBuildNumber, startofmonth(TimeGenerated)
+| where isnotempty(OSBuildNumber)
+| render areachart 
+    with (
+    ytitle="Device Count",
+    xtitle="Week",
+    title="Count of Windows 10 and 11 OS Builds per month")
