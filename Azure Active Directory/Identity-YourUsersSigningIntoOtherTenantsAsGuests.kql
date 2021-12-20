@@ -1,0 +1,13 @@
+//Find sign ins where your users signed into other Azure AD tenants as guests.
+SigninLogs
+| where AADTenantId == HomeTenantId
+| where ResourceTenantId != AADTenantId
+| where UserType == "Guest"
+| project
+    TimeGenerated,
+    AppDisplayName,
+    UserPrincipalName,
+    ResultType,
+    Location,
+    IPAddress,
+    ResourceTenantId
