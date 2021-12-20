@@ -25,3 +25,17 @@ DeviceEvents
     UserAdded=AccountUPN,
     UserAddedSid=AccountSID,
     UserWhoAdded=Actor
+
+
+//Use the below for the equivalent query in M365 advanced hunting
+DeviceEvents
+| where Timestamp > ago(30d)
+| where ActionType == "UserAccountAddedToLocalGroup"
+| where AdditionalFields contains "Administrator"
+| where InitiatingProcessAccountSid != "S-1-5-18"
+| project DeviceName, Actor=InitiatingProcessAccountName, AccountSid
+| join kind=inner (
+IdentityInfo
+)
+on $left.AccountSid==$right.OnPremSid
+| project DeviceName, Actor, AccountSid, UserAdded=AccountUpn
