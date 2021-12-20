@@ -9,5 +9,5 @@ DeviceInfo
 | render areachart 
     with (
     ytitle="Device Count",
-    xtitle="Week",
+    xtitle="Month",
     title="Count of Windows 10 and 11 OS Builds per month")
