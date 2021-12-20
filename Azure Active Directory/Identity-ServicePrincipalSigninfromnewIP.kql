@@ -7,8 +7,8 @@ AADServicePrincipalSignInLogs
     (
     AADServicePrincipalSignInLogs
     | where TimeGenerated > ago(7d)
-    | project TimeGenerated, AppId, IPAddress, ResultType
+    | project TimeGenerated, AppId, IPAddress, ResultType, ServicePrincipalName
     )
     on IPAddress
 | where ResultType == "0"
-| distinct AppId, IPAddress
+| distinct ServicePrincipalName, AppId, IPAddress
