@@ -1,0 +1,14 @@
+//Detect when an app is installed into Teams for the first time compared to the previous timerange
+let timerange = 180d;
+OfficeActivity
+| where TimeGenerated > ago(timerange) and TimeGenerated < ago(7d)
+| where OfficeWorkload == "MicrosoftTeams"
+| where Operation == "AppInstalled"
+| distinct AzureADAppId
+| join kind=rightanti (
+    OfficeActivity
+    | where TimeGenerated > ago (7d)
+    | where OfficeWorkload == "MicrosoftTeams"
+    | where Operation == "AppInstalled")
+    on AzureADAppId
+| project AddonName, AzureADAppId
