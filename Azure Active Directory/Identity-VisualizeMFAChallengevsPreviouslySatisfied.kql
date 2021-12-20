@@ -3,8 +3,9 @@ SigninLogs
 | where TimeGenerated > ago(90d)
 | where AuthenticationRequirement == "multiFactorAuthentication"
 | extend x=todynamic(AuthenticationDetails)
+| mv-expand x
 | project TimeGenerated, x
-| extend MFAResultStep = tostring(x[0].authenticationStepResultDetail)
+| extend MFAResultStep = tostring(x.authenticationStepResultDetail)
 | summarize
     MFARequired=countif(MFAResultStep == "MFA completed in Azure AD"),
     PreviouslySatisfied=countif(MFAResultStep == "MFA requirement satisfied by claim in the token")
