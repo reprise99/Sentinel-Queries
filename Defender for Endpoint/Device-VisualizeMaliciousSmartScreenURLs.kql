@@ -1,0 +1,9 @@
+//Visualize the most common domains triggering smart screen warnings
+DeviceEvents
+| where TimeGenerated > ago (30d)
+| where ActionType == "SmartScreenUrlWarning"
+| parse RemoteUrl with * '://' Domain '/' *
+| where isnotempty(Domain)
+| summarize DomainCount=count()by Domain
+| sort by DomainCount
+| render piechart 
