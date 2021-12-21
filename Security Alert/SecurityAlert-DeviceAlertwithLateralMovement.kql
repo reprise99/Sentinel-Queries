@@ -1,0 +1,9 @@
+//Detect when a device triggers a Defender for Endpoint alert where Defender for Identity has also detected a lateral movement path
+SecurityAlert
+| where ProviderName == "MDATP"
+| project TimeGenerated, AlertName, CompromisedEntity
+| join kind=inner (
+    IdentityDirectoryEvents
+    | where ActionType == "Potential lateral movement path identified")
+    on $left.CompromisedEntity == $right.DeviceName
+| distinct DeviceName, AlertName, AccountName, ReportId
