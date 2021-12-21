@@ -1,0 +1,19 @@
+//Detect when a user or process attempts to tamper with Defender for Endpoint registry settings
+DeviceEvents
+| where ActionType == "TamperingAttempt"
+| extend OriginalRegistryValue = tostring(AdditionalFields.OriginalValue)
+| extend Status = tostring(AdditionalFields.Status)
+| extend TamperingAction = tostring(AdditionalFields.TamperingAction)
+| extend AttemptedRegistryValue = tostring(AdditionalFields.TamperingAttemptedValue)
+| extend TargetRegistryKey = tostring(AdditionalFields.Target)
+| where TamperingAction == "RegistryModification"
+| project
+    TimeGenerated,
+    DeviceName,
+    TamperingAction,
+    Status,
+    OriginalRegistryValue,
+    AttemptedRegistryValue,
+    TargetRegistryKey,
+    InitiatingProcessAccountName,
+    InitiatingProcessCommandLine
