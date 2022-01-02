@@ -1,0 +1,8 @@
+//Calculate how many days since each analytic rule last triggered, useful to determine if rules are still valid
+SecurityIncident
+| where TimeGenerated > ago(180d)
+| where Status == "New" and ModifiedBy == "Incident created from alert"
+| summarize arg_max(TimeGenerated, *) by Title
+| extend ['Days Since Last Incident'] = datetime_diff("day", now(), TimeGenerated)
+| project Title, ['Days Since Last Incident']
+| sort by ['Days Since Last Incident'] desc
