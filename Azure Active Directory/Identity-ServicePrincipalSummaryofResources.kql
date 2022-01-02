@@ -1,0 +1,5 @@
+AADServicePrincipalSignInLogs
+| where TimeGenerated > ago(30d)
+| where ResultType == "0"
+| summarize ResourcesAccessed=make_set(ResourceDisplayName) by ServicePrincipalName
+| sort by array_length(ResourcesAccessed) desc
