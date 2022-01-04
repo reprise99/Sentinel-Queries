@@ -1,0 +1,9 @@
+//Visualize how many guests are redeeming invites over the time period with trend
+let StartDate = now(-180d);
+let EndDate = now();
+AuditLogs
+| where OperationName == "Redeem external user invite"
+| make-series TotalInvites=count() on TimeGenerated in range(StartDate, EndDate, 1d)
+| extend (RSquare, SplitIdx, Variance, RVariance, TrendLine)=series_fit_2lines(TotalInvites)
+| project TimeGenerated, TotalInvites, TrendLine
+| render timechart with (title="Guest Invites redeemed over time with trend")
