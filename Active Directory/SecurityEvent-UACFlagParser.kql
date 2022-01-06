@@ -1,0 +1,16 @@
+//Parser to retrieve the values from User Account Control and generate friendly names
+SecurityEvent
+| where isnotempty(UserAccountControl) and UserAccountControl != "-"
+| where AccountType == "User"
+| extend x = extract_all(@"([0-9]{4})", UserAccountControl)
+| mv-expand x
+| extend UACFlags = case
+    (
+    x == "2080", strcat(x, " - Account Disabled"),
+    x == "2084", strcat(x, " - Normal Account - Enabled"),
+    x == "2082", strcat(x, " - Password not required - Enabled"),
+    x == "2091", strcat(x, " - Encrypted Text Password Allowed - Enabled"),
+    x == "2092", strcat(x, " - Smartcard Required - Enabled"),
+    "Unknown")
+| project TargetAccount, UserAccountControl, UACFlags
+| summarize AccountChanges=make_list(UACFlags) by TargetAccount
