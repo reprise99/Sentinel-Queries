@@ -1,0 +1,12 @@
+//Detect when a download URL is generated for an Azure virtual machine disk
+AzureActivity
+| where OperationNameValue == "MICROSOFT.COMPUTE/DISKS/BEGINGETACCESS/ACTION"
+| where ActivityStatusValue == "Success"
+| extend DiskName = tostring(Properties_d.resource)
+| project
+    TimeGenerated,
+    Actor=Caller,
+    ActorIPAddress=CallerIpAddress,
+    SubscriptionId,
+    ResourceGroup,
+    DiskName
