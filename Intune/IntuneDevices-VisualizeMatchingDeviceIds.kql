@@ -1,0 +1,9 @@
+//Visualize devices in intune with the same intune and Azure AD Id per week by join type
+IntuneDevices
+| where TimeGenerated > ago (180d)
+| summarize arg_max(TimeGenerated, *) by DeviceName, startofweek(TimeGenerated)
+| where DeviceId == ReferenceId
+| where OS == 'Windows'
+| summarize count()by startofweek(TimeGenerated), JoinType
+| where isnotempty( JoinType)
+| render columnchart with (kind=unstacked, title="Devices with the same Azure AD and Intune device Id per week by join type")
