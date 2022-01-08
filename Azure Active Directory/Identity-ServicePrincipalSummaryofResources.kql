@@ -1,0 +1,6 @@
+//Create a summary of which resources each of your service principals are connecting to. The higher the count the potential higher blast radius.
+AADServicePrincipalSignInLogs
+| where TimeGenerated > ago(30d)
+| where ResultType == "0"
+| summarize ResourcesAccessed=make_set(ResourceDisplayName) by ServicePrincipalName
+| sort by array_length(ResourcesAccessed) desc
