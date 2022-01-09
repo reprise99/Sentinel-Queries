@@ -1,6 +1,6 @@
 //When Defender for Identity detects suspected golden ticket usage, parse the relevant user accounts and host names
 SecurityAlert
-| where AlertName == "Suspected Golden Ticket usage (encryption downgrade)"
+| where AlertName startswith "Suspected Golden Ticket usage"
 | extend x = todynamic(Entities)
 | mv-expand x
 | parse x with * 'HostName":"' HostName '","Id' *
