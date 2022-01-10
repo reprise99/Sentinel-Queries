@@ -12,10 +12,10 @@ Select Add workbook.
 
 Select edit.
 
-![Edit workbook](https://github.com/reprise99/Sentinel-Queries/blob/main/Functions/Workbooks/workbook3.png?raw=true)
+![Edit workbook](https://github.com/reprise99/Sentinel-Queries/blob/main/Workbooks/ReadmeImages/workbook3.png?raw=true)
 
 Select the advanced editor option.
 
-![Select advanced editor](https://github.com/reprise99/Sentinel-Queries/blob/main/Functions/Workbooks/workbook.png?raw=true)
+![Select advanced editor](https://github.com/reprise99/Sentinel-Queries/blob/main/Workbooks/ReadmeImages/workbook4.png?raw=true)
 
 Remove all the code from within the advanced editor and copy in the code from the above provided JSON and then save your workbook.
