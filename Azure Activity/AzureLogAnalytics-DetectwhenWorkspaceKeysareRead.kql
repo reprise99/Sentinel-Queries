@@ -1,0 +1,12 @@
+//Detect when the workspace keys to an Azure log analytics workspace are read
+AzureActivity
+| where OperationNameValue == "MICROSOFT.OPERATIONALINSIGHTS/WORKSPACES/SHAREDKEYS/ACTION"
+| extend WorkspaceName = tostring(parse_json(Properties).resource)
+| where ActivityStatusValue == "Success"
+| project
+    TimeGenerated,
+    Actor=Caller,
+    ActorIPAddress=CallerIpAddress,
+    WorkspaceName,
+    SubscriptionId,
+    ResourceGroup
