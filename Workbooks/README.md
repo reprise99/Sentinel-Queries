@@ -2,7 +2,7 @@
 
 Microsoft Sentinel allows you to create workbooks to visualize multiple queries as a dashboard.
 
-To create a new workbook from a provided template. Browse to your Sentinel instance and select Workbooks.
+To create a new workbook from a provided template, browse to your Sentinel instance and select Workbooks.
 
 ![Select workbooks](https://github.com/reprise99/Sentinel-Queries/blob/main/Workbooks/ReadmeImages/workbook1.png?raw=true)
 

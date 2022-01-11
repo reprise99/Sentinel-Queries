@@ -1,0 +1,519 @@
+{
+  "version": "Notebook/1.0",
+  "items": [
+    {
+      "type": 11,
+      "content": {
+        "version": "LinkItem/1.0",
+        "style": "tabs",
+        "links": [
+          {
+            "id": "1a2013a0-0c04-4ade-a7b3-10b1b3a1691f",
+            "cellValue": "tab",
+            "linkTarget": "parameter",
+            "linkLabel": "Azure AD Sign-Ins",
+            "subTarget": "azureadsign",
+            "style": "link"
+          },
+          {
+            "id": "b25342e2-48b6-4369-b4aa-4c4b100f5417",
+            "cellValue": "tab",
+            "linkTarget": "parameter",
+            "linkLabel": "Azure AD Audit",
+            "subTarget": "azureadaudit",
+            "style": "link"
+          },
+          {
+            "id": "2138f218-9a99-44ea-9cde-c981aefd1ea7",
+            "cellValue": "tab",
+            "linkTarget": "parameter",
+            "linkLabel": "MFA Analytics",
+            "subTarget": "mfa",
+            "style": "link"
+          },
+          {
+            "id": "1f23a0b2-df81-4c09-ab67-fcecf73f820e",
+            "cellValue": "tab",
+            "linkTarget": "parameter",
+            "linkLabel": "Office 365 Analytics",
+            "subTarget": "o365",
+            "style": "link"
+          },
+          {
+            "id": "55414398-f3a6-4170-b967-302f11d52be8",
+            "cellValue": "tab",
+            "linkTarget": "parameter",
+            "linkLabel": "Sentinel Analytics",
+            "subTarget": "sentinel",
+            "style": "link"
+          }
+        ]
+      },
+      "name": "links - 0"
+    },
+    {
+      "type": 9,
+      "content": {
+        "version": "KqlParameterItem/1.0",
+        "parameters": [
+          {
+            "id": "7505c02c-5bdc-46d9-8ff8-72e5173ed77a",
+            "version": "KqlParameterItem/1.0",
+            "name": "Timerange",
+            "label": "Time Range",
+            "type": 4,
+            "value": {
+              "durationMs": 2592000000
+            },
+            "typeSettings": {
+              "selectableValues": [
+                {
+                  "durationMs": 259200000
+                },
+                {
+                  "durationMs": 604800000
+                },
+                {
+                  "durationMs": 1209600000
+                },
+                {
+                  "durationMs": 2419200000
+                },
+                {
+                  "durationMs": 2592000000
+                },
+                {
+                  "durationMs": 5184000000
+                },
+                {
+                  "durationMs": 7776000000
+                }
+              ]
+            },
+            "timeContext": {
+              "durationMs": 86400000
+            }
+          }
+        ],
+        "style": "pills",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces"
+      },
+      "customWidth": "25",
+      "name": "parameters - 2"
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "items": [
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "union SigninLogs, AAD*\r\n| where TimeGenerated {Timerange}\r\n| summarize count() by Type, bin(TimeGenerated, 1d)",
+              "size": 1,
+              "title": "Total Azure AD Signins per day",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "visualization": "areachart"
+            },
+            "name": "query - 3"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "SigninLogs\r\n| where TimeGenerated {Timerange}\r\n| project TimeGenerated, ResultType, ConditionalAccessPolicies\r\n| where ResultType == 53003\r\n| extend FailedPolicy = tostring(ConditionalAccessPolicies[0].displayName)\r\n| where isnotempty(FailedPolicy)\r\n| summarize FailureCount=count()by FailedPolicy, bin(TimeGenerated, 1d)",
+              "size": 1,
+              "title": "Conditional Access Policy Failures",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "visualization": "unstackedbar"
+            },
+            "name": "query - 0"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "AADUserRiskEvents\r\n| where TimeGenerated {Timerange}\r\n| summarize RiskEvents=count() by RiskEventType, bin(TimeGenerated, 1d)\r\n| where isnotempty( RiskEvents)\r\n| render timechart ",
+              "size": 1,
+              "title": "Risk Event Types per day",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "visualization": "unstackedbar"
+            },
+            "name": "query - 1"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "SigninLogs\r\n| project TimeGenerated, AuthenticationDetails\r\n| where TimeGenerated {Timerange}\r\n| extend AuthMethod = tostring(parse_json(AuthenticationDetails)[0].authenticationMethod)\r\n| where AuthMethod != \"Previously satisfied\"\r\n| summarize\r\n    Password=countif(AuthMethod == \"Password\"),\r\n    Passwordless=countif(AuthMethod in (\"FIDO2 security key\", \"Passwordless phone sign-in\", \"Windows Hello for Business\"))\r\n    by bin(TimeGenerated,1d)",
+              "size": 1,
+              "title": "Password vs Passwordless Sign Ins per day",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "visualization": "unstackedbar"
+            },
+            "name": "query - 2"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "let StartDate = now(-180d);\r\nlet EndDate = now();\r\nAuditLogs\r\n| where OperationName == \"Redeem external user invite\"\r\n| make-series TotalInvites=count() on TimeGenerated in range(StartDate, EndDate, 1d)\r\n| extend (RSquare, SplitIdx, Variance, RVariance, TrendLine)=series_fit_2lines(TotalInvites)\r\n| project TimeGenerated, TotalInvites, TrendLine",
+              "size": 1,
+              "title": "Guest invites redeemed per day with trend",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "visualization": "timechart"
+            },
+            "name": "query - 4"
+          }
+        ]
+      },
+      "conditionalVisibility": {
+        "parameterName": "tab",
+        "comparison": "isEqualTo",
+        "value": "azureadsign"
+      },
+      "name": "group - 1"
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "items": [
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "AuditLogs\r\n| where TimeGenerated {Timerange}\r\n| where OperationName in (\"Reset password (self-service)\", \"Unlock user account (self-service)\")\r\n| summarize\r\n    PasswordReset=countif(OperationName == \"Reset password (self-service)\" and ResultDescription == \"Successfully completed reset.\"),\r\n    AccountUnlock=countif(OperationName == \"Unlock user account (self-service)\" and ResultDescription == \"Success\")\r\n    by bin(TimeGenerated,1d)",
+              "size": 1,
+              "title": "Self Service Password Resets & Account Unlocks per day",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "visualization": "timechart"
+            },
+            "name": "query - 0"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "AuditLogs\r\n| where TimeGenerated {Timerange}\r\n| where OperationName in (\"Redeem external user invite\", \"Invite external user\")\r\n| summarize count() by OperationName, bin(TimeGenerated, 1d)",
+              "size": 1,
+              "title": "Guests Invites vs Redeemed per day",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "visualization": "unstackedbar"
+            },
+            "name": "query - 1"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "AuditLogs\r\n| where TimeGenerated {Timerange}\r\n| where OperationName == \"Redeem external user invite\"\r\n| extend GuestEmail = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)\r\n| extend UserDomain = tostring(split(GuestEmail, \"@\")[1])\r\n| where isnotempty(UserDomain)\r\n| project UserDomain\r\n| summarize DomainCount=count()by UserDomain\r\n| where DomainCount > 15\r\n| sort by DomainCount desc ",
+              "size": 0,
+              "title": "Top Domains Redeeming Guest Invites",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "visualization": "piechart"
+            },
+            "name": "query - 2"
+          }
+        ]
+      },
+      "conditionalVisibility": {
+        "parameterName": "tab",
+        "comparison": "isEqualTo",
+        "value": "azureadaudit"
+      },
+      "name": "group - 4"
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "items": [
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "SecurityIncident\r\n| where TimeGenerated {Timerange}\r\n| summarize IncidentSeverity=dcount(IncidentNumber)by Severity, bin(TimeGenerated,1d)",
+              "size": 1,
+              "title": "Microsoft Sentinel Incident Severity per day",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "visualization": "linechart"
+            },
+            "name": "query - 0"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "SecurityIncident\r\n| where TimeGenerated {Timerange}\r\n| where Status == \"New\" and ModifiedBy == \"Incident created from alert\"\r\n| summarize count() by Title\r\n| sort by count_ desc\r\n| take 10",
+              "size": 0,
+              "title": "Top Sentinel Incidents Triggered",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "visualization": "table",
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "count_",
+                    "formatter": 3,
+                    "formatOptions": {
+                      "palette": "blue"
+                    }
+                  }
+                ]
+              }
+            },
+            "customWidth": "50",
+            "name": "query - 1"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "SecurityIncident\r\n| where TimeGenerated > ago(180d)\r\n| where Status == \"New\" and ModifiedBy == \"Incident created from alert\"\r\n| summarize arg_max(TimeGenerated, *) by Title\r\n| extend ['Days Since Last Incident'] = datetime_diff(\"day\", now(), TimeGenerated)\r\n| project Title, ['Days Since Last Incident']\r\n| sort by ['Days Since Last Incident'] desc\r\n| take 10",
+              "size": 0,
+              "title": "Sentinel Incidents not Recently Triggered",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "Days Since Last Incident",
+                    "formatter": 3,
+                    "formatOptions": {
+                      "palette": "coldHot"
+                    }
+                  }
+                ]
+              }
+            },
+            "customWidth": "50",
+            "name": "query - 2"
+          }
+        ]
+      },
+      "conditionalVisibility": {
+        "parameterName": "tab",
+        "comparison": "isEqualTo",
+        "value": "sentinel"
+      },
+      "name": "group - 6"
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "items": [
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "OfficeActivity\r\n| where TimeGenerated {Timerange}\r\n| project TimeGenerated, Operation\r\n| where Operation in (\"FileSyncDownloadedFull\",\"FileSyncUploadedFull\",\"FileDownloaded\",\"FileUploaded\")\r\n| summarize FilesDownloaded=countif(Operation in (\"FileDownloaded\",\"FileSyncDownloadedFull\")),FilesUploaded=countif(Operation in (\"FileSyncUploadedFull\",\"FileUploaded\")) by bin(TimeGenerated,1d)",
+              "size": 1,
+              "title": "File Uploads vs Downloads in Office 365 per day",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "visualization": "unstackedbar"
+            },
+            "name": "query - 1"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "OfficeActivity\r\n| where TimeGenerated {Timerange}\r\n| where UserType == \"Regular\"\r\n| where CommunicationType == \"Team\"\r\n| where OfficeWorkload == \"MicrosoftTeams\" \r\n| where Operation in (\"MemberAdded\", \"MemberRemoved\")\r\n| extend User = tostring(Members[0].UPN)\r\n| where User contains \"#EXT\"\r\n| project TimeGenerated, Operation, User\r\n| summarize\r\n    GuestsAdded=countif(Operation == \"MemberAdded\"),\r\n    GuestsRemoved=countif(Operation == \"MemberRemoved\")\r\n    by bin(TimeGenerated,1d)",
+              "size": 1,
+              "title": "Guests Added vs Removed to Teams per day",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "visualization": "unstackedbar"
+            },
+            "name": "query - 2"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "IdentityInfo\r\n| where TimeGenerated > ago(21d)\r\n| where UserType == \"Guest\"\r\n| summarize arg_max(TimeGenerated, *) by AccountUPN, MailAddress\r\n| project UserId=tolower(AccountUPN), MailAddress\r\n| join kind=inner (\r\n    OfficeActivity\r\n    | where TimeGenerated {Timerange}\r\n    | where Operation in (\"FileSyncDownloadedFull\", \"FileDownloaded\")\r\n    )\r\n    on UserId\r\n| extend username = tostring(split(UserId,\"#\")[0])\r\n| parse MailAddress with * \"@\" userdomain \r\n| summarize FileCount=count() by userdomain\r\n| sort by FileCount desc\r\n| take 10",
+              "size": 0,
+              "title": "Top Guest Domains Downloading from Office 365",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "visualization": "table",
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "FileCount",
+                    "formatter": 8,
+                    "formatOptions": {
+                      "palette": "magenta"
+                    }
+                  }
+                ]
+              }
+            },
+            "customWidth": "33",
+            "name": "query - 0"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "SecurityAlert\r\n| where TimeGenerated {Timerange}\r\n| where ProviderName == \"OATP\"\r\n| where AlertName in (\"Email messages containing malicious URL removed after delivery​\",\"Email messages containing phish URLs removed after delivery\")\r\n| extend x = todynamic(Entities)\r\n| parse-where x with * '\"Url\":\"' MaliciousURL '\"' *\r\n| parse-where MaliciousURL with * \"//\" MaliciousDomain \"/\" *\r\n| project TimeGenerated, MaliciousDomain\r\n| summarize DomainCount=count() by MaliciousDomain\r\n| sort by DomainCount desc \r\n| take 10",
+              "size": 0,
+              "title": "Top Malicious Domains with Phishing Emails Removed",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "visualization": "table",
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "DomainCount",
+                    "formatter": 8,
+                    "formatOptions": {
+                      "palette": "orangeRed"
+                    }
+                  }
+                ]
+              }
+            },
+            "customWidth": "33",
+            "name": "query - 3"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "SecurityAlert\r\n| where TimeGenerated {Timerange}\r\n| where ProviderName == \"OATP\"\r\n| where AlertName in (\"Email messages containing malicious URL removed after delivery​\", \"Email messages containing malicious file removed after delivery​\")\r\n| extend x = todynamic(Entities)\r\n| mv-expand x\r\n| parse-where x with * 'MailboxPrimaryAddress\":\"' User '\"' *\r\n| summarize PhishingCount=count()by User\r\n| order by PhishingCount",
+              "size": 0,
+              "title": "Top Users Targeted by Phishing",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "PhishingCount",
+                    "formatter": 8,
+                    "formatOptions": {
+                      "palette": "orangeRed"
+                    }
+                  }
+                ]
+              }
+            },
+            "customWidth": "33",
+            "name": "query - 4"
+          }
+        ]
+      },
+      "conditionalVisibility": {
+        "parameterName": "tab",
+        "comparison": "isEqualTo",
+        "value": "o365"
+      },
+      "name": "group - 7"
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "items": [
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "SigninLogs\r\n| where TimeGenerated {Timerange}\r\n| where AuthenticationRequirement == \"multiFactorAuthentication\"\r\n| extend x=todynamic(AuthenticationDetails)\r\n| mv-expand x\r\n| project TimeGenerated, x\r\n| extend MFAResultStep = tostring(x.authenticationStepResultDetail)\r\n| summarize\r\n    MFARequired=countif(MFAResultStep == \"MFA completed in Azure AD\"),\r\n    PreviouslySatisfied=countif(MFAResultStep == \"MFA requirement satisfied by claim in the token\")\r\n    by bin(TimeGenerated, 1d)",
+              "size": 1,
+              "title": "MFA Challenge vs MFA Previously Satisfied per day",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "visualization": "timechart"
+            },
+            "name": "query - 2"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "SigninLogs\r\n| where TimeGenerated {Timerange}\r\n| where AuthenticationRequirement == \"multiFactorAuthentication\"\r\n| extend x=todynamic(AuthenticationDetails)\r\n| mv-expand x\r\n| project TimeGenerated, x\r\n| where x.RequestSequence != \"1\"\r\n| where x.authenticationStepRequirement == \"Multi-factor authentication\"\r\n| extend MFAMethod = tostring(x.authenticationMethod)\r\n| summarize MFAMethodCount=count() by MFAMethod, bin(TimeGenerated, 1d)\r\n| where MFAMethod != \"Previously satisfied\" and isnotempty(MFAMethod)",
+              "size": 1,
+              "title": "MFA methods per day ",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "visualization": "areachart"
+            },
+            "name": "query - 3"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "SigninLogs\r\n| where TimeGenerated {Timerange}\r\n| where AuthenticationRequirement == \"multiFactorAuthentication\"\r\n| extend AuthMethod = tostring(parse_json(AuthenticationDetails)[0].authenticationMethod)\r\n| summarize count() by AuthMethod\r\n| where AuthMethod has_any (\"Text message\", \"Mobile app notification\", \"OATH verification code\", \"Passwordless phone sign-in\")",
+              "size": 2,
+              "title": "MFA Methods by Type",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "visualization": "piechart"
+            },
+            "customWidth": "33",
+            "name": "query - 0"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "SigninLogs\r\n| where TimeGenerated {Timerange}\r\n| where ResultType == 0\r\n| summarize\r\n    TotalCount=count(),\r\n    MFACount=countif(AuthenticationRequirement == \"multiFactorAuthentication\"),\r\n    nonMFACount=countif(AuthenticationRequirement == \"singleFactorAuthentication\")\r\n    by AppDisplayName\r\n| project\r\n    AppDisplayName,\r\n    TotalCount,\r\n    MFACount,\r\n    nonMFACount,\r\n    MFAPercentage=(todouble(MFACount) * 100 / todouble(TotalCount))\r\n| sort by MFAPercentage asc, TotalCount desc\r\n| take 10",
+              "size": 0,
+              "title": "Most Popular Apps with the least MFA coverage",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "MFAPercentage",
+                    "formatter": 8,
+                    "formatOptions": {
+                      "palette": "red"
+                    },
+                    "numberFormat": {
+                      "unit": 1,
+                      "options": {
+                        "style": "decimal"
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "customWidth": "66",
+            "name": "query - 1"
+          }
+        ]
+      },
+      "conditionalVisibility": {
+        "parameterName": "tab",
+        "comparison": "isEqualTo",
+        "value": "mfa"
+      },
+      "name": "group - 7"
+    }
+  ],
+  "fromTemplateId": "sentinel-UserWorkbook",
+  "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
+}
