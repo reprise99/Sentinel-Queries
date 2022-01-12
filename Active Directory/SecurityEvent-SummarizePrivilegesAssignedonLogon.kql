@@ -1,0 +1,11 @@
+//Create a summary of your computers and the accounts that have logged on with special privileges over the last 30 days
+SecurityEvent
+| where TimeGenerated > ago (30d)
+| project TimeGenerated, EventID, Account, AccountType, PrivilegeList, Computer
+| where EventID == "4672"
+| where Account != "NT AUTHORITY\\SYSTEM" and Account !has "Window Manager"
+| where AccountType == "User"
+| extend Privs=extract_all(@"Se(.*?)Privilege", PrivilegeList)
+| project TimeGenerated, Account, Computer, Privs
+| summarize Privileges=make_set(Privs) by Computer, Account
+| sort by Computer asc  
