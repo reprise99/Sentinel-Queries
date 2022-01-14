@@ -1,0 +1,16 @@
+//Detects when certutil is used to connect to a public IP. This could indicate abuse of cert util, see - https://www.avira.com/en/blog/certutil-abused-by-attackers-to-spread-threats
+DeviceNetworkEvents
+| where TimeGenerated > ago (7d)
+| project
+    TimeGenerated,
+    DeviceName,
+    InitiatingProcessAccountName,
+    InitiatingProcessCommandLine,
+    LocalIPType,
+    LocalIP,
+    RemoteIPType,
+    RemoteIP,
+    RemoteUrl,
+    RemotePort
+| where InitiatingProcessCommandLine contains "certutil"
+| where RemoteIPType == "Public"
