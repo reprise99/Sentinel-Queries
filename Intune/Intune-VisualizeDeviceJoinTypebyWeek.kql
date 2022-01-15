@@ -1,0 +1,13 @@
+//Visualize the join type  (Azure AD joined, Azure AD registered or Hybrid joined) of your MEM/Intune devices per week
+IntuneDevices
+| where TimeGenerated > ago(180d)
+| summarize arg_max(TimeGenerated, *) by DeviceName, startofweek(TimeGenerated)
+| where OS == "Windows"
+| summarize JoinSummary=count()by JoinType, startofweek(TimeGenerated)
+| where isnotempty(JoinType)
+| render columnchart
+    with (
+    kind=unstacked,
+    ytitle="Device Count",
+    xtitle="Week",
+    title="Device count by join type per week") 
