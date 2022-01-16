@@ -1,0 +1,9 @@
+//Find the most attacked hostname behind an Azure App Gateway
+AzureDiagnostics
+| where TimeGenerated > ago(30d)
+| where ResourceType == "APPLICATIONGATEWAYS"
+| where isnotempty(ruleId_s)
+| summarize WAFHits=count() by hostname_s
+| where isnotempty( hostname_s)
+| sort by WAFHits desc
+| render piechart with (title="Most WAF Hits by Hostname")
