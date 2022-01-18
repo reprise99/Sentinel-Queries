@@ -1,0 +1,24 @@
+//Adds a friendly error description to the AADServicePrincipalSignInLogs table for any non successful signins
+AADServicePrincipalSignInLogs
+| where ResultType != "0"
+| extend ErrorDescription = case (
+    ResultType == "7000215", strcat("Invalid client secret is provided"),
+    ResultType == "7000222", strcat("The provided client secret keys are expired"),
+    ResultType == "700027", strcat("Client assertion failed signature validation"),
+    ResultType == "700024", strcat("Client assertion is not within its valid time range"),
+    ResultType == "70021", strcat("No matching federated identity record found for presented assertion"),
+    ResultType == "500011", strcat("The resource principal named {name} was not found in the tenant named {tenant}"),
+    ResultType == "700082", strcat("The refresh token has expired due to inactivity"),
+    ResultType == "90025", strcat("Request processing has exceeded gateway allowance"),
+    ResultType == "500341", strcat("The user account {identifier} has been deleted from the {tenant} directory"),
+    ResultType == "100007", strcat("AAD Regional ONLY supports auth either for MSIs OR for requests from MSAL using SN+I for 1P apps or 3P apps in Microsoft infrastructure tenants"),
+    ResultType == "1100000", strcat("Non-retryable error has occurred"),
+    ResultType == "90033", strcat("A transient error has occurred. Please try again"),
+    "Unknown"
+    )
+| distinct
+    ServicePrincipalName,
+    ServicePrincipalId,
+    ErrorDescription,
+    ResultType,
+    IPAddress
