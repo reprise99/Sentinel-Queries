@@ -1,0 +1,10 @@
+//Create a summary showing which of your Azure AD conditional access policies are preventing the most signins and for what reason
+SigninLogs
+| where TimeGenerated > ago (30d)
+| project TimeGenerated, ConditionalAccessPolicies, ResultType, ResultDescription
+| mv-expand ConditionalAccessPolicies
+| extend CAResult = tostring(ConditionalAccessPolicies.result)
+| extend CAPolicyName = tostring(ConditionalAccessPolicies.displayName)
+| where CAResult == "failure"
+| summarize CAFailureCount=count()by CAPolicyName, ResultType, ResultDescription
+| sort by CAFailureCount desc 
