@@ -1,0 +1,13 @@
+//Visualize your total attack surface reduction rule events over time with trend
+let StartDate = now(-90d);
+let EndDate = now();
+DeviceEvents
+| where ActionType startswith "Asr"
+| make-series TotalASREvents=count() on TimeGenerated in range(StartDate, EndDate, 1d)
+| extend (RSquare, SplitIdx, Variance, RVariance, TrendLine)=series_fit_2lines(TotalASREvents)
+| project TimeGenerated, TotalASREvents, TrendLine
+| render timechart
+    with (
+    xtitle="Day",
+    ytitle="Count of ASR Events",
+    title="Attack surface reduction events over time with trend")
