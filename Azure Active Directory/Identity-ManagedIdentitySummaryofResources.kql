@@ -1,0 +1,6 @@
+//Summarize the Azure resources that each of your managed identities are accessing. The higher the count the higher the potential blast radius.
+let timerange=30d;
+AADManagedIdentitySignInLogs
+| where ResultType == 0
+| summarize ResourcesAccessed=make_set(ResourceDisplayName) by ServicePrincipalName
+| sort by array_length(ResourcesAccessed)
