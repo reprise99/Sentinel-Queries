@@ -1,0 +1,7 @@
+//Alert when a user is granted send as permission to another mailbox
+OfficeActivity
+| where Operation == "Add-RecipientPermission"
+| parse-where Parameters with * 'Identity","Value":"' TargetMailbox '"' *
+| parse-where Parameters with * 'Trustee","Value":"' UserGivenAccess '"' *
+| parse-where Parameters with * 'AccessRights","Value":"' AccessRights '"' *
+| project TimeGenerated, Actor=UserId, TargetMailbox, TargetMailboxDisplayName=OfficeObjectId, UserGivenAccess, AccessRights
