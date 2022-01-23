@@ -1,0 +1,6 @@
+//Use KQL to forecast the count of Azure AD Identity Protection Events events based on the previous 30 days
+SecurityAlert
+| where ProviderName == "IPC"
+| make-series ["Azure AD Identity Protection Events"]=count() on TimeGenerated from ago(30d) to now() + 14d step 1d
+| extend ["Azure AD Identity Protection Events Forecast"] = series_decompose_forecast(['Azure AD Identity Protection Events'], toint(14d / 1d))
+| render timechart 
