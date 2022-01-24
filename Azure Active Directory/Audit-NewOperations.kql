@@ -1,0 +1,10 @@
+//Find any new operations generated in the Azure AD audit table in the last week compared to the last 90 days
+AuditLogs
+| where TimeGenerated > ago(90d) and TimeGenerated < ago(7d)
+| distinct OperationName
+| join kind=rightanti
+    (AuditLogs
+    | where TimeGenerated > ago(7d)
+    | summarize NewOperationCount=count() by OperationName, Category)
+    on OperationName
+| sort by NewOperationCount desc 
