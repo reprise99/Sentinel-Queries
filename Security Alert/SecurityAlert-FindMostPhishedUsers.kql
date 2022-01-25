@@ -1,0 +1,10 @@
+//Find the most phished users from the last 365 days
+SecurityAlert
+| where TimeGenerated > ago (365d)
+| where ProviderName == "OATP"
+| where AlertName in ("Email messages containing malicious URL removed after delivery", "Email messages containing phish URLs removed after delivery")
+| extend x = todynamic(Entities)
+| mv-expand x
+| parse-where x with * 'MailboxPrimaryAddress":"' User '"' *
+| summarize PhishingCount=count()by User
+| order by PhishingCount
