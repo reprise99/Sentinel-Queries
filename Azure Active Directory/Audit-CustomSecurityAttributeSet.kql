@@ -1,0 +1,17 @@
+//Detect when a custom security attribute is set on a user
+AuditLogs
+| where OperationName == "Update attribute values assigned to a user"
+| extend x = tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[0].displayName)
+| extend ["Attribute Value"] = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[0].newValue))[0])
+| extend Target = tostring(TargetResources[0].userPrincipalName)
+| extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| parse x with * '.' ['Attribute Set Name'] "_" *
+| extend ["Attribute Name"]=split(x, "_")[1]
+| project
+    TimeGenerated,
+    OperationName,
+    Target,
+    ['Attribute Set Name'],
+    ['Attribute Name'],
+    ['Attribute Value'],
+    Actor
