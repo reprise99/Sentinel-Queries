@@ -1,0 +1,37 @@
+//Detect when a user is added and removed from an Azure AD role within a short time frame
+//Timerange = the amount of data to look back on, timeframe = the time between the role being added and removed
+let timerange=7d;
+let timeframe=4h;
+AuditLogs
+| where TimeGenerated > ago (timerange)
+| where OperationName == "Add member to role"
+| where Result == "success"
+//Exclude role additions from Azure AD PIM
+| where Identity <> "MS-PIM"
+| extend User = tostring(TargetResources[0].userPrincipalName)
+| extend Role = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[1].newValue)))
+| extend UserWhoAdded = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| project TimeAdded=TimeGenerated, User, Role, UserWhoAdded
+| join kind=inner (
+    AuditLogs
+    | where TimeGenerated > ago (timerange)
+    | where OperationName == "Remove member from role"
+    //Exclude role removals from Azure AD PIM
+    | where Result == "success"
+    | where Identity <> "MS-PIM"
+    | extend User = tostring(TargetResources[0].userPrincipalName)
+    | extend Role = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[1].oldValue)))
+    | extend UserWhoRemoved = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+    | project TimeRemoved=TimeGenerated, User, Role, UserWhoRemoved
+    )
+    on User, Role
+| extend ['Time User Held Role'] = TimeRemoved - TimeAdded
+| where ['Time User Held Role'] < ['timeframe']
+| project
+    TimeAdded,
+    TimeRemoved,
+    ['Time User Held Role'],
+    User,
+    Role,
+    UserWhoAdded,
+    UserWhoRemoved
