@@ -1,3 +1,7 @@
+// Save as a function in your workspace then invoke via its name, i.e if you save as ASALogs
+// ASALogs | where TimeGenerated > ago(30d) | where Action == "A real IP packet was denied by the ACL"
+// ASALogs | where TimeGenerated > ago(30d) | where DstIP == "1.1.1.1"
+// This parse the Syslog messages from a Cisco ASA appliance to separate columns
 let asa106017=
 Syslog
 | parse SyslogMessage with * '%' Event ':' *
