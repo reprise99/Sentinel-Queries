@@ -1,0 +1,20 @@
+//Calculate the change in size of all your tables from last week to this week
+let lastweek=
+union withsource=_TableName *
+| where TimeGenerated > ago(14d) and TimeGenerated < ago(7d)
+| summarize
+    Entries = count(), Size = sum(_BilledSize) by Type
+| project ['Table Name'] = Type, ['Last Week Table Size'] = Size, ['Last Week Table Entries'] = Entries, ['Last Week Size per Entry'] = 1.0 * Size / Entries
+| order by ['Table Name']  desc;
+let thisweek=
+union withsource=_TableName *
+| where TimeGenerated > ago(7d)
+| summarize
+    Entries = count(), Size = sum(_BilledSize) by Type
+| project ['Table Name'] = Type, ['This Week Table Size'] = Size, ['This Week Table Entries'] = Entries, ['This Week Size per Entry'] = 1.0 * Size / Entries
+| order by ['Table Name']  desc;
+lastweek
+| join kind=inner thisweek on ['Table Name']
+| extend PercentageChange=todouble(['This Week Table Size']) * 100 / todouble(['Last Week Table Size'])
+| project ['Table Name'], ['Last Week Table Size'], ['This Week Table Size'], PercentageChange
+| sort by PercentageChange desc
