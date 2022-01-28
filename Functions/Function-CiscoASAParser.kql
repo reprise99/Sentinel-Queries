@@ -1,0 +1,355 @@
+let asa106017=
+Syslog
+| parse SyslogMessage with * '%' Event ':' *
+| project TimeGenerated, Event, SyslogMessage, Computer
+| extend Description = "Deny IP due to Land Attack"
+| where Event == "ASA-2-106017"
+| extend Action = Description
+| parse SyslogMessage with * 'ASA-2-106017:' Message 'from' x 'to' y
+| extend SrcIP = split(x,'/')[0]
+| extend SrcPort = split(x,'/')[1]
+| extend DstIP = split(y,'/')[0]
+| extend DstPort = split(y,'/')[1]
+| project TimeGenerated, Computer, Description, Event, Action, Message, SrcIP, DstIP;
+let asa210005=
+Syslog
+| parse SyslogMessage with * '%' Event ':' *
+| project TimeGenerated, Event, SyslogMessage, Computer
+| extend Description = "LU allocate connection failed"
+| extend Action = Description
+| where Event == "ASA-3-210005"
+| parse SyslogMessage with * 'ASA-3-210005:' Message 'from' SrcVlan ':' x 'to' DstVLan ':' y
+| extend SrcIP = split(x,'/')[0]
+| extend SrcPort = split(x,'/')[1]
+| extend DstIP = split(y,'/')[0]
+| extend DstPort = split(y,'/')[1]
+| project TimeGenerated, Computer, Description, Event, Action, Message, SrcVlan, SrcIP,SrcPort, DstVLan, DstIP, DstPort;
+let asa106023=
+Syslog
+| parse SyslogMessage with * '%' Event ':' *
+| project TimeGenerated, Event, SyslogMessage, Computer
+| extend Description = "A real IP packet was denied by the ACL"
+| extend Action = Description
+| where Event == "ASA-4-106023"
+| parse SyslogMessage with * 'ASA-4-106023: Deny ' z ' src ' SrcVlan ':' x 'dst' DstVLan ':' y ' ' *
+| extend SrcIP = split(x,'/')[0]
+| extend SrcPort = split(x,'/')[1]
+| extend DstIP = split(y,'/')[0]
+| extend DstPort = split(y,'/')[1]
+| extend Protocol = toupper(z)
+| project TimeGenerated, Computer, Description, Event, Action, Protocol, SrcVlan, SrcIP, SrcPort, DstVLan, DstIP, DstPort;
+let asa313005=
+Syslog
+| parse SyslogMessage with * '%' Event ':' *
+| project TimeGenerated, Event, SyslogMessage, Computer
+| extend Description = "No matching connection for ICMP error message"
+| extend Action = Description
+| where Event == "ASA-4-313005"
+| parse SyslogMessage with * 'ASA-4-313005:' Message 'src' SrcVlan ':' x 'dst' DstVLan ':' y ' ' *
+| extend SrcIP = split(x,'/')[0]
+| extend SrcPort = split(x,'/')[1]
+| extend DstIP = split(y,'/')[0]
+| extend DstPort = split(y,'/')[1]
+| parse Action with * 'connection for ' Protocol ' error' *
+| project TimeGenerated, Computer, Description, Event, Protocol, Action, Message, SrcVlan, SrcIP, DstVLan, DstIP;
+let asa410001=
+Syslog
+| parse SyslogMessage with * '%' Event ':' *
+| project TimeGenerated, Event, SyslogMessage, Computer
+| extend Description = "Dropped UDP DNS"
+| extend Action = Description
+| where Event == "ASA-4-410001"
+| parse SyslogMessage with * 'ASA-4-410001:' Message 'from' SrcVlan ':' x 'to' DstVLan ':' y ';' *
+| extend SrcIP = split(x,'/')[0]
+| extend SrcPort = split(x,'/')[1]
+| extend DstIP = split(y,'/')[0]
+| extend DstPort = split(y,'/')[1]
+| parse Action with * 'Dropped ' Protocol ' DNS' *
+| project TimeGenerated, Computer, Description, Protocol, Event, Action, Message, SrcVlan, SrcIP, SrcPort, DstVLan, DstIP, DstPort;
+let asa419002=
+Syslog
+| parse SyslogMessage with * '%' Event ':' *
+| project TimeGenerated, Event, SyslogMessage, Computer
+| extend Description = "Duplicate TCP SYN"
+| extend Action = Description
+| where Event == "ASA-4-419002"
+| parse SyslogMessage with * 'ASA-4-419002:' Message 'from' SrcVlan ':' x 'to' DstVLan ':' y ' ' *
+| extend SrcIP = split(x,'/')[0]
+| extend SrcPort = split(x,'/')[1]
+| extend DstIP = split(y,'/')[0]
+| extend DstPort = split(y,'/')[1]
+| parse Action with * 'Duplicate ' Protocol ' SYN' *
+| project TimeGenerated, Computer, Description, Protocol, Event, Action, Message, SrcVlan, SrcIP,SrcPort, DstVLan, DstIP, DstPort;
+let asa500004=
+Syslog
+| parse SyslogMessage with * '%' Event ':' *
+| project TimeGenerated, Event, SyslogMessage, Computer
+| extend Description = "Invalid transport field for protocol"
+| extend Action = Description
+| where Event == "ASA-4-500004"
+| parse SyslogMessage with * 'ASA-4-500004:' Message ', from' x 'to' y
+| extend SrcIP = split(x,'/')[0]
+| extend SrcPort = split(x,'/')[1]
+| extend DstIP = split(y,'/')[0]
+| extend DstPort = split(y,'/')[1]
+| project TimeGenerated, Computer, Description, Event, Action, Message, SrcIP, SrcPort, DstIP, DstPort;
+let asa733100=
+Syslog
+| parse SyslogMessage with * '%' Event ':' *
+| project TimeGenerated, Event, SyslogMessage, Computer
+| extend Description = "Drop rate exceeded"
+| where Event == "ASA-4-733100"
+| extend Action = Description
+| parse SyslogMessage with * 'ASA-4-733100:' Message
+| project TimeGenerated, Computer, Description, Event, Action, Message;
+let asa111008=
+Syslog
+| parse SyslogMessage with * '%' Event ':' *
+| project TimeGenerated, Event, SyslogMessage, Computer
+| extend Description = "User command executed"
+| extend Action = Description
+| where Event == "ASA-5-111008"
+| parse SyslogMessage with * 'ASA-5-111008:' Message
+| project TimeGenerated, Computer, Description, Event, Action, Message;
+let asa111010=
+Syslog
+| parse SyslogMessage with * '%' Event ':' *
+| project TimeGenerated, Event, SyslogMessage, Computer
+| extend Description = "User made configuration change"
+| extend Action = Description
+| where Event == "ASA-5-111010"
+| parse SyslogMessage with * 'ASA-5-111010:' Message
+| project TimeGenerated, Computer, Description, Event, Action, Message;
+let asa611103=
+Syslog
+| parse SyslogMessage with * '%' Event ':' *
+| project TimeGenerated, Event, SyslogMessage, Computer
+| extend Description = "User logged out"
+| extend Action = Description
+| where Event == "ASA-5-611103"
+| parse SyslogMessage with * 'ASA-5-611103:' Message
+| project TimeGenerated, Computer, Description, Event, Action, Message;
+let asa106015=
+Syslog
+| parse SyslogMessage with * '%' Event ':' *
+| project TimeGenerated, Event, SyslogMessage, Computer
+| extend Description = "Deny TCP (no connection)"
+| extend Action = Description
+| where Event == "ASA-6-106015"
+| parse SyslogMessage with * 'ASA-6-106015:' Message 'from' x 'to' y 'flags' Flags 'on interface' DstVLan
+| extend SrcIP = split(x,'/')[0]
+| extend SrcPort = split(x,'/')[1]
+| extend DstIP = split(y,'/')[0]
+| extend DstPort = split(y,'/')[1]
+| parse Action with * 'Deny ' Protocol ' (' *
+| project TimeGenerated, Computer, Description, Event, Protocol, Action, Message, SrcIP, SrcPort, DstIP, DstPort, Flags, DstVLan;
+let asa110002=
+Syslog
+| parse SyslogMessage with * '%' Event ':' *
+| project TimeGenerated, Event, SyslogMessage, Computer
+| extend Description = "Failed to locate egress interface"
+| extend Action = Description
+| where Event == "ASA-6-110002"
+| parse SyslogMessage with * 'ASA-6-110002:' Message 'for' Protocol 'from' SrcVlan ':' x 'to' y
+| extend SrcIP = split(x,'/')[0]
+| extend SrcPort = split(x,'/')[1]
+| extend DstIP = split(y,'/')[0]
+| extend DstPort = split(y,'/')[1]
+| project TimeGenerated, Computer, Description, Event, Action, Message, Protocol, SrcVlan, SrcIP, SrcPort, DstIP, DstPort;
+let asa113004=
+Syslog
+| parse SyslogMessage with * '%' Event ':' *
+| project TimeGenerated, Event, SyslogMessage, Computer
+| extend Description = "AAA user authentication Successful"
+| extend Action = Description
+| where Event == "ASA-6-113004"
+| parse SyslogMessage with * 'ASA-6-113004:' Message ': server = ' x ' : user = ' User
+| extend SrcIP = split(x,'/')[0]
+| extend SrcPort = split(x,'/')[1]
+| project TimeGenerated, Computer, Description, Event, Action, Message, SrcIP, User;
+let asa113008=
+Syslog
+| parse SyslogMessage with * '%' Event ':' *
+| project TimeGenerated, Event, SyslogMessage, Computer
+| extend Description = "AAA transaction status ACCEPT"
+| extend Action = Description
+| where Event == "ASA-6-113008"
+| parse SyslogMessage with * 'ASA-6-113008:' Message ' : user = ' User
+| project TimeGenerated, Computer, Description, Event, Message, Action, User;
+let asa302010=
+Syslog
+| parse SyslogMessage with * '%' Event ':' *
+| project TimeGenerated, Event, SyslogMessage, Computer
+| extend Description = "Connection stats"
+| where Event == "ASA-6-302010"
+| extend Action = Description
+| parse SyslogMessage with * 'ASA-6-302010:' ConnectionsInUse ' in use, ' ConnectionsMostUsed  ' most used';
+let asa302013=
+Syslog
+| parse SyslogMessage with * '%' Event ':' *
+| project TimeGenerated, Event, SyslogMessage, Computer
+| extend Description = "Built outbound TCP connection"
+| extend Action = Description
+| where Event == "ASA-6-302013"
+| parse SyslogMessage with * 'connection ' ConnectionId 'for ' DstVlan ':' y ' (' DestNATIp ') to ' SrcVlan ':' x ' (' DstNATIP ')' 
+| extend SrcIP = split(x,'/')[0]
+| extend SrcPort = split(x,'/')[1]
+| extend DstIP = split(y,'/')[0]
+| extend DstPort = split(y,'/')[1]
+| parse Action with * ' outbound ' Protocol ' connection' *
+| project TimeGenerated, Computer, Description, Event, Action, Protocol, ConnectionId, DstVlan, DstIP, DstPort, SrcVlan, SrcIP, SrcPort, DstNATIP;
+let asa302014=
+Syslog
+| parse SyslogMessage with * '%' Event ':' *
+| project TimeGenerated, Event, SyslogMessage, Computer
+| extend Description = "Teardown outbound TCP connection"
+| extend Action = Description
+| where Event == "ASA-6-302014"
+| parse SyslogMessage with * 'connection ' ConnectionId 'for ' DstVlan ':' y ' to ' SrcVlan ':' x ' duration ' Duration ' bytes' *
+| extend SrcIP = split(x,'/')[0]
+| extend SrcPort = split(x,'/')[1]
+| extend DstIP = split(y,'/')[0]
+| extend DstPort = split(y,'/')[1]
+| parse Action with * ' outbound ' Protocol ' connection' *
+| project TimeGenerated, Computer, Description, Event, Action, Protocol, ConnectionId, DstVlan, DstIP, DstPort, SrcVlan, SrcIP, SrcPort, Duration;
+let asa302015=
+Syslog
+| parse SyslogMessage with * '%' Event ':' *
+| project TimeGenerated, Event, SyslogMessage, Computer
+| extend Description = "Built outbound UDP connection"
+| extend Action = Description
+| where Event == "ASA-6-302015"
+| parse SyslogMessage with * 'connection ' ConnectionId 'for ' DstVlan ':' y ' (' DestNATIp ') to ' SrcVlan ':' x ' (' DstNATIP ')' 
+| extend SrcIP = split(x,'/')[0]
+| extend SrcPort = split(x,'/')[1]
+| extend DstIP = split(y,'/')[0]
+| extend DstPort = split(y,'/')[1]
+| parse Action with * ' outbound ' Protocol ' connection' *
+| project TimeGenerated, Computer, Description, Event, Protocol, Action, ConnectionId, DstVlan, DstIP, DstPort, SrcVlan, SrcIP, SrcPort, DstNATIP;
+let asa302016=
+Syslog
+| parse SyslogMessage with * '%' Event ':' *
+| project TimeGenerated, Event, SyslogMessage, Computer
+| extend Description = "Teardown UDP connection"
+| extend Action = Description
+| where Event == "ASA-6-302016"
+| parse SyslogMessage with * 'connection ' ConnectionId 'for ' DstVlan ':' y ' to ' SrcVlan ':' x ' duration ' Duration ' bytes' *
+| extend SrcIP = split(x,'/')[0]
+| extend SrcPort = split(x,'/')[1]
+| extend DstIP = split(y,'/')[0]
+| extend DstPort = split(y,'/')[1]
+| parse Action with * 'Teardown ' Protocol ' connection' *
+| project TimeGenerated, Computer, Description, Protocol, Event, Action, ConnectionId, DstVlan, DstIP, DstPort, SrcVlan, SrcIP, SrcPort, Duration;
+let asa302020=
+Syslog
+| parse SyslogMessage with * '%' Event ':' *
+| project TimeGenerated, Event, SyslogMessage, Computer
+| extend Description = "Built outbound ICMP connection"
+| extend Action = Description
+| where Event == "ASA-6-302020"
+| parse SyslogMessage with * 'faddr ' y ' gaddr ' x ' laddr ' SrcNATIP ' type' *
+| extend SrcIP = split(x,'/')[0]
+| extend SrcPort = split(x,'/')[1]
+| extend DstIP = split(y,'/')[0]
+| extend DstPort = split(y,'/')[1]
+| parse Action with * ' outbound ' Protocol ' connection' *
+| project TimeGenerated, Computer, Description, Protocol, Event, Action, DstIP, DstPort, SrcPort, SrcIP, SrcNATIP;
+let asa302021=
+Syslog
+| parse SyslogMessage with * '%' Event ':' *
+| project TimeGenerated, Event, SyslogMessage, Computer
+| extend Description = "Teardown ICMP connection"
+| extend Action = Description
+| where Event == "ASA-6-302021"
+| parse SyslogMessage with * 'faddr ' y ' gaddr ' x ' laddr ' SrcNATIP ' type' *
+| extend SrcIP = split(x,'/')[0]
+| extend SrcPort = split(x,'/')[1]
+| extend DstIP = split(y,'/')[0]
+| extend DstPort = split(y,'/')[1]
+| parse Action with * 'Teardown ' Protocol ' connection' *
+| project TimeGenerated, Computer, Description, Protocol, Event, Action, DstIP, DstPort, SrcIP, SrcPort, SrcNATIP;
+let asa303002=
+Syslog
+| parse SyslogMessage with * '%' Event ':' *
+| project TimeGenerated, Event, SyslogMessage, Computer
+| extend Description = "FTP connection"
+| extend Action = Description
+| where Event == "ASA-6-303002"
+| parse SyslogMessage with * 'from ' SrcVlan ':' x ' to ' DstVlan ':' y ',' Message
+| extend SrcIP = split(x,'/')[0]
+| extend SrcPort = split(x,'/')[1]
+| extend DstIP = split(y,'/')[0]
+| extend DstPort = split(y,'/')[1]
+| project TimeGenerated, Computer, Description, Event, Action, SrcVlan, SrcIP, SrcPort, DstVlan, DstIP, DstPort, Message;
+let asa305011=
+Syslog
+| parse SyslogMessage with * '%' Event ':' *
+| project TimeGenerated, Event, SyslogMessage, Computer
+| extend Description = "Build Nat Translation"
+| extend Action = Description
+| where Event == "ASA-6-305011"
+| parse SyslogMessage with * 'dynamic ' Protocol ' translation from ' SrcVlan ':' x ' to ' DstVlan ':' y
+| extend SrcIP = split(x,'/')[0]
+| extend SrcPort = split(x,'/')[1]
+| extend DstIP = split(y,'/')[0]
+| extend DstPort = split(y,'/')[1]
+| project TimeGenerated, Computer, Description, Event, Action, SrcVlan, SrcIP, SrcPort, DstVlan, DstIP, DstPort;
+let asa305012=
+Syslog
+| parse SyslogMessage with * '%' Event ':' *
+| project TimeGenerated, Event, SyslogMessage, Computer
+| extend Description = "Teardown Nat Translation"
+| extend Action = Description
+| where Event == "ASA-6-305012"
+| parse SyslogMessage with * 'dynamic ' Protocol ' translation from ' SrcVlan ':' x ' to ' DstVlan ':' y ' duration ' Duration
+| extend SrcIP = split(x,'/')[0]
+| extend SrcPort = split(x,'/')[1]
+| extend DstIP = split(y,'/')[0]
+| extend DstPort = split(y,'/')[1]
+| project TimeGenerated, Computer, Description, Event, Action, SrcVlan, SrcIP, SrcPort, DstVlan, DstIP, DstPort, Duration;
+let asa315011=
+Syslog
+| parse SyslogMessage with * '%' Event ':' *
+| project TimeGenerated, Event, SyslogMessage, Computer
+| extend Description = "SSH session"
+| extend Action = Description
+| where Event == "ASA-6-315011"
+| parse SyslogMessage with * 'from ' x 'on interface ' SrcVlan 'for ' Message
+| extend SrcIP = split(x,'/')[0]
+| extend SrcPort = split(x,'/')[1]
+| project TimeGenerated, Computer, Description, Event, Action, SrcIP, SrcVlan, Message;
+let asa605005=
+Syslog
+| parse SyslogMessage with * '%' Event ':' *
+| project TimeGenerated, Event, SyslogMessage, Computer
+| extend Description = "Login permitted"
+| extend Action = Description
+| where Event == "ASA-6-605005"
+| parse SyslogMessage with * 'from ' x ' to ' DstVlan ':' y ' for user ' User
+| extend SrcIP = split(x,'/')[0]
+| extend SrcPort = split(x,'/')[1]
+| extend DstIP = split(y,'/')[0]
+| extend DstPort = split(y,'/')[1]
+| project TimeGenerated, Computer, Description, Event, Action, SrcIP, SrcPort, DstVlan, DstIP, DstPort, User;
+let asa611101=
+Syslog
+| parse SyslogMessage with * '%' Event ':' *
+| project TimeGenerated, Event, SyslogMessage, Computer
+| extend Description = "User authentication succeeded"
+| extend Action = Description
+| where Event == "ASA-6-611101"
+| parse SyslogMessage with * ': IP address: ' x ', Uname: ' User
+| extend SrcIP = split(x,'/')[0]
+| extend SrcPort = split(x,'/')[1]
+| project TimeGenerated, Computer, Description, Event, Action, SrcIP, User;
+let asa769007=
+Syslog
+| parse SyslogMessage with * '%' Event ':' *
+| project TimeGenerated, Event, SyslogMessage, Computer
+| extend Description = "Image version"
+| extend Action = Description
+| where Event == "ASA-6-769007"
+| parse SyslogMessage with * 'UPDATE: ' ImageVersion
+| project TimeGenerated, Computer, Description, Event, Action, ImageVersion;
+union asa106017, asa106023, asa210005, asa313005, asa410001, asa419002, asa500004, asa733100, asa111008, asa111010, asa611103, asa106015, asa110002, asa113004, asa113008, asa302010, asa302013, asa302014, asa302015, asa302016, asa302020, asa302021, asa303002, asa305011, asa305012, asa315011, asa605005, asa611101, asa769007
+| project TimeGenerated, Computer, Event, Action, Protocol, SrcIP, SrcPort, SrcVlan, SrcNATIP, DstIP, DstPort, DstVlan, DstNATIP ,Duration, Message, User, Flags, ImageVersion, ConnectionsInUse, ConnectionsMostUsed, Description
