@@ -1,0 +1,30 @@
+//Find when either application or delegated access is granted to a service principal in Azure AD
+let delegatedaccess=
+    AuditLogs
+    | where OperationName has "Add delegated permission grant"
+    | extend x = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[0].newValue)))
+    | extend ['Permissions granted'] = split(x, ' ')
+    | extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+    | extend ['Service Principal ObjectId'] = tostring(TargetResources[1].id)
+    | extend Activity = strcat("Delegated access added to application")
+    | project
+        TimeGenerated,
+        Activity,
+        ['Permissions granted'],
+        ['Service Principal ObjectId'],
+        Actor;
+let appaccess=
+    AuditLogs
+    | where OperationName has "Add app role assignment to service principal"
+    | extend x = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[1].newValue)))
+    | extend ['Permissions granted'] = split(x, ' ')
+    | extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+    | extend Activity = strcat("Application access added to application")
+    | extend ['Service Principal ObjectId'] = tostring(TargetResources[1].id)
+    | project
+        TimeGenerated,
+        Activity,
+        ['Permissions granted'],
+        ['Service Principal ObjectId'],
+        Actor;
+union delegatedaccess, appaccess
