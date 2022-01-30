@@ -1,0 +1,40 @@
+//Find any Azure AD service principals that have been granted any .All access in the last year that haven't signed in for 30 days. May include already deleted service principals.
+let delegatedaccess=
+    AuditLogs
+    | where TimeGenerated > ago(365d)
+    | where OperationName has "Add delegated permission grant"
+    | extend x = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[0].newValue)))
+    | extend ['Permissions granted'] = split(x, ' ')
+    | extend ServicePrincipalId = tostring(TargetResources[1].id)
+    | extend ['Permission type'] = strcat("Delegated")
+    | summarize arg_max(TimeGenerated, *) by ServicePrincipalId
+    | project
+        TimeGenerated,
+        ['Permission type'],
+        ['Permissions granted'],
+        ServicePrincipalId;
+let appaccess=
+    AuditLogs
+    | where TimeGenerated > ago(365d)
+    | where OperationName has "Add app role assignment to service principal"
+    | extend x = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[1].newValue)))
+    | extend ['Permissions granted'] = split(x, ' ')
+    | extend ['Permission type'] = strcat("Application")
+    | extend ServicePrincipalId = tostring(TargetResources[1].id)
+    | summarize arg_max(TimeGenerated, *) by ServicePrincipalId
+    | project
+        TimeGenerated,
+        ServicePrincipalId,
+        ['Permission type'],
+        ['Permissions granted'];
+union delegatedaccess, appaccess
+| where ['Permissions granted'] contains ".All"
+| distinct ServicePrincipalId
+| join kind=leftanti (
+    AADServicePrincipalSignInLogs
+    | where TimeGenerated > ago (30d)
+    | where ResultType == "0"
+    | distinct ServicePrincipalName, ServicePrincipalId)
+    on ServicePrincipalId
+
+
