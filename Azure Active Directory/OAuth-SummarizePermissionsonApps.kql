@@ -1,0 +1,35 @@
+//Summarize which permissions are most used across your Azure AD applications (for apps updated in the last year).  May include already deleted service principals.
+let delegatedaccess=
+    AuditLogs
+    | where TimeGenerated > ago(365d)
+    | where OperationName has "Add delegated permission grant"
+    | extend x = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[0].newValue)))
+    | extend ['Permissions granted'] = split(x, ' ')
+    | extend ServicePrincipalId = tostring(TargetResources[1].id)
+    | extend ['Permission type'] = strcat("Delegated")
+    | summarize arg_max(TimeGenerated, *) by ServicePrincipalId
+    | project
+        TimeGenerated,
+        ['Permission type'],
+        ['Permissions granted'],
+        ServicePrincipalId;
+let appaccess=
+    AuditLogs
+    | where TimeGenerated > ago(365d)
+    | where OperationName has "Add app role assignment to service principal"
+    | extend x = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[1].newValue)))
+    | extend ['Permissions granted'] = split(x, ' ')
+    | extend ['Permission type'] = strcat("Application")
+    | extend ServicePrincipalId = tostring(TargetResources[1].id)
+    | summarize arg_max(TimeGenerated, *) by ServicePrincipalId
+    | project
+        TimeGenerated,
+        ServicePrincipalId,
+        ['Permission type'],
+        ['Permissions granted'];
+union delegatedaccess, appaccess
+| mv-expand ['Permissions granted']
+| where isnotempty( ['Permissions granted'])
+| extend Permission=strcat(['Permission type']," - ",['Permissions granted'])
+| summarize PermissionCount=count()by Permission
+| sort by PermissionCount desc
