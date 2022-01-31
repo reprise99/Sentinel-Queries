@@ -1,0 +1,50 @@
+//Detect when a user adds delegated or application permissions to an Azure AD app for the first time.
+//Look back in the last year to find all users who have added access to an app
+let newusers=
+AuditLogs
+| where TimeGenerated > ago(365d) and TimeGenerated < ago(1d)
+| where OperationName in ("Add app role assignment to service principal","Add delegated permission grant")
+| extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| distinct Actor
+//Find users who add access to an app for the first time in the last day
+| join kind=rightanti (
+AuditLogs
+| where TimeGenerated > ago(1d)
+| where OperationName in ("Add app role assignment to service principal","Add delegated permission grant")
+| extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| distinct Actor )
+on Actor;
+//Retrieve the list of permissions granted by the first time users
+let delegatedaccess=
+    AuditLogs
+    | where TimeGenerated > ago(1d)
+    | where OperationName has "Add delegated permission grant"
+    | extend x = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[0].newValue)))
+    | extend ['Permissions granted'] = split(x, ' ')
+    | extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+    | where Actor in (newusers)
+    | extend ['Service Principal ObjectId'] = tostring(TargetResources[1].id)
+    | extend Activity = strcat("Delegated access added to application")
+    | project
+        TimeGenerated,
+        Activity,
+        ['Permissions granted'],
+        ['Service Principal ObjectId'],
+        Actor;
+let appaccess=
+    AuditLogs
+    | where TimeGenerated > ago(1d)
+    | where OperationName has "Add app role assignment to service principal"
+    | extend x = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[1].newValue)))
+    | extend ['Permissions granted'] = split(x, ' ')
+    | extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+    | where Actor in (newusers)
+    | extend Activity = strcat("Application access added to application")
+    | extend ['Service Principal ObjectId'] = tostring(TargetResources[1].id)
+    | project
+        TimeGenerated,
+        Activity,
+        ['Permissions granted'],
+        ['Service Principal ObjectId'],
+        Actor;
+union delegatedaccess, appaccess
