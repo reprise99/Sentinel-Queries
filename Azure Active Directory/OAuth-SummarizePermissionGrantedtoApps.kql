@@ -1,0 +1,46 @@
+//Summarize the permissions granted to your Azure AD apps over the last year
+//Find applications that have been deleted
+let deletedapps=
+AuditLogs
+| where OperationName == "Remove service principal"
+| extend ServicePrincipalId = tostring(TargetResources[0].id)
+| project ServicePrincipalId;
+let delegatedaccess=
+    AuditLogs
+    | where TimeGenerated > ago(365d)
+    | where OperationName has "Add delegated permission grant"
+    | extend x = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[0].newValue)))
+    | extend ['Permissions granted'] = split(x, ' ')
+    | extend ServicePrincipalId = tostring(TargetResources[1].id)
+    | extend ['Permission type'] = strcat("Delegated")
+    | summarize arg_max(TimeGenerated, *) by ServicePrincipalId
+//Exclude deleted applications
+    | where ServicePrincipalId !in (deletedapps)
+    | project
+        TimeGenerated,
+        ['Permission type'],
+        ['Permissions granted'],
+        ServicePrincipalId;
+let appaccess=
+    AuditLogs
+    | where TimeGenerated > ago(365d)
+    | where OperationName has "Add app role assignment to service principal"
+    | extend x = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[1].newValue)))
+    | extend ['Permissions granted'] = split(x, ' ')
+    | extend ['Permission type'] = strcat("Application")
+    | extend ServicePrincipalId = tostring(TargetResources[1].id)
+    | summarize arg_max(TimeGenerated, *) by ServicePrincipalId
+//Exclude deleted applications
+    | where ServicePrincipalId !in (deletedapps)
+    | project
+        TimeGenerated,
+        ServicePrincipalId,
+        ['Permission type'],
+        ['Permissions granted'];
+union delegatedaccess, appaccess
+| mv-expand ['Permissions granted']
+| where isnotempty( ['Permissions granted'])
+//Extend new permission field
+| extend Permission = strcat(['Permission type']," - ",['Permissions granted'])
+| summarize PermissionCount=count()by Permission
+| sort by PermissionCount desc 
