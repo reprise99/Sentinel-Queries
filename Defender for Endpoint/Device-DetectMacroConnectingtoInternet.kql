@@ -1,4 +1,4 @@
-//Detect when a macro file connects to the internet. Some IPs returned shown may be Microsoft telemetry.
+//Detect when an Excel macro connects to the internet. Some IPs returned shown may be Microsoft telemetry.
 //Microsoft Sentinel query
 DeviceNetworkEvents
 | where InitiatingProcessFileName == "excel.exe"
