@@ -2,7 +2,7 @@
 //Some IPs returned shown may be Microsoft telemetry but these events are still worth investigating.
 //Microsoft Sentinel query
 DeviceNetworkEvents
-| where InitiatingProcessFileName == "excel.exe"
+| where InitiatingProcessFileName contains "excel.exe"
 | where InitiatingProcessCommandLine contains ".xlsm" or InitiatingProcessCommandLine contains ".xltm"
 //Exclude Microsoft telemetry endpoints 
 | where RemoteUrl !endswith "outlook.com" 
@@ -23,7 +23,7 @@ DeviceNetworkEvents
 
 //Advanced Hunting query
 DeviceNetworkEvents
-| where InitiatingProcessFileName == "excel.exe"
+| where InitiatingProcessFileName contains "excel.exe"
 | where InitiatingProcessCommandLine contains ".xlsm" or InitiatingProcessCommandLine contains ".xltm"
 | where RemoteIPType == "Public"
 //Exclude Microsoft telemetry endpoints 
