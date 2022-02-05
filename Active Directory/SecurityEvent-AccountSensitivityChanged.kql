@@ -1,0 +1,10 @@
+//Detect when the 'account is sensitive and cannot be delegated' flag on an account is changed
+SecurityEvent
+| project TimeGenerated, EventID, TargetAccount, SubjectAccount, UserAccountControl
+| where EventID == "4738"
+| where UserAccountControl has_any("2094", "2062")
+| extend Activity = case
+    (UserAccountControl contains "2094", strcat("Account Sensitivity Enabled"),
+     UserAccountControl contains "2062", strcat("Account Sensitivity Disabled"),
+    "Unknown")
+| project TimeGenerated, Target=TargetAccount, Actor=SubjectAccount, Activity
