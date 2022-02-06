@@ -1,0 +1,23 @@
+//Detect when group policy inheritance is either allowed or blocked
+SecurityEvent
+| project TimeGenerated, EventID, EventData, SubjectAccount
+| where EventID == "5136"
+| parse EventData with * 'ObjectDN">' OU '</Data' *
+| parse EventData with * 'AttributeLDAPDisplayName">' LDAPAttribute '</Data' *
+| parse EventData with * 'AttributeValue">' AttributeValue '</Data' *
+| parse EventData with * 'OperationType">%%' OperationType '</Data' *
+| project
+    TimeGenerated,
+    Actor=SubjectAccount,
+    OU,
+    LDAPAttribute,
+    AttributeValue,
+    OperationType
+| where LDAPAttribute == "gPOptions"
+| where AttributeValue == "1"
+| extend Activity = case
+(OperationType == "14674" and AttributeValue == "1", strcat("Group Policy Inheritance Blocked"),
+ OperationType == "14675" and AttributeValue == "1", strcat("Group Policy Inheritance Allowed"),
+ "Unknown")
+| project TimeGenerated, Actor, OU, Activity
+
