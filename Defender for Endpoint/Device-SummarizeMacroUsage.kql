@@ -1,0 +1,33 @@
+//Summarize macro usage on your devies by creating a list all macros used, a count of how many users are using each one and the account names
+//Macro usage may be double counted if the same file is executed from two locations, i.e from a network share and a local drive.
+//Microsoft Sentinel query
+union DeviceFileEvents, DeviceNetworkEvents
+| where TimeGenerated > ago(30d)
+| project InitiatingProcessCommandLine, InitiatingProcessAccountName, SHA256
+| where InitiatingProcessCommandLine startswith '"EXCEL.EXE'  
+| where InitiatingProcessCommandLine endswith '.xltm"' or InitiatingProcessCommandLine endswith '.xlsm"'
+//Retrieve distinct values for process, hash and account
+| distinct InitiatingProcessCommandLine, SHA256, InitiatingProcessAccountName
+//Parse the file path and file name from the process
+| parse-where InitiatingProcessCommandLine with * '"EXCEL.EXE" "' ['Macro Filename'] '"' *
+//Summarize the list of macro files by which users have used them
+| summarize Users=make_set(InitiatingProcessAccountName) by ['Macro Filename']
+//Calculate the number of users per macro and list by the most popular
+| extend ['Count of users']=array_length(Users)
+| sort by ['Count of users'] desc 
+
+//Advanced Hunting query
+union DeviceFileEvents, DeviceNetworkEvents
+| where Timestamp > ago(30d)
+| project InitiatingProcessCommandLine, InitiatingProcessAccountName, SHA256
+| where InitiatingProcessCommandLine startswith '"EXCEL.EXE'  
+| where InitiatingProcessCommandLine endswith '.xltm"' or InitiatingProcessCommandLine endswith '.xlsm"'
+//Retrieve distinct values for process, hash and account
+| distinct InitiatingProcessCommandLine, SHA256, InitiatingProcessAccountName
+//Parse the file path and file name from the process
+| parse-where InitiatingProcessCommandLine with * '"EXCEL.EXE" "' ['Macro Filename'] '"' *
+//Summarize the list of macro files by which users have used them
+| summarize Users=make_set(InitiatingProcessAccountName) by ['Macro Filename']
+//Calculate the number of users per macro and list by the most popular
+| extend ['Count of users']=array_length(Users)
+| sort by ['Count of users'] desc 
