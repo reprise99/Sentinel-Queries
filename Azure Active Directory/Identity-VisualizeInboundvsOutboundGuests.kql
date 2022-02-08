@@ -1,0 +1,10 @@
+//Visualize inbound Azure AD guests (other tenants connecting to your tenant) vs outbound (your users connecting to other tenants)
+SigninLogs
+| where TimeGenerated > ago (30d)
+| where UserType == "Guest"
+| where ResultType == 0
+| summarize
+    ['Inbound Guests']=countif(AADTenantId != HomeTenantId and HomeTenantId != ResourceTenantId),
+    ['Outbound Guests']=countif(AADTenantId == HomeTenantId and ResourceTenantId != AADTenantId)
+    by bin(TimeGenerated, 1d)
+| render timechart with (title="Inbound Guest vs Outbound Guest Access", ytitle="Number of connections")
