@@ -16,5 +16,5 @@ DeviceEvents
 | extend isAudit = tostring(AdditionalFields.IsAudit)
 | where isAudit = true
 | summarize LsassAudit=make_set(DeviceName) by InitiatingProcessCommandLine
-| extend ['Count of Processes']=array_length(LsassAudit)
-| sort by ['Count of Processes'] desc 
+| extend ['Count of Devices']=array_length(LsassAudit)
+| sort by ['Count of Devices'] desc 
