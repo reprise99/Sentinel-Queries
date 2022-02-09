@@ -1,0 +1,20 @@
+//Summarize which processes are triggering Lsass credential theft audit alerts in your attack surface reduction rules
+//Summarize each device by which processes are triggering the audit alert
+DeviceEvents
+| where TimeGenerated > ago (7d)
+| where ActionType == "AsrLsassCredentialTheftAudited"
+| extend isAudit = tostring(AdditionalFields.IsAudit)
+| where isAudit = true
+| summarize LsassAudit=make_set(InitiatingProcessCommandLine) by DeviceName
+| extend ['Count of Processes']=array_length(LsassAudit)
+| sort by ['Count of Processes'] desc 
+
+//Summarize each process by which devices are triggering the audit alert
+DeviceEvents
+| where TimeGenerated > ago (7d)
+| where ActionType == "AsrLsassCredentialTheftAudited"
+| extend isAudit = tostring(AdditionalFields.IsAudit)
+| where isAudit = true
+| summarize LsassAudit=make_set(DeviceName) by InitiatingProcessCommandLine
+| extend ['Count of Processes']=array_length(LsassAudit)
+| sort by ['Count of Processes'] desc 
