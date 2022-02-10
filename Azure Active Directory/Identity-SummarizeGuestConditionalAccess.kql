@@ -1,0 +1,17 @@
+//Summarize which conditional access policies your inbound guests have logged any successes or failures against.
+SigninLogs
+| where TimeGenerated > ago (90d)
+| where UserType == "Guest"
+| where AADTenantId != HomeTenantId and HomeTenantId != ResourceTenantId
+| project ConditionalAccessPolicies, UserPrincipalName, HomeTenantId
+| project-rename GuestTenantId=HomeTenantId
+| mv-expand ConditionalAccessPolicies
+| extend CAResult = tostring(ConditionalAccessPolicies.result)
+| extend CAName = tostring(ConditionalAccessPolicies.displayName)
+| where CAResult has_any ("success", "failure")
+| extend ['Conditional Access Result']=strcat(CAName, " || ", CAResult)
+| summarize
+    ['Conditional Access Outcomes']=make_set(['Conditional Access Result'])
+    by
+    GuestTenantId
+| order by GuestTenantId asc
