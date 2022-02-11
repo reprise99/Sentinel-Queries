@@ -1,0 +1,16 @@
+//When a macro is received via email from an external sender, find all users who receieved the same file
+EmailEvents
+| where EmailDirection == "Inbound"
+| project
+    TimeGenerated,
+    SenderMailFromAddress,
+    RecipientEmailAddress,
+    NetworkMessageId
+| join kind=inner (EmailAttachmentInfo) on NetworkMessageId
+| project
+    TimeGenerated,
+    SenderMailFromAddress,
+    RecipientEmailAddress,
+    FileName
+| where FileName endswith ".xlsm" or FileName endswith ".xstm"
+| summarize Recipient=make_set(RecipientEmailAddress) by FileName, SenderMailFromAddress
