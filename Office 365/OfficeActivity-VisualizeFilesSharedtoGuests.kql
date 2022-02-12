@@ -1,0 +1,8 @@
+//Visualize the files shared to guests from Office 365 over time
+let timerange=90d;
+OfficeActivity
+| where TimeGenerated > ago(timerange)
+| where Operation in ("SecureLinkCreated", "AddedToSecureLink")
+| where TargetUserOrGroupType == "Guest"
+| summarize Count=count()by bin(TimeGenerated, 1d)
+| render timechart with (ytitle="File Count", title="Files shared with guests over time")
