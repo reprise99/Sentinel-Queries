@@ -1,0 +1,12 @@
+//Detect when new tables have been written to in the last week compared to the last 90 days
+let existingtables=
+    union withsource=_TableName *
+    | where TimeGenerated > ago(90d) and TimeGenerated < ago(7d)
+    | distinct Type;
+let newtables=
+    union withsource=_TableName *
+    | where TimeGenerated > ago(7d)
+    | summarize ['First Log Received'] = min(TimeGenerated) by Type
+    | project Type, ['First Log Received'];
+existingtables
+| join kind=rightanti newtables on Type
