@@ -1,0 +1,12 @@
+//Alert when the 'Log on to' device list is changed for a user
+SecurityEvent
+| where EventID == 4738
+| where AccountType == "User"
+//Include domain accounts only (excluding local accounts)
+| where TargetDomainName == SubjectDomainName
+| extend ['Allowed Devices'] = case(isnotempty(UserWorkstations) and UserWorkstations != "-" and UserWorkstations != "%%1793", split(UserWorkstations, ","),
+    (isnotempty(UserWorkstations) and UserWorkstations == "%%1793"), strcat("User can log onto all devices"),
+    "unknown")
+//Exclude other 4738 events where the device list isn't changed
+| where ['Allowed Devices'] != "unknown"
+| project TimeGenerated, Actor=SubjectAccount, User=TargetAccount, ['Allowed Devices']
