@@ -1,0 +1,16 @@
+//Summarize legacy auth authentications by type (such as ActiveSync, IMAP etc) and which accounts are using those protocols
+//Microsoft Sentinel query
+union SigninLogs, AADNonInteractiveUserSignInLogs
+| where TimeGenerated > ago(30d)
+| where ResultType == 0
+| where ClientAppUsed in ("Exchange ActiveSync", "Exchange Web Services", "AutoDiscover", "Unknown", "POP3", "IMAP4", "Other clients", "Authenticated SMTP", "MAPI Over HTTP", "Offline Address Book")
+| summarize ['Count of legacy auth attempts'] = count()by ClientAppUsed, UserPrincipalName
+| sort by ClientAppUsed asc, ['Count of legacy auth attempts'] desc 
+
+//Advanced Hunting query
+AADSignInEventsBeta
+| where Timestamp > ago(30d)
+| where ErrorCode == 0
+| where ClientAppUsed in ("Exchange ActiveSync", "Exchange Web Services", "AutoDiscover", "Unknown", "POP3", "IMAP4", "Other clients", "Authenticated SMTP", "MAPI Over HTTP", "Offline Address Book")
+| summarize ['Count of legacy auth attempts'] = count()by ClientAppUsed, AccountUpn
+| sort by ClientAppUsed asc, ['Count of legacy auth attempts'] desc 
