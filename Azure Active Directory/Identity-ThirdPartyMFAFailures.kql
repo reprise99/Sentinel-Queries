@@ -1,0 +1,37 @@
+//Retrieve sign in failures due to third party MFA (Okta/Duo etc). Azure AD handles third party MFA different to native MS MFA. A user is sent to the third party MFA service and generates code 50158.
+//If successful the user then generates a success code 0. When third party MFA fails Azure AD logs the 50158 result code but no corresponding 0 result code.
+//Microsoft Sentinel query
+SigninLogs
+//Create a list of all result codes within a single sign in to Azure AD
+| summarize MFA=make_list(ResultType) by CorrelationId
+//Find correlation ids where the user was sent to third party MFA (ResultType 50158) but there is no subsequent success (ResultType 0)
+| where MFA has "50158" and MFA !has "0"
+//Join back to SigninLogs table to find the sign in details
+| join kind=inner (SigninLogs) on CorrelationId
+| project
+    TimeGenerated,
+    UserPrincipalName,
+    UserType,
+    AppDisplayName,
+    IPAddress,
+    Location,
+    UserAgent,
+    ResultType
+
+//Advanced Hunting query
+AADSignInEventsBeta
+//Create a list of all result codes within a single sign in to Azure AD
+| summarize MFA=make_list(ErrorCode) by CorrelationId
+//Find correlation ids where the user was sent to third party MFA (ResultType 50158) but there is no subsequent success (ResultType 0)
+| where MFA has "50158" and MFA !has "0"
+//Join back to SigninLogs table to find the sign in details
+| join kind=inner (AADSignInEventsBeta) on CorrelationId
+| project
+    Timestamp,
+    AccountUpn,
+    IsGuestUser,
+    Application,
+    IPAddress,
+    Country,
+    UserAgent,
+    ErrorCode
