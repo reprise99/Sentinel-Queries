@@ -42,7 +42,7 @@ AADSignInEventsBeta
 
 Differences in schema are noted below.
 
-| Field Description | Sentinel Example - https://docs.microsoft.com/en-us/azure/sentinel/ | Advanced Hunting Example - https://docs.microsoft.com/en-us/microsoft-365/security/defender/advanced-hunting-overview?view=o365-worldwide  | Notes |
+| Field Description | Sentinel Examples | Advanced Hunting Examples | Notes |
 | -------------   | ---------- | --------------------------------------------------------------------------------------------------------------------------------| ----- |
 | Time  | SigninLogs <br />\| where TimeGenerated > ago (7d)| AADSignInEventsBeta <br />\| where Timestamp > ago(7d) | TimeGenerated becomes Timestamp
 | Username  | SigninLogs <br />\| where UserPrincipalName == "reprise@domain.com"  | AADSignInEventsBeta <br />\| where AccountUpn == "reprise99@domain.com" | UserPrincipalName becomes AccountUpn |
@@ -63,6 +63,7 @@ Device Trust Type | SigninLogs <br />\| extend trustType = tostring(DeviceDetail
 | Latitude | SigninLogs <br />\| extend Latitude = tostring(parse_json(tostring(LocationDetails.geoCoordinates)).latitude) <br />\| where Latitude contains "49.25" | AADSignInEventsBeta <br /> \| where Latitude contains "49.25" | Sentinel keeps Latitude in a nested field and has to be extracted first
 | Longitude | SigninLogs \| extend Longitude = tostring(parse_json(tostring(LocationDetails.geoCoordinates)).longitude) <br />\| where Longitude contains "-122" | AADSignInEventsBeta <br />\| where Longitude contains "-122" | Sentinel keeps Longitude in a nested field and has to be extracted first
 | State |SigninLogs <br />\| extend State = tostring(LocationDetails.state) <br />\| where State == "British Columbia" | AADSignInEventsBeta <br />\| where State == "British Columbia"  <br /> | Sentinel keeps State in a nested field and has to be extracted first
+| Combined Example | SigninLogs <br />\| extend State = tostring(LocationDetails.state) <br />\| where UserType == "Guest" and State == "British Columbia" <br />and ResultType == "0" and AppDisplayName == "Microsoft Teams" | AADSignInEventsBeta <br />\| where IsGuestUser == "1" and State == "British Columbia" and ErrorCode == "0" and Application == "Microsoft Teams" | Look for guests in British Columbia successfully signing into Teams |
 
 A number of fields are the same across both tables such as UserAgent or ClientAppUsed, and some only exist in one. For example, Advanced Hunting has LastPasswordChangeTimestamp whereas Sentinel does not. In general, the Sentinel logs are more detailed.
 
