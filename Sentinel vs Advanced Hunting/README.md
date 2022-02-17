@@ -42,7 +42,7 @@ AADSignInEventsBeta
 
 Differences in schema are noted below.
 
-| Field Description | Sentinel Example | &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  &nbsp; &nbsp;Advanced Hunting Example  &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  | Notes |
+| Field Description | Sentinel Example | Advanced Hunting Example  | Notes |
 | -------------   | ---------- | --------------------------------------------------------------------------------------------------------------------------------| ----- |
 | Time  | SigninLogs <br />\| where TimeGenerated > ago (7d)| AADSignInEventsBeta <br />\| where Timestamp > ago(7d) | TimeGenerated becomes Timestamp
 | Username  | SigninLogs <br />\| where UserPrincipalName == "reprise@domain.com"  | AADSignInEventsBeta <br />\| where AccountUpn == "reprise99@domain.com" | UserPrincipalName becomes AccountUpn |
