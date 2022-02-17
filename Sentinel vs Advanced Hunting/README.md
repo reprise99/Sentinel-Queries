@@ -44,7 +44,7 @@ Differences in schema are noted below.
 
 | Field Description | Sentinel Examples | Advanced Hunting Examples | Notes |
 | -------------   | ---------- | --------------------------------------------------------------------------------------------------------------------------------| ----- |
-| Time  | SigninLogs <br />\| where TimeGenerated > ago (7d)| AADSignInEventsBeta <br />\| where Timestamp > ago(7d) | TimeGenerated becomes Timestamp
+| Time  | SigninLogs <br />\| where TimeGenerated > ago (7d)| AADSignInEventsBeta <br />\| where Timestamp > ago(7d) | TimeGenerated becomes Timestamp |
 | Username  | SigninLogs <br />\| where UserPrincipalName == "reprise@domain.com"  | AADSignInEventsBeta <br />\| where AccountUpn == "reprise99@domain.com" | UserPrincipalName becomes AccountUpn |
 | Account Display Name | SigninLogs <br />\| where UserDisplayName== "Jane Citizen" | AADSignInEventsBeta <br />\| where AccountDisplayName == "Jane Citizen" | UserDisplayName becomes AccountDisplayName
 | Azure AD Object Id | SigninLogs <br />\| where UserId == "33d3f3dd-1e47-4cbd-82dd-93e17e0107f2" | AADSignInEventsBeta <br />\| where AccountObjectId == "33d3f3dd-1e47-4cbd-82dd-93e17e0107f2" | UserId becomes AccountObjectId
