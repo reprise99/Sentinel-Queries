@@ -42,14 +42,14 @@ AADSignInEventsBeta
 
 Differences in schema are noted below.
 
-| Field Description | Sentinel Example | Advanced Hunting Example | Notes |
+| Field Description | Sentinel Example | Advanced Hunting Example  | Notes |
 | -------------   | ---------- | -----------| ----- |
 | Time  | SigninLogs \| where TimeGenerated > ago (7d)| AADSignInEventsBeta \| where Timestamp > ago(7d) | TimeGenerated becomes Timestamp
 | Username  | SigninLogs \| where UserPrincipalName == "reprise@domain.com"  | AADSignInEventsBeta \| where AccountUpn == "reprise99@domain.com" | UserPrincipalName becomes AccountUpn |
 | Account Display Name | SigninLogs \| where UserDisplayName== "Jane Citizen" | AADSignInEventsBeta \| where AccountDisplayName == "Jane Citizen" | UserDisplayName becomes AccountDisplayName
 | Azure AD Object Id | SigninLogs \| where UserId == "33d3f3dd-1e47-4cbd-82dd-93e17e0107f2" | AADSignInEventsBeta \| where AccountObjectId == "33d3f3dd-1e47-4cbd-82dd-93e17e0107f2" | UserId becomes AccountObjectId
 | Application Name | SigninLogs \| where AppDisplayName == "Microsoft Teams" | AADSignInEventsBeta \| where Application == "Microsoft Teams" | AppDisplayName becomes Application
-| Application Id | SigninLogs \| where AppId == "00000002-0000-0ff1-ce00-000000000000" | AADSignInEventsBeta \| where ApplicationId == "00000002-0000-0ff1-ce00-000000000000" | AppId becomes ApplicationId
+| Application Id | SigninLogs \| where AppId == "00000002-0000-0ff1-ce00-000000000000" | AADSignInEventsBeta \| where ApplicationId == "00000002-0000-0ff1-ce00-000000000000" &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; | AppId becomes ApplicationId
 | Guest User | SigninLogs \| where UserType == "Guest" | AADSignInEventsBeta \| where IsGuestUser == "1" | UserType = guest becomes IsGuestUser = 1
 | Status | SigninLogs \| where ResultType == "50126" | AADSignInEventsBeta \| where ErrorCode == "50126" | ResultType becomes ErrorCode
 | Conditional Access Status | SigninLogs \| where ConditionalAccessStatus == "success" | AADSignInEventsBeta \| where ConditionalAccessStatus == "0" | Sentinel uses strings vs advanced hunting numbers. success = 0, failure = 1, notApplied = 2
