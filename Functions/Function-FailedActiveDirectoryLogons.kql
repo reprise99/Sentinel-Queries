@@ -1,0 +1,40 @@
+// Save as a function in your workspace then invoke via its name, i.e if you save as ADFailedLogons
+// ADFailedLogons | where TimeGenerated > ago(30d) | where Account == "DOMAIN\username" // will find logon failures by that user
+// ADFailedLogons | where TimeGenerated > ago(30d) | where ResultReason == "User logon with expired password" // will find logon failures from accounts with expired passwords
+// This will parse the SecurityEvent log for logon failures and add the descriptive reason.
+SecurityEvent
+| where EventID == "4625"
+| extend ResultReason = case(
+    Status == "0xc000005e", strcat("There are currently no logon servers available to service the logon request"),
+    Status == "0xc0000064", strcat("User logon with misspelled or bad user account"),
+    Status == "0xc000006a", strcat("User logon with misspelled or bad password"),
+    Status == "0xc000006d", strcat("The cause is either a bad username or authentication information"),
+    Status == "0xc000006e", strcat("Indicates a referenced user name and authentication information are valid, but some user account restriction has prevented successful authentication (such as time-of-day restrictions)"),
+    Status == "0xc000006f", strcat("User logon outside authorized hours"),
+    Status == "0xc0000070", strcat("User logon from unauthorized workstation"),
+    Status == "0xc0000071", strcat("User logon with expired password"),
+    Status == "0xc0000072", strcat("User logon to account disabled by administrator"),
+    Status == "0xc000018b", strcat("Security database on the server does not have a computer account for this workstation trust relationship"),
+    Status == "0xc00000dc", strcat("Indicates the Sam Server was in the wrong state to perform the desired operation"),
+    Status == "0xc0000133", strcat("Clocks between DC and other computer too far out of sync"),
+    Status == "0xc000015b", strcat("The user has not been granted the requested logon type (also called the logon right) at this machine"),
+    Status == "0xc000018c", strcat("The logon request failed because the trust relationship between the primary domain and the trusted domain failed"),
+    Status == "0xc0000192", strcat("An attempt was made to logon, but the Netlogon service was not started"),
+    Status == "0xc0000193", strcat("User logon with expired account"),
+    Status == "0xc0000224", strcat("User is required to change password at next logon"),
+    Status == "0xc0000225", strcat("Evidently a bug in Windows and not a risk"),
+    Status == "0xc0000234", strcat("User logon with account locked"),
+    Status == "0xc000015a", strcat("During a logon attempt, the user's security context accumulated too many security IDs"),
+    Status == "0xc00002ee", strcat("Failure Reason: An Error occurred during Logon"),
+    Status == "0xc0000413", strcat("Logon Failure: The machine you are logging on to is protected by an authentication firewall. The specified account is not allowed to authenticate to the machine"),
+    Status == "0x0", strcat("Status OK"),
+    "unknown")
+| project
+    TimeGenerated,
+    Status,
+    ResultReason,
+    Account,
+    AccountType,
+    Computer,
+    AuthenticationPackageName,
+    IpAddress
