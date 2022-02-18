@@ -1,0 +1,20 @@
+//Visualize the difference been total and distinct user sign ins to an app per day
+//Microsoft Sentinel query
+SigninLogs
+| where TimeGenerated > ago(90d)
+| where AppDisplayName == "Office 365 Exchange Online"
+| where ResultType == 0
+| summarize ['Total Signins']=count(), ['Distinct user signins']=dcount(UserPrincipalName) by bin(TimeGenerated, 1d)
+| render timechart
+    with (
+    title="Total vs Distinct signins to Exchange Online",
+    xtitle="Day",
+    ytitle="Count")
+
+//Advanced Hunting query
+AADSignInEventsBeta
+| where Timestamp > ago(90d)
+| where Application == "Office 365 Exchange Online"
+| where ErrorCode == 0
+| summarize ['Total Signins']=count(), ['Distinct user signins']=dcount(AccountUpn) by bin(Timestamp, 1d)
+| render timechart
