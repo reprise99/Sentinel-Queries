@@ -1,0 +1,12 @@
+//Create a daily summary of Azure Active Directory group additions
+let timerange=7d;
+AuditLogs
+| where TimeGenerated > ago (timerange)
+| where OperationName == "Add member to group"
+| extend Type = tostring(TargetResources[0].type)
+| where Type == "User"
+| extend GroupName = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[1].newValue)))
+| extend UserAdded = tostring(TargetResources[0].userPrincipalName)
+| where isnotempty(UserAdded)
+| summarize GroupAdditions=make_set(UserAdded) by GroupName, startofday(TimeGenerated)
+| sort by GroupName asc, TimeGenerated desc 
