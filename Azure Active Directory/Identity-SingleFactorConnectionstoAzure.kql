@@ -1,0 +1,21 @@
+//Find any single factor sign ins to Azure resources such as the Azure portal
+//Microsoft Sentinel query
+SigninLogs
+| where TimeGenerated > ago(7d)
+| where AppDisplayName has "Azure"
+| where ResultType == 0
+| where AuthenticationRequirement == "singleFactorAuthentication"
+| summarize ['Single Factor Authentications']=make_set(UserPrincipalName) by AppDisplayName
+| extend ['User Count'] = array_length(['Single Factor Authentications'])
+| order by ['User Count'] desc
+
+//Advanced Hunting query
+AADSignInEventsBeta
+| where Timestamp > ago(7d)
+| where Application has "Azure"
+| where ErrorCode == 0
+| where LogonType == @"[""interactiveUser""]"
+| where AuthenticationRequirement == "singleFactorAuthentication"
+| summarize ['Single Factor Authentications']=make_set(AccountUpn) by Application
+| extend ['User Count'] = array_length(['Single Factor Authentications'])
+| order by ['User Count'] desc
