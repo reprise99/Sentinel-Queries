@@ -2,9 +2,9 @@
 let timerange = 7d;
 SecurityEvent
 | where TimeGenerated > ago (timerange)
-| where EventID in ("4728", "4732", "4756", "4761", "4746", "4751")
 | where AccountType == "User"
-| parse-where kind = regex flags=i EventData with * '"MemberName">CN=' UserAdded ',' *
-| project TimeGenerated, Group=TargetAccount, UserAdded
-| summarize GroupAdditions=make_list(UserAdded) by Group, startofday(TimeGenerated)
-| order by Group asc, TimeGenerated desc 
+| project TimeGenerated, MemberName, GroupName=TargetUserName, EventID
+| where EventID in (4728, 4732, 4756, 4761, 4746, 4751)
+| parse MemberName with * 'CN=' UserAdded ',' *
+| summarize UsersAdded=make_set(UserAdded) by GroupName, startofday(TimeGenerated)
+| sort by GroupName asc, TimeGenerated desc 
