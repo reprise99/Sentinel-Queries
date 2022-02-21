@@ -1,0 +1,22 @@
+//Visualize the most blocked domains sending email inbound to your users
+//Microsoft Sentinel query
+EmailEvents
+| where TimeGenerated > ago (7d)
+| where EmailDirection == "Inbound"
+| where DeliveryAction == "Blocked"
+| extend Domain = tostring(split(SenderMailFromAddress, "@")[-1])
+| summarize BlockedCount=count()by Domain
+| where isnotempty(Domain)
+| sort by BlockedCount desc
+| render piechart 
+
+//Advanced Hunting query
+EmailEvents
+| where Timestamp > ago (7d)
+| where EmailDirection == "Inbound"
+| where DeliveryAction == "Blocked"
+| extend Domain = tostring(split(SenderMailFromAddress, "@")[-1])
+| summarize BlockedCount=count()by Domain
+| where isnotempty(Domain)
+| sort by BlockedCount desc
+| render piechart 
