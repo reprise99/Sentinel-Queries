@@ -1,0 +1,10 @@
+//Find Azure AD applications that have had no signins for over 30 days. May be a sign of an app no longer in use or users bypassing SSO.
+SigninLogs
+| where TimeGenerated > ago (365d)
+| where ResultType == 0
+| summarize arg_max(TimeGenerated, *) by AppId
+| project
+    AppDisplayName,
+    ['Last Logon Time']=TimeGenerated,
+    ['Days Since Last Logon']=datetime_diff("day", now(), TimeGenerated)
+| where ['Days Since Last Logon'] > 30
