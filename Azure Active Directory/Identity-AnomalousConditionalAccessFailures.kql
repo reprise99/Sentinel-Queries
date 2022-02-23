@@ -1,0 +1,28 @@
+//Detect anomalies in the amount of conditional access failures by users in your tenant, then visualize those conditional access failures
+//Starttime and endtime = which period of data to look at, i.e from 21 days ago until today.
+let startdate=21d;
+let enddate=1d;
+//Timeframe = time period to break the data up into, i.e 1 hour blocks.
+let timeframe=1h;
+//Sensitivity = the lower the number the more sensitive the anomaly detection is, i.e it will find more anomalies, default is 1.5
+let sensitivity=2;
+//Threshold = set this to tune out low count anomalies, i.e when total failures for a user doubles from 1 to 2
+let threshold=5;
+let outlierusers=
+SigninLogs
+| where TimeGenerated between (startofday(ago(startdate))..startofday(ago(enddate)))
+| where ResultType == "53003"
+| project TimeGenerated, ResultType, UserPrincipalName
+| make-series CAFailureCount=count() on TimeGenerated from startofday(ago(startdate)) to startofday(ago(enddate)) step timeframe by UserPrincipalName 
+| extend outliers=series_decompose_anomalies(CAFailureCount, sensitivity)
+| mv-expand TimeGenerated, CAFailureCount, outliers
+| where outliers == 1 and CAFailureCount > threshold
+| distinct UserPrincipalName;
+//Optiionally visualize the anomalies
+SigninLogs
+| where TimeGenerated between (startofday(ago(startdate))..startofday(ago(enddate)))
+| where ResultType == "53003"
+| project TimeGenerated, ResultType, UserPrincipalName
+| where UserPrincipalName in (outlierusers)
+| summarize CAFailures=count()by UserPrincipalName, bin(TimeGenerated, timeframe)
+| render timechart with (ytitle="Failure Count",title="Anomalous Conditional Access Failures")
