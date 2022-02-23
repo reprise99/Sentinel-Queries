@@ -18,7 +18,7 @@ SigninLogs
 | mv-expand TimeGenerated, CAFailureCount, outliers
 | where outliers == 1 and CAFailureCount > threshold
 | distinct UserPrincipalName;
-//Optiionally visualize the anomalies
+//Optionally visualize the anomalies
 SigninLogs
 | where TimeGenerated between (startofday(ago(startdate))..startofday(ago(enddate)))
 | where ResultType == "53003"
