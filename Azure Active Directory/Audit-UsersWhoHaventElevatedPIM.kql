@@ -1,0 +1,12 @@
+//Find users who have not elevated any roles in Azure AD PIM in 30 days
+AuditLogs
+| where TimeGenerated > ago (365d)
+| project TimeGenerated, OperationName, Result, TargetResources, InitiatedBy
+| where OperationName == "Add member to role completed (PIM activation)"
+| where Result == "success"
+| extend ['Last Role Activated'] = tostring(TargetResources[0].displayName)
+| extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| summarize arg_max(TimeGenerated, *) by Actor
+| project Actor, ['Last Role Activated'], ['Last Activation Time']=TimeGenerated, ['Days Since Last Activation']=datetime_diff("day", now(), TimeGenerated)
+| where ['Days Since Last Activation'] >= 30
+| sort by ['Days Since Last Activation'] desc
