@@ -1,0 +1,38 @@
+//Identifies potential DNS tunnelling over HTTPS 
+//Microsoft Sentinel query
+DeviceNetworkEvents
+| where ActionType == "NetworkSignatureInspected"
+| extend AF = parse_json(AdditionalFields)
+| extend NetworkSignature = AF.SignatureName
+//Search for network signatures that are DNS but not on regular DNS ports including Netbios & LLMNR if those are in use
+| where NetworkSignature == "DNS_Request" and RemotePort !in ("53", "137", "5353", "5355")
+//Exclude traffic where the remote IP is a private/local IP address, you can remove this if also interested in that traffic
+| where not(ipv4_is_private(RemoteIP))
+| project
+    TimeGenerated,
+    DeviceName,
+    NetworkSignature,
+    LocalIP,
+    LocalPort,
+    RemoteIP,
+    RemotePort,
+    RemoteUrl
+
+//Advanced Hunting query
+DeviceNetworkEvents
+| where ActionType == "NetworkSignatureInspected"
+| extend AF = parse_json(AdditionalFields)
+| extend NetworkSignature = AF.SignatureName
+//Search for network signatures that are DNS but not on regular DNS ports including Netbios & LLMNR if those are in use
+| where NetworkSignature == "DNS_Request" and RemotePort !in ("53", "137", "5353", "5355")
+//Exclude traffic where the remote IP is a private/local IP address, you can remove this if also interested in that traffic
+| where not(ipv4_is_private(RemoteIP))
+| project
+    Timestamp,
+    DeviceName,
+    NetworkSignature,
+    LocalIP,
+    LocalPort,
+    RemoteIP,
+    RemotePort,
+    RemoteUrl
