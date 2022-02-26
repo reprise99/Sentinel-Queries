@@ -1,0 +1,20 @@
+//Detect when a resource lock is added or removed from an Azure resource
+AzureActivity
+| where OperationNameValue in ("MICROSOFT.AUTHORIZATION/LOCKS/WRITE", "MICROSOFT.AUTHORIZATION/LOCKS/DELETE")
+| where ActivityStatusValue == "Success"
+| extend Activity = case(OperationNameValue == "MICROSOFT.AUTHORIZATION/LOCKS/WRITE", strcat("Resource Lock Added"),
+    OperationNameValue == "MICROSOFT.AUTHORIZATION/LOCKS/DELETE", strcat("Resource Lock Removed"),
+    "unknown")
+| extend ResourceGroup = tostring(parse_json(Properties).resourceGroup)
+| extend AzureResource = tostring(parse_json(Properties).resourceProviderValue)
+| extend x = tostring(parse_json(Properties).resource)
+| parse x with ResourceName "/" *
+| parse x with * "microsoft.authorization/" LockName
+| project
+    TimeGenerated,
+    Activity,
+    ResourceName,
+    AzureResource,
+    SubscriptionId,
+    ResourceGroup,
+    LockName
