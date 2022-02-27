@@ -1,0 +1,12 @@
+//Finds encoded PowerShell commands and then decodes the encoded string
+//Query modified from this post - https://techcommunity.microsoft.com/t5/microsoft-sentinel/finding-base64-encoded-commands/m-p/1891876
+DeviceProcessEvents
+| where ProcessCommandLine contains "powershell" or InitiatingProcessCommandLine contains "powershell"
+| where ProcessCommandLine contains "-enc" or ProcessCommandLine contains "-encodedcommand" or InitiatingProcessCommandLine contains "-enc" or InitiatingProcessCommandLine contains "-encodedcommand"
+//Extract encoded command using regex
+//This query will only return results when the command can be matched via regex and decoded, if you run only the above lines it will return all encoded commands without attempting to match and decode
+| extend EncodedCommand = extract(@'\s+([A-Za-z0-9+/]{20}\S+$)', 1, ProcessCommandLine)
+| where EncodedCommand != ""
+| extend DecodedCommand = base64_decode_tostring(EncodedCommand)
+| where DecodedCommand != ""
+| project TimeGenerated, DeviceName, InitiatingProcessAccountName, InitiatingProcessCommandLine, ProcessCommandLine, EncodedCommand, DecodedCommand
