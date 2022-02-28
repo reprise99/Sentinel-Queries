@@ -1,0 +1,23 @@
+//Visualize distinct users allowed to connect via legacy auth vs blocked by conditional access
+//Microsoft Sentinel query
+SigninLogs
+| where TimeGenerated > ago(180d)
+| where ResultType in ("0", "53003")
+| where ClientAppUsed in ("Exchange ActiveSync", "Exchange Web Services", "AutoDiscover", "Unknown", "POP3", "IMAP4", "Other clients", "Authenticated SMTP", "MAPI Over HTTP", "Offline Address Book")
+| summarize
+    ['Legacy Auth Users Allowed']=dcountif(UserPrincipalName, ResultType == 0),
+    ['Legacy Auth Users Blocked']=dcountif(UserPrincipalName, ResultType == 53003)
+    by bin(TimeGenerated, 1d)
+| render timechart with (title="Legacy auth distinct users allowed vs blocked by Conditional Access")
+
+//Advanced Hunting query
+//Visualize distinct users allowed to connect via legacy auth vs blocked by conditional access
+AADSignInEventsBeta
+| where Timestamp > ago(180d)
+| where ErrorCode  in ("0", "53003")
+| where ClientAppUsed in ("Exchange ActiveSync", "Exchange Web Services", "AutoDiscover", "Unknown", "POP3", "IMAP4", "Other clients", "Authenticated SMTP", "MAPI Over HTTP", "Offline Address Book")
+| summarize
+    ['Legacy Auth Users Allowed']=dcountif(AccountUpn, ErrorCode == 0),
+    ['Legacy Auth Users Blocked']=dcountif(AccountUpn, ErrorCode == 53003)
+    by bin(Timestamp, 1d)
+| render timechart 
