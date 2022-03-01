@@ -19,4 +19,4 @@ SecurityAlert
     SecurityGroups=make_set(Group),
     Resources=make_set(ResourceId),
     TimeAccessed=make_set(Time)
-    by SystemAlertId, AlertName, Description
+    by TimeGenerated, SystemAlertId, AlertName, Description
