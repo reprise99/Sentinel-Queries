@@ -1,0 +1,24 @@
+//Visualize the different RDP clients, such as rMemoteNG or RoyalTS being used in your environment
+//Microsoft Sentinel query
+DeviceNetworkEvents
+| where TimeGenerated > ago(7d)
+| where ActionType == "ConnectionSuccess"
+| where RemotePort == "3389"
+//Exclude Defender for Identity which uses RDP traffic to map your network
+| where InitiatingProcessFileName != "Microsoft.Tri.Sensor.exe"
+| summarize ['RDP Client Count']=count()by InitiatingProcessFileName
+| where isnotempty(InitiatingProcessFileName)
+| sort by ['RDP Client Count'] desc
+| render piechart 
+
+//Advanced Hunting query
+DeviceNetworkEvents
+| where Timestamp > ago(7d)
+| where ActionType == "ConnectionSuccess"
+| where RemotePort == "3389"
+//Exclude Defender for Identity which uses RDP traffic to map your network
+| where InitiatingProcessFileName != "Microsoft.Tri.Sensor.exe"
+| summarize ['RDP Client Count']=count()by InitiatingProcessFileName
+| where isnotempty(InitiatingProcessFileName)
+| sort by ['RDP Client Count'] desc
+| render piechart 
