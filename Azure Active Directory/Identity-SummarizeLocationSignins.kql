@@ -24,7 +24,7 @@ let failureCodes = dynamic([50053, 50126, 50055]);
 let successCodes = dynamic([0, 50055, 50057, 50155, 50105, 50133, 50005, 50076, 50079, 50173, 50158, 50072, 50074, 53003, 53000, 53001, 50129]);
 AADSignInEventsBeta
 | where Timestamp > ago(7d)
-//Choose a country code, you could do multiples with | where Location in ("AU","US")
+//Choose a country code, you could do multiples with | where Country in ("AU","US")
 | where Country == "RU"
 | extend ['Full Location'] = strcat(Country, '|', State, '|', City)
 | where ErrorCode in(successCodes) or ErrorCode in(failureCodes)
