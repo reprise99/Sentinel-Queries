@@ -1,0 +1,23 @@
+//Summarize the domain names, the count of users and list of users for each guest tenant connecting to your Azure AD tenant
+SigninLogs
+| where TimeGenerated > ago (30d)
+| project
+    TimeGenerated,
+    UserPrincipalName,
+    HomeTenantId,
+    AADTenantId,
+    Id,
+    ResourceTenantId,
+    ResourceIdentity,
+    UserId
+| where UserId != "00000000-0000-0000-0000-000000000000"
+| where ResourceIdentity != ''
+| where HomeTenantId != ''
+| where HomeTenantId != AADTenantId
+| extend GuestDomain = split(UserPrincipalName, '@')[-1]
+| summarize
+    ['Guest Domain Names']=make_set(GuestDomain),
+    ['Distinct User Count']=dcount(UserPrincipalName),
+    ['List of Guest Users']=make_set(UserPrincipalName)
+    by HomeTenantId
+| sort by ['Distinct User Count'] desc 
