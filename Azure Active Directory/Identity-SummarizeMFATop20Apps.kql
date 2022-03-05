@@ -1,0 +1,52 @@
+//Summarize the percentage of signins covered by MFA for your top 20 most popular Azure AD apps
+//Microsoft Sentinel query
+//First create a list of your top 20 apps by finding distinct user count by application over 30 days
+let top20apps=
+    SigninLogs
+    | where TimeGenerated > ago (30d)
+    | summarize UserCount=dcount(UserPrincipalName)by AppDisplayName
+    | sort by UserCount desc 
+    | take 20
+    | project AppDisplayName;
+//Use that list to calculate the percentage of signins to those apps that are covered by MFA
+SigninLogs
+| where TimeGenerated > ago (30d)
+| where AppDisplayName in (top20apps)
+| summarize TotalCount=count(),
+    MFACount=countif(AuthenticationRequirement == "multiFactorAuthentication"),
+    nonMFACount=countif(AuthenticationRequirement == "singleFactorAuthentication")
+    by AppDisplayName
+| project
+    AppDisplayName,
+    TotalCount,
+    MFACount,
+    nonMFACount,
+    MFAPercentage=(todouble(MFACount) * 100 / todouble(TotalCount))
+| sort by MFAPercentage asc  
+
+//Advanced Hunting query
+//First create a list of your top 20 apps by finding distinct user count by application over 30 days
+let top20apps=
+    AADSignInEventsBeta
+    | where Timestamp > ago (30d)
+    | where LogonType == @"[""interactiveUser""]"
+    | summarize UserCount=dcount(AccountUpn)by Application
+    | sort by UserCount desc 
+    | take 20
+    | project Application;
+//Use that list to calculate the percentage of signins to those apps that are covered by MFA
+AADSignInEventsBeta
+| where Timestamp > ago (30d)
+| where LogonType == @"[""interactiveUser""]"
+| where Application in (top20apps)
+| summarize TotalCount=count(),
+    MFACount=countif(AuthenticationRequirement == "multiFactorAuthentication"),
+    nonMFACount=countif(AuthenticationRequirement == "singleFactorAuthentication")
+    by Application
+| project
+    Application,
+    TotalCount,
+    MFACount,
+    nonMFACount,
+    MFAPercentage=(todouble(MFACount) * 100 / todouble(TotalCount))
+| sort by MFAPercentage asc  
