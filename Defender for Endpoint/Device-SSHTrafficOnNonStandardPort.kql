@@ -1,4 +1,4 @@
-//Detect SSH traffic that isn't on port 22 connecting to remote IP addresses
+//Detect SSH traffic that isn't on port 22 connecting to public IP addresses
 //Microosft Sentinel query
 DeviceNetworkEvents
 | where ActionType == "NetworkSignatureInspected"
