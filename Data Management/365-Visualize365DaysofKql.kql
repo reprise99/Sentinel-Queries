@@ -1,0 +1,5 @@
+//Visualize the breakdown of 365 days of KQL
+externaldata(Category: string, Count: int)
+[
+h@'https://gist.githubusercontent.com/reprise99/12487ffefee2c2c417e2706150e25b8e/raw/0679cbb29e43e370c7304bb9b3d0007042a8ad52/365daysofkql.csv'
+] | sort by Count desc | render piechart 
