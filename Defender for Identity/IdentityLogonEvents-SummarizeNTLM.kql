@@ -1,0 +1,18 @@
+//Summarize NTLM authentications by which source computers & accounts are connecting to the most destination devices
+//Microsoft Sentinel query
+IdentityLogonEvents
+| where TimeGenerated > ago(7d)
+| where ActionType == "LogonSuccess"
+| where Protocol == "Ntlm"
+| where LogonType == "Credentials validation"
+| summarize ['Target Device List']=make_set(DestinationDeviceName), ['Target Device Count']=dcount(DestinationDeviceName) by DeviceName, AccountName
+| sort by ['Target Device Count'] desc 
+
+//Advanced Hunting query
+IdentityLogonEvents
+| where Timestamp > ago(7d)
+| where ActionType == "LogonSuccess"
+| where Protocol == "Ntlm"
+| where LogonType == "Credentials validation"
+| summarize ['Target Device List']=make_set(DestinationDeviceName), ['Target Device Count']=dcount(DestinationDeviceName) by DeviceName, AccountName
+| sort by ['Target Device Count'] desc 
