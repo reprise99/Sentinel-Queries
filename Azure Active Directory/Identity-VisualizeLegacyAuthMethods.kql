@@ -1,0 +1,16 @@
+//Visualize legacy auth method (i.e Activesync, IMAP etc) by distinct user count over time
+//Microsoft Sentinel query
+SigninLogs
+| where TimeGenerated > ago(90d)
+| where ResultType == 0
+| where ClientAppUsed in ("Exchange ActiveSync", "Exchange Web Services", "AutoDiscover", "Unknown", "POP3", "IMAP4", "Other clients", "Authenticated SMTP", "MAPI Over HTTP", "Offline Address Book")
+| summarize Count=dcount(UserPrincipalName) by ClientAppUsed, bin (TimeGenerated, 1d)
+| render timechart with (title="Legacy auth methods by distinct user over time")
+
+//Advanced Hunting query
+AADSignInEventsBeta
+| where Timestamp > ago(30d)
+| where ErrorCode == 0
+| where ClientAppUsed in ("Exchange ActiveSync", "Exchange Web Services", "AutoDiscover", "Unknown", "POP3", "IMAP4", "Other clients", "Authenticated SMTP", "MAPI Over HTTP", "Offline Address Book")
+| summarize Count=dcount(AccountUpn) by ClientAppUsed, bin (Timestamp, 1d)
+| render timechart
