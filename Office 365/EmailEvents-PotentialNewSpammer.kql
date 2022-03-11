@@ -1,0 +1,43 @@
+//Find senders that are potentially spamming your users for the first time. Useful at detecting business email compromise from partner companies.
+//Set a threshold of the same email being received within a 10 minute period
+//Microsoft Sentinel query
+let threshold = 500;
+//First create a list of sender addresses that have previously sent you bulk email, hopefully this will let us exclude corporate communications and newsletters etc
+let knownbulkemail=
+    EmailEvents
+    | where TimeGenerated > ago(30d) and TimeGenerated < ago (1d)
+    | project TimeGenerated, EmailDirection, DeliveryAction, RecipientEmailAddress, SenderFromAddress, Subject
+    | where EmailDirection == "Inbound"
+    | where DeliveryAction == "Delivered"
+    | summarize RecipientCount=dcount(RecipientEmailAddress) by SenderFromAddress, Subject, bin(TimeGenerated, 10m)
+    | where RecipientCount > threshold
+    | distinct SenderFromAddress;
+//Look in the last hour for any new senders that have sent over the threshold in a 10 minute period
+EmailEvents
+| where TimeGenerated > ago(1d)
+| project TimeGenerated, EmailDirection, DeliveryAction, RecipientEmailAddress, SenderFromAddress, Subject
+| where EmailDirection == "Inbound"
+| where DeliveryAction == "Delivered"
+| summarize RecipientCount=dcount(RecipientEmailAddress) by SenderFromAddress, Subject, bin(TimeGenerated, 10m)
+| where SenderFromAddress !in (knownbulkemail) and RecipientCount > threshold
+
+//Advanced Hunting query
+let threshold = 500;
+//First create a list of sender addresses that have previously sent you bulk email, hopefully this will let us exclude corporate communications and newsletters etc
+let knownbulkemail=
+    EmailEvents
+    | where Timestamp > ago(30d) and Timestamp < ago (1d)
+    | project Timestamp, EmailDirection, DeliveryAction, RecipientEmailAddress, SenderFromAddress, Subject
+    | where EmailDirection == "Inbound"
+    | where DeliveryAction == "Delivered"
+    | summarize RecipientCount=dcount(RecipientEmailAddress) by SenderFromAddress, Subject, bin(Timestamp, 10m)
+    | where RecipientCount > threshold
+    | distinct SenderFromAddress;
+//Look in the last hour for any new senders that have sent over the threshold in a 10 minute period
+EmailEvents
+| where Timestamp > ago(1d)
+| project Timestamp, EmailDirection, DeliveryAction, RecipientEmailAddress, SenderFromAddress, Subject
+| where EmailDirection == "Inbound"
+| where DeliveryAction == "Delivered"
+| summarize RecipientCount=dcount(RecipientEmailAddress) by SenderFromAddress, Subject, bin(Timestamp, 10m)
+| where SenderFromAddress !in (knownbulkemail) and RecipientCount > threshold
