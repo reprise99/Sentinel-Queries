@@ -1,0 +1,28 @@
+//Find which of your accounts have logged onto the most devices with local admin credentials. These accounts are potential targets for lateral movement and privilege escalation
+//Microsoft Sentinel query
+DeviceLogonEvents
+| where TimeGenerated > ago(30d)
+| project DeviceName, ActionType, LogonType, AdditionalFields, InitiatingProcessCommandLine, AccountName, IsLocalAdmin
+| where ActionType == "LogonSuccess"
+| where LogonType == "Interactive"
+| where AdditionalFields.IsLocalLogon == true
+| where InitiatingProcessCommandLine == "lsass.exe"
+| summarize
+    ['Local Admin Count']=dcountif(DeviceName,IsLocalAdmin == "true"),
+    ['Local Admins']=make_set_if(DeviceName, IsLocalAdmin == "true")
+    by AccountName
+| sort by ['Local Admin Count'] desc  
+
+//Advanced Hunting query
+DeviceLogonEvents
+| where Timestamp > ago(30d)
+| project DeviceName, ActionType, LogonType, AdditionalFields, InitiatingProcessCommandLine, AccountName, IsLocalAdmin
+| where ActionType == "LogonSuccess"
+| where LogonType == "Interactive"
+| where IsLocalAdmin == true
+| where InitiatingProcessCommandLine == "lsass.exe"
+| summarize
+    ['Local Admin Count']=dcountif(DeviceName,IsLocalAdmin == "true"),
+    ['Local Admins']=make_set_if(DeviceName, IsLocalAdmin == "true")
+    by AccountName
+| sort by ['Local Admin Count'] desc  
