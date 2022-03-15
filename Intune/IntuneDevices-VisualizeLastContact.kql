@@ -1,0 +1,14 @@
+//Visualize when your devices last contacted Intune
+IntuneDevices
+| where TimeGenerated > ago(90d)
+| where isnotempty(LastContact)
+//Retrieve latest record for each DeviceId
+| summarize arg_max(TimeGenerated, *) by DeviceId
+//Convert string to datetime format
+| extend LastContactTime = todatetime(LastContact)
+| project DeviceId, LastContactTime
+//Exclude devices reporting as 0001-01-01
+| where LastContactTime <> todatetime('0001-01-01T00:00:00Z')
+//Group by month and render chart
+| summarize ['Device Count']=count()by startofmonth(LastContactTime)
+| render columnchart with (title="Intune devices by last contact time", xtitle="Month")
