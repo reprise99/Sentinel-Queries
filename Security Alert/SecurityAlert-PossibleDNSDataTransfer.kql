@@ -1,0 +1,14 @@
+//When Defender for Cloud detects possible data transfer via DNS tunnel, use DNS logs to find any other devices that have queried the potentially malicious domain
+let maliciousdomain=
+    SecurityAlert
+    | where AlertName contains "via DNS tunnel"
+    | mv-expand todynamic(Entities)
+    | project Entities
+    | extend MaliciousDomain = tostring(Entities.DomainName)
+    | where isnotempty(MaliciousDomain)
+    | distinct MaliciousDomain;
+DnsEvents
+| where QueryType == "A"
+| project Name, ClientIP
+| where Name in~ (maliciousdomain)
+| summarize ['List of Device IPs']=make_set(ClientIP) by Name
