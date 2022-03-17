@@ -1,0 +1,13 @@
+//Find any of your Teams that have had guests added to them in the last week and arrange by the Teams with the most guests added.
+OfficeActivity
+| where TimeGenerated > ago(7d)
+| where Operation == "MemberAdded"
+| mv-expand Members
+| extend UserAdded = tostring(Members.UPN)
+| where UserAdded contains "#EXT#"
+| where CommunicationType == "Team"
+| summarize
+    ['Number of Guests Added']=dcount(UserAdded),
+    ['List of Guests Added']=make_set(UserAdded)
+    by TeamName
+| sort by ['Number of Guests Added'] desc 
