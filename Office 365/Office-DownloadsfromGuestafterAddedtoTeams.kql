@@ -13,6 +13,7 @@ OfficeActivity
 | join kind=inner
     (
     OfficeActivity
+    | where TimeGenerated > ago(starttime)
     | where Operation in (['operations'])
     )
     on UserId
