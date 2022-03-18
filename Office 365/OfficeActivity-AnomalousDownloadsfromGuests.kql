@@ -1,0 +1,28 @@
+//Detect anomalies in the amount of downloads from your Office 365 tenant by guest accounts.
+//Starttime and endtime = which period of data to look at, i.e from 21 days ago until today.
+let startdate=21d;
+let enddate=1d;
+//Timeframe = time period to break the data up into, i.e 1 hour blocks.
+let timeframe=1h;
+//Sensitivity = the lower the number the more sensitive the anomaly detection is, i.e it will find more anomalies, default is 1.5
+let sensitivity=2;
+//Threshold = set this to tune out low count anomalies, i.e when total downloads are only over 300 per hour
+let threshold=300;
+let outlierusers=
+OfficeActivity
+| where TimeGenerated between (startofday(ago(startdate))..startofday(ago(enddate)))
+| where Operation in ("FileSyncDownloadedFull","FileDownloaded")
+| where UserId contains "#EXT#"
+| make-series GuestDownloads=count() on TimeGenerated from startofday(ago(startdate)) to startofday(ago(enddate)) step timeframe by UserId
+| extend outliers=series_decompose_anomalies(GuestDownloads, sensitivity)
+| mv-expand TimeGenerated, GuestDownloads, outliers
+| where outliers == 1 and GuestDownloads > threshold
+//Optionally visualize the anomalies - remove everything below this line to just retrieve the data instead of visualizing
+| distinct UserId;
+OfficeActivity
+| where TimeGenerated between (startofday(ago(startdate))..startofday(ago(enddate)))
+| where Operation in ("FileSyncDownloadedFull","FileDownloaded")
+| where UserId contains "#EXT#"
+| where UserId in (outlierusers)
+| make-series GuestDownloads=count() default=0 on TimeGenerated from startofday(ago(startdate)) to startofday(ago(enddate)) step timeframe by UserId 
+| render timechart with (ytitle="Download Count",title="Anomalous Guest Downloads from Office 365")
