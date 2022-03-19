@@ -1,0 +1,14 @@
+//Detect when a guest is added to multiple Teams in a short time frame.
+//Define a time period to check and the threshold of how many Teams to alert on.
+let timeframe=15m;
+let threshold=2;
+OfficeActivity
+| where TimeGenerated > ago(1d)
+| where Operation == "MemberAdded"
+| mv-expand Members
+| extend UserAdded = tostring(Members.UPN)
+| where UserAdded contains "#EXT#"
+| where CommunicationType == "Team"
+| summarize
+    ['Number of Teams Guest Added To']=dcount(TeamName), ['Team Names']=make_set(TeamName) by UserAdded, bin(TimeGenerated, timeframe)
+| where ['Number of Teams Guest Added To'] >= threshold

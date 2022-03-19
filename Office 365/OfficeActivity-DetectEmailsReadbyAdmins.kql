@@ -1,15 +1,15 @@
 //Detects users with global or exchange administrator roles who have accessed email items from mailboxes other than their own
 let timeframe=30d;
+let adminusers=
 IdentityInfo
 | where TimeGenerated > ago(21d)
 | where AssignedRoles has_any ("Exchange Administrator", "Global Administrator")
 | summarize arg_max(TimeGenerated, *) by AccountUPN
-| project UserId=AccountUPN
-| join kind=inner (
+| project UserId=AccountUPN;
 OfficeActivity
 | where TimeGenerated > ago(timeframe)
 | where OfficeWorkload == "Exchange"
-| where Operation == "MailItemsAccessed")
-on UserId
+| where Operation == "MailItemsAccessed"
+| where UserId in (adminusers)
 | where UserId != MailboxOwnerUPN
 | project AccessTime=TimeGenerated, UserId, MailboxOwnerUPN, Folders
