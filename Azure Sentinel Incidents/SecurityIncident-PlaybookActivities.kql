@@ -3,6 +3,9 @@ let timeframe=45d;
 SecurityIncident
 | where TimeGenerated > ago (timeframe)
 | where ModifiedBy startswith "Playbook"
-| summarize PlaybookRuns=count() by ModifiedBy
-| sort by PlaybookRuns desc 
-| render piechart   
+| summarize Count=count() by ModifiedBy
+| sort by Count desc 
+| render barchart
+    with (
+    title="Count of playbooks interacting with Microsoft Sentinel incidents",
+    ytitle="Playbook Name")  
