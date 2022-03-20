@@ -1,10 +1,10 @@
-//Summarize the total count of files downloaded by each guest domain in your tenant
+//Summarize the total count of downloads from Office 365 for each of your guest domains
 OfficeActivity
 | where TimeGenerated > ago(30d)
 | where Operation in ("FileSyncDownloadedFull", "FileDownloaded")
 | where UserId contains "#EXT#"
-| extend ['Guest UserId'] = tostring(split(UserId,"#")[0])
-| extend ['Guest Domain'] = tostring(split(['Guest UserId'],"_")[-1])
+| extend ['Guest UserPrincipalName'] = tostring(split(UserId,"#")[0])
+| extend ['Guest Domain'] = tostring(split(['Guest UserPrincipalName'],"_")[-1])
 | project ['Guest Domain']
 | summarize ['Download Count']=count()by ['Guest Domain']
 | sort by ['Download Count'] desc 
