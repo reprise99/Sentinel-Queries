@@ -1,0 +1,20 @@
+//Visualize total guests redeemed in Azure AD vs guests that have been added to a Team
+let guestsredeemed=
+    AuditLogs
+    | where TimeGenerated > ago (90d)
+    | where OperationName == "Redeem external user invite"
+    | extend GuestRedeemed = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+    | extend Activity = strcat("Guest Invite Redeemed")
+    | project TimeGenerated, GuestRedeemed, Activity;
+let guestsaddedtoteams=
+    OfficeActivity
+    | where TimeGenerated > ago(90d)
+    | where Operation == "MemberAdded"
+    | mv-expand Members
+    | extend GuestAdded = tostring(Members.UPN)
+    | where GuestAdded contains "#EXT#"
+    | extend Activity = strcat("Guest Added to Team")
+    | project TimeGenerated, GuestAdded, Activity;
+union guestsredeemed, guestsaddedtoteams
+| summarize ['Total Count']=count() by Activity, bin(TimeGenerated, 1d)
+| render columnchart with (kind=unstacked, title="Total Guests Redeemed vs Guests Added to Teams")
