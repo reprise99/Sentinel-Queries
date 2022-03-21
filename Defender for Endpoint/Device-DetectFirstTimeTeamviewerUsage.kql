@@ -1,24 +1,20 @@
-//Detects first time internal to external Teamviewer access not seen for the previous timeframe
-let timeframe = startofday(ago(60d));
+//Detects Teamviewer being used for the first time on a device
+//Build a list of known devices using Teamviewer over the last 60 days
+let knowndevices=
 DeviceNetworkEvents
-| where TimeGenerated > timeframe and TimeGenerated < startofday(now())
+| where TimeGenerated > ago(60d) and TimeGenerated < ago(1d)
+| project DeviceName, InitiatingProcessFileName, ActionType, LocalIPType, RemoteIPType
 | where InitiatingProcessFileName contains "teamviewer.exe"
 | where ActionType == "ConnectionSuccess"
 | where LocalIPType == "Private"
 | where RemoteIPType == "Public"
-| project TimeGenerated, DeviceName
-| join kind=rightanti
-    (
+| distinct DeviceName;
+//Find new devices in the last day not in the known list
     DeviceNetworkEvents
-    | where TimeGenerated > startofday(now())
+    | where TimeGenerated > ago(1d)
     | where InitiatingProcessFileName contains "teamviewer.exe"
     | where ActionType == "ConnectionSuccess"
     | where LocalIPType == "Private"
-    | where RemoteIPType == "Public")
-    on DeviceName
-| distinct
-    DeviceName,
-    InitiatingProcessAccountName,
-    InitiatingProcessFileName,
-    LocalIP,
-    RemoteIP
+    | where RemoteIPType == "Public"
+    | where DeviceName !in (knowndevices)
+    | distinct DeviceName
