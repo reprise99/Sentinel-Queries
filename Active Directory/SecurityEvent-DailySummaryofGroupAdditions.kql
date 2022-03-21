@@ -1,10 +1,9 @@
 //Create a daily report of users being added to on premise Active Directory groups, summarized by group name
-let timerange = 7d;
 SecurityEvent
-| where TimeGenerated > ago (timerange)
+| where TimeGenerated > ago (7d)
 | where AccountType == "User"
-| project TimeGenerated, MemberName, GroupName=TargetUserName, EventID
 | where EventID in (4728, 4732, 4756, 4761, 4746, 4751)
+| project TimeGenerated, MemberName, ['Group Name']=TargetUserName, EventID
 | parse MemberName with * 'CN=' UserAdded ',' *
-| summarize UsersAdded=make_set(UserAdded) by GroupName, startofday(TimeGenerated)
-| sort by GroupName asc, TimeGenerated desc 
+| summarize UsersAdded=make_set(UserAdded) by ['Group Name'], startofday(TimeGenerated)
+| sort by ['Group Name'] asc, TimeGenerated desc 

@@ -3,10 +3,10 @@ SecurityAlert
 | where TimeGenerated > ago(365d)
 | where ProviderName == "OATP"
 | where AlertName in ("Email messages containing malicious URL removed after delivery​","Email messages containing phish URLs removed after delivery")
-| extend x = todynamic(Entities)
-| parse-where x with * '"Url":"' MaliciousURL '"' *
-| parse-where MaliciousURL with * "//" MaliciousDomain "/" *
-| project TimeGenerated, MaliciousDomain
-| summarize DomainCount=count() by MaliciousDomain
-| sort by DomainCount desc 
-| render piechart 
+| mv-expand todynamic(Entities)
+| extend MaliciousURL = tostring(Entities.Url)
+| project MaliciousURL
+| parse-where MaliciousURL with * "//" ['Malicious Domain'] "/" *
+| summarize Count=count() by ['Malicious Domain']
+| sort by Count desc 
+| render barchart  
