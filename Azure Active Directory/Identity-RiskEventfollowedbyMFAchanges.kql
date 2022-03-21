@@ -1,9 +1,8 @@
-// Detects when a user flags an Azure AD risk event followed by changes to their MFA profile - potentially detecting a bad actor altering MFA details
-// starttime = the amount of data to look back on, timeframe = the time between flagging a risk event and MFA details being changed
-let starttime = 45d;
+// Detects when a user flags an Azure AD risk event followed by changes to their MFA profile - potentially detecting a bad actor changing MFA details
+// Timeframe = the time between flagging a risk event and MFA details being changed
 let timeframe = 4h;
 AADUserRiskEvents
-| where TimeGenerated > ago(starttime)
+| where TimeGenerated > ago(1d)
 | where RiskDetail != "aiConfirmedSigninSafe"
 | project RiskTime=TimeGenerated, UserPrincipalName, RiskEventType, RiskLevel, Source
 | join kind=inner (

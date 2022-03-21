@@ -1,13 +1,10 @@
-//Finds agents that haven't sent a heartbeat in the specified timeframe and retrieve last heartbeat time
-let timerange=365d;
-let timeframe=30d;
+//Finds computers that haven't sent a heartbeat in the last 30 days
 Heartbeat
-| where TimeGenerated > ago(timerange)
+| where TimeGenerated > ago(365d)
 | summarize arg_max(TimeGenerated, *) by Computer
-| project Computer, TimeGenerated
-| join kind=leftanti (
-    Heartbeat
-    | where TimeGenerated > ago(timeframe)
-    | summarize arg_max(TimeGenerated, *) by Computer)
-    on Computer
-| project Computer, LastHeartbeat=TimeGenerated
+| project
+    Computer,
+    ['Last Heartbeat']=TimeGenerated,
+    ['Days Since Last Heartbeat']=datetime_diff("day", now(), TimeGenerated)
+| where ['Days Since Last Heartbeat'] > 30
+| sort by ['Days Since Last Heartbeat'] desc 

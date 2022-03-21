@@ -1,5 +1,6 @@
 // Detects when a user downgrades a label on a file and that file is then emailed outbound 
-// starttime = the amount of data to look back on, timeframe = the time between the label downgrade and email event
+// Starttime = the amount of data to look back on
+// Timeframe = the time between the label downgrade and email event
 let starttime=7d;
 let timeframe=4h;
 InformationProtectionEvents

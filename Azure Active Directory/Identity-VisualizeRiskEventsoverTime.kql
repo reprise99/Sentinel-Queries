@@ -1,6 +1,6 @@
-//Visualizes risk events per month over the timerange
+//Visualize the different risk types (e.g password spray, unlikely travel) per month
 AADUserRiskEvents
 | where TimeGenerated > ago (180d)
 | where isnotempty(RiskEventType)
-| summarize RiskCount=count()by RiskEventType, startofmonth(TimeGenerated)
-| render columnchart with (kind=unstacked, title="Risk Events Over Time", xtitle="Month")
+| summarize Count=count()by RiskEventType, startofmonth(TimeGenerated)
+| render columnchart with (kind=unstacked, title="Risk event types per month", xtitle="Month")

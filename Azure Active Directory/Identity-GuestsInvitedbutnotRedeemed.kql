@@ -1,5 +1,6 @@
-//Lists guests who have been invited but not yet redeemed their invites. Excludes newly invited guests (last 30 days).
-let timerange=180d;
+//Lists guests who have been invited but not yet redeemed their invites.
+//Excludes newly invited guests (last 30 days).
+let timerange=365d;
 let timeframe=30d;
 AuditLogs
 | where TimeGenerated between (ago(timerange) .. ago(timeframe)) 

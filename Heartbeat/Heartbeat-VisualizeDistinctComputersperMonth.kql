@@ -1,5 +1,5 @@
-//Visualize how many machines you are onboarding or offboarding to Sentinel per month
+//Visualize distinct computers per month sending data
 Heartbeat
 | where TimeGenerated > ago(365d)
-| summarize Count=dcount(Computer)by startofmonth(TimeGenerated)
-| render columnchart with (title="Unique Monthly Computers Onboarded")
+| summarize Count=dcount(Computer)by Month=startofmonth(TimeGenerated)
+| render columnchart with (title="Distinct monthly computers sending data to Microsoft Sentinel")
