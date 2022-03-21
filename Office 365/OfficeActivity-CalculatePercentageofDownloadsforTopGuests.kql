@@ -1,0 +1,25 @@
+//Find the top 20 guests who are downloading files from your tenant and calculate the percentage of total downloads from those users. Useful to see if you have a few guests responsible for most of the downloads in your tenant.
+//First find the count of all downloads by guests in your tenant
+let totalguestdownloads=
+    OfficeActivity
+    | where TimeGenerated > ago(30d)
+    | where Operation in ("FileSyncDownloadedFull", "FileDownloaded")
+    | where UserId contains "#EXT#"
+    | count
+//Extend a fake column we will use to join our two queries
+    | extend ['Total Download Count'] = Count, Constant="x";
+OfficeActivity
+| where TimeGenerated > ago(30d)
+| where Operation in ("FileSyncDownloadedFull", "FileDownloaded")
+| where UserId contains "#EXT#"
+//Extend the same fake column to use to join our two queries
+| extend Constant="x"
+| extend ['Guest UserPrincipalName'] = tostring(split(UserId, "#")[0])
+//Summarize download count by each guest and join to our first query
+| summarize ['Individual Download Count']=count()by ['Guest UserPrincipalName'], Constant
+| join kind=fullouter totalguestdownloads on Constant
+| project-away Constant, Constant1, Count
+| sort by ['Individual Download Count'] desc 
+//Take the top 20 and then calculate the percentage
+| take 20
+| extend ['Percentage of Total Downloads']=(todouble(['Individual Download Count']) * 100 / todouble(['Total Download Count']))
