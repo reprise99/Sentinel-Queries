@@ -1,11 +1,12 @@
-//Creates a list of your applications and summarizes successful signins by members vs guests
-let timerange=30d;
+//Creates a list of your applications and summarizes successful signins by members vs guests separated to total and distinct signins
 SigninLogs
-| where TimeGenerated > ago(timerange)
-| project TimeGenerated, UserType, ResultType, AppDisplayName
+| where TimeGenerated > ago(30d)
+| project TimeGenerated, UserType, ResultType, AppDisplayName, UserPrincipalName
 | where ResultType == 0
 | summarize
-    MemberSignins=countif(UserType == "Member"),
-    GuestSignins=countif(UserType == "Guest")
+    ['Total Member Signins']=countif(UserType == "Member"),
+    ['Distinct Member Signins']=dcountif(UserPrincipalName, UserType == "Member"),
+    ['Total Guest Signins']=countif(UserType == "Guest"),
+    ['Distinct Guest Signins']=dcountif(UserPrincipalName, UserType == "Guest")
     by AppDisplayName
-| sort by AppDisplayName  
+| sort by AppDisplayName asc  
