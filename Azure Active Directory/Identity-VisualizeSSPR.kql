@@ -1,12 +1,11 @@
 //Visualize successful self service password resets and account unlocks over time
-let timerange=180d;
 AuditLogs
-| where TimeGenerated > ago (timerange)
+| where TimeGenerated > ago (180d)
 | where OperationName in ("Reset password (self-service)", "Unlock user account (self-service)")
 | summarize
-    PasswordReset=countif(OperationName == "Reset password (self-service)" and ResultDescription == "Successfully completed reset."),
-    AccountUnlock=countif(OperationName == "Unlock user account (self-service)" and ResultDescription == "Success")
-    by startofday(TimeGenerated)
+    ['Password Reset']=countif(OperationName == "Reset password (self-service)" and ResultDescription == "Successfully completed reset."),
+    ['Account Unlock']=countif(OperationName == "Unlock user account (self-service)" and ResultDescription == "Success")
+    by startofweek(TimeGenerated)
 | render timechart
     with (
     ytitle="Count",

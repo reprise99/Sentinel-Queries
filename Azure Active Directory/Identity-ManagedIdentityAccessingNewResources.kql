@@ -9,4 +9,13 @@ AADManagedIdentitySignInLogs
     | where ResultType == "0"
     )
     on ServicePrincipalId, ResourceIdentity
-| distinct ServicePrincipalId, ServicePrincipalName, ResourceIdentity, ResourceDisplayName
+| project
+    ['Service Principal DisplayName']=ServicePrincipalName,
+    ['Service Principal Id']=ServicePrincipalId,
+    ['Azure Resource Identity Id']=ResourceIdentity,
+    ['Azure Resource DisplayName']=ResourceDisplayName
+| distinct
+    ['Service Principal DisplayName'],
+    ['Service Principal Id'],
+    ['Azure Resource DisplayName'],
+    ['Azure Resource Identity Id']
