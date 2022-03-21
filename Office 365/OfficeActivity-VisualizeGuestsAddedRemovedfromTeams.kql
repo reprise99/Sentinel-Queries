@@ -1,17 +1,17 @@
-//Visualize guests added vs removed from Teams per day over the timerange
-let timerange=30d;
+//Visualize guests added vs removed from Teams per day over the last 30 days
 OfficeActivity
-| where TimeGenerated > ago(timerange)
+| where TimeGenerated > ago(30d)
 | where UserType == "Regular"
 | where CommunicationType == "Team"
 | where OfficeWorkload == "MicrosoftTeams" 
 | where Operation in ("MemberAdded", "MemberRemoved")
-| extend User = tostring(Members[0].UPN)
-| where User contains "#EXT"
+| mv-expand Members
+| extend User = tostring(Members.UPN)
+| where User contains "#EXT#"
 | project TimeGenerated, Operation, User
 | summarize
-    GuestsAdded=countif(Operation == "MemberAdded"),
-    GuestsRemoved=countif(Operation == "MemberRemoved")
+    ['Guests Added']=countif(Operation == "MemberAdded"),
+    ['Guests Removed']=countif(Operation == "MemberRemoved")
     by startofday(TimeGenerated)
 | render columnchart
     with (
