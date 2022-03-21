@@ -1,18 +1,17 @@
 // Detects when a user downgrades a label on a file and that file is then copied to USB
-// starttime = the amount of data to look back on, timeframe = the time between the label downgrade and file copy event
-let starttime=30d;
+// Timeframe = the time between the label downgrade and file copy event
 let timeframe=4h;
 InformationProtectionEvents
-| where Time > ago(starttime)
+| where Time > ago(1d)
 | where Activity == "DowngradeLabel"
 | project LabelChangeTime=Time, User, FileDowngraded=ItemName
 | join kind=inner (
     DeviceEvents
-    | where TimeGenerated > ago(starttime)
+    | where TimeGenerated > ago(1d)
     | where ActionType == "UsbDriveMounted"
     | extend DriveLetter = tostring(todynamic(AdditionalFields).DriveLetter)
     | join kind=inner (DeviceFileEvents
-        | where TimeGenerated > ago(starttime)
+        | where TimeGenerated > ago(1d)
         | project TimeGenerated, ActionType, FileName, FolderPath, DeviceId, DeviceName
         | extend FileCopyTime = TimeGenerated
         | where ActionType == "FileCreated"

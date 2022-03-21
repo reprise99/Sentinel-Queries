@@ -1,12 +1,11 @@
 //Visualize how much data is being copied to USB drives per day in your environment over the time range.
-let timerange=30d;
 DeviceEvents
-| where TimeGenerated > ago (timerange)
+| where TimeGenerated > ago (21d)
 | project TimeGenerated, ActionType, AdditionalFields, DeviceId, FileName
 | where ActionType == "UsbDriveMounted"
 | extend DriveLetter = tostring(todynamic(AdditionalFields).DriveLetter)
 | join kind=inner (DeviceFileEvents
-    | where TimeGenerated > ago (timerange)
+    | where TimeGenerated > ago (21d)
     | project TimeGenerated, ActionType, FolderPath, DeviceId, FileName, FileSize
     | extend FileCopyTime = TimeGenerated
     | where ActionType == "FileCreated"
