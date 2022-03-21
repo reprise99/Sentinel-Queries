@@ -1,8 +1,9 @@
-//Month by month breakdown of when your Azure AD guests last signed in
+//Group your Azure AD guest accounts into the month they last signed in
 SigninLogs
 | where TimeGenerated > ago (360d)
 | where UserType == "Guest" or UserPrincipalName contains "#ext#"
 | where ResultType == 0
 | summarize arg_max(TimeGenerated, *) by UserPrincipalName
 | project TimeGenerated, UserPrincipalName
-| summarize InactiveUsers=make_set(UserPrincipalName) by startofmonth(TimeGenerated)
+| summarize ['Inactive Guest Accounts']=make_set(UserPrincipalName) by Month=startofmonth(TimeGenerated)
+| sort by Month desc  

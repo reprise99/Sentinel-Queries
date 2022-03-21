@@ -1,4 +1,5 @@
 //Detects successful TeamViewer connections from internal to external IP addresses
+//If TeamViewer is a sanctioned app then you will get lots of hits.
 DeviceNetworkEvents
 | where InitiatingProcessFileName contains "teamviewer.exe"
 | where ActionType == "ConnectionSuccess"

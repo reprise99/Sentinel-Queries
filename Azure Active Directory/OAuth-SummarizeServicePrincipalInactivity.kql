@@ -1,7 +1,8 @@
-//Summarize the last time your service principals signed in, grouped by month
+//Summarize your Azure AD service principals by the last time they signed in, grouped by month
 AADServicePrincipalSignInLogs
-| project TimeGenerated, AppId, ResultType
+| project TimeGenerated, AppId, ResultType, ServicePrincipalName
 | where TimeGenerated > ago (360d)
 | where ResultType == 0
 | summarize arg_max(TimeGenerated, *) by AppId
-| summarize LastAppAccess=make_set(AppId) by startofmonth(TimeGenerated)
+| summarize ['Application List']=make_set(ServicePrincipalName) by Month=startofmonth(TimeGenerated)
+| sort by Month asc 
