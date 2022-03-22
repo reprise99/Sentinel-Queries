@@ -1,17 +1,16 @@
-//Calculate the percentage of signins to each of your Azure AD applications that require MFA
-let timerange=30d;
+//Calculate the percentage of signins to each of your Azure AD applications that used MFA
 SigninLogs
-| where TimeGenerated > ago(timerange)
+| where TimeGenerated > ago(30d)
 | where ResultType == 0
 | summarize
-    TotalCount=count(),
-    MFACount=countif(AuthenticationRequirement == "multiFactorAuthentication"),
-    nonMFACount=countif(AuthenticationRequirement == "singleFactorAuthentication")
+    ['Total Signin Count']=count(),
+    ['Total MFA Count']=countif(AuthenticationRequirement == "multiFactorAuthentication"),
+    ['Total non MFA Count']=countif(AuthenticationRequirement == "singleFactorAuthentication")
     by AppDisplayName
 | project
     AppDisplayName,
-    TotalCount,
-    MFACount,
-    nonMFACount,
-    MFAPercentage=(todouble(MFACount) * 100 / todouble(TotalCount))
-| sort by MFAPercentage desc 
+    ['Total Signin Count'],
+    ['Total MFA Count'],
+    ['Total non MFA Count'],
+    MFAPercentage=(todouble(['Total MFA Count']) * 100 / todouble(['Total Signin Count']))
+| sort by ['Total Signin Count'] desc, MFAPercentage asc  

@@ -1,7 +1,6 @@
-//Alert when attack surface reduction rules are triggered while ASR is in audit mode
-let timerange=7d;
+//Summarize attack surface reduction audit hits for each device
 DeviceEvents
-| where TimeGenerated > ago (timerange)
+| where TimeGenerated > ago (1d)
 | where ActionType startswith "Asr"
 | extend isAudit = tostring(AdditionalFields.IsAudit)
 | where isAudit = true
@@ -15,3 +14,9 @@ DeviceEvents
     InitiatingProcessCommandLine,
     InitiatingProcessParentFileName,
     ProcessTokenElevation
+| summarize
+    ['Total ASR audit hits']=count(),
+    ['Distinct ASR audit rule hits']=dcount(ActionType),
+    ['List of processes']=make_set(InitiatingProcessCommandLine)
+    by DeviceName
+| sort by ['Total ASR audit hits'] desc  

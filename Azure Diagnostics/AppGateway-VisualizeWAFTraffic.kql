@@ -1,6 +1,6 @@
-let timeframe=30d;
+//Visualize WAF rule actions such as allowed, blocked, detected and matched over time
 AzureDiagnostics
-| where TimeGenerated > ago(timeframe)
+| where TimeGenerated > ago(30d)
 | where ResourceType == "APPLICATIONGATEWAYS"
 | summarize count()by action_s, bin(TimeGenerated, 1h)
 | where isnotempty(action_s)
