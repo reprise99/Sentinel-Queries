@@ -14,14 +14,14 @@ SigninLogs
 //Extend authentication result description
 | extend AuthResult = tostring(parse_json(AuthenticationDetails)[1].authenticationStepResultDetail)
 //Find results that include both denined and completed MFA
-| where AuthResult in ("MFA completed in Azure AD", "MFA denied; user declined the authentication")
+| where AuthResult in ("MFA completed in Azure AD", "MFA denied; user declined the authentication","MFA denied; user did not respond to mobile app notification")
 //Create a list of completed and denied MFA challenges per correlation id
 | summarize ['Result Types']=make_list(AuthResult) by CorrelationId, UserPrincipalName
 //Ensure the list includes both completed and denied MFA challenges
-| where ['Result Types'] has_all ("MFA completed in Azure AD", "MFA denied; user declined the authentication")
+| where ['Result Types'] has ("MFA completed in Azure AD") and ['Result Types'] has_any ("MFA denied; user declined the authentication", "MFA denied; user did not respond to mobile app notification")
 | mv-expand ['Result Types'] to typeof(string)
 //Expand and count all the denied challenges and then return CorrelationId's where the MFA denied count is greater or equal to your threshold
-| where ['Result Types'] == "MFA denied; user declined the authentication"
+| where ['Result Types'] has_any ("MFA denied; user declined the authentication","MFA denied; user did not respond to mobile app notification")
 | summarize ['Denied MFA Count']=count()by ['Result Types'], CorrelationId, UserPrincipalName
 | where ['Denied MFA Count'] >= threshold
 
@@ -41,13 +41,28 @@ SigninLogs
 //Extend authentication result description
 | extend AuthResult = tostring(parse_json(AuthenticationDetails)[1].authenticationStepResultDetail)
 //Find results that include both denined and completed MFA
-| where AuthResult in ("MFA completed in Azure AD", "MFA denied; user declined the authentication")
+| where AuthResult in ("MFA completed in Azure AD", "MFA denied; user declined the authentication","MFA denied; user did not respond to mobile app notification")
 //Create a list of completed and denied MFA challenges per user principal name over 10 minute periods
 | summarize ['Result Types']=make_list(AuthResult) by UserPrincipalName, bin(TimeGenerated, 10m)
 //Ensure the list includes both completed and denied MFA challenges
-| where ['Result Types'] has_all ("MFA completed in Azure AD", "MFA denied; user declined the authentication")
+| where ['Result Types'] has ("MFA completed in Azure AD") and ['Result Types'] has_any ("MFA denied; user declined the authentication", "MFA denied; user did not respond to mobile app notification")
 | mv-expand ['Result Types'] to typeof(string)
 //Expand and count all the denied challenges and then return UserPrincipalNames where the MFA denied count is greater or equal to your threshold
-| where ['Result Types'] == "MFA denied; user declined the authentication"
+| where ['Result Types'] has_any ("MFA denied; user declined the authentication","MFA denied; user did not respond to mobile app notification")
 | summarize ['Denied MFA Count']=count()by ['Result Types'], UserPrincipalName
 | where ['Denied MFA Count'] >= threshold
+
+//Simple query to count users being spammed with denies or not responding in one hour time windows
+SigninLogs
+| project
+    TimeGenerated,
+    AuthenticationRequirement,
+    AuthenticationDetails,
+    UserPrincipalName,
+    CorrelationId
+| where AuthenticationRequirement == "multiFactorAuthentication"
+| extend AuthResult = tostring(parse_json(AuthenticationDetails)[1].authenticationStepResultDetail)
+| where AuthResult in ("MFA denied; user declined the authentication","MFA denied; user did not respond to mobile app notification")
+| summarize ['Result Types']=make_list(AuthResult), ['Result Count']=count() by UserPrincipalName, bin(TimeGenerated, 60m)
+//Find hits with greater than 3 failures in an hour
+| where ['Result Count'] > 3
