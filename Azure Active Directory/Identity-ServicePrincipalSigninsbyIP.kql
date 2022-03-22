@@ -2,4 +2,5 @@
 AADServicePrincipalSignInLogs
 | where TimeGenerated > ago(90d)
 | where ResultType == "0"
-| summarize IPAddresses=make_set(IPAddress) by ServicePrincipalName, AppId
+| summarize ['List of IP Addresses']=make_set(IPAddress), ['Count of Unique IP Addresses']=dcount(IPAddress) by ServicePrincipalName, AppId
+| sort by ['Count of Unique IP Addresses'] desc 

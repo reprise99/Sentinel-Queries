@@ -2,7 +2,7 @@
 //Add additional applications to include them in the same query, i.e Defender for Cloud Apps portal.
 //Select a time frame to look back on, i.e find users logging on for the first time today not seen in the prior 60 days
 let timeframe = startofday(ago(60d));
-let applications = dynamic(["Azure Active Directory PowerShell", "Microsoft Azure PowerShell", "Graph Explorer", "ACOM Azure Website"]);
+let applications = dynamic(["Azure Active Directory PowerShell", "Microsoft Azure PowerShell", "Graph Explorer", "ACOM Azure Website", "Azure Portal", "Azure Advanced Threat Protection"]);
 SigninLogs
 | where TimeGenerated > timeframe and TimeGenerated < startofday(now())
 | where AppDisplayName in (applications)
