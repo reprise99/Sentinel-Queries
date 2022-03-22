@@ -1,9 +1,9 @@
-//Visualize the most common domains triggering smart screen warnings
+//Visualize the most common domains triggering Microsoft Defender SmartScreen warnings
 DeviceEvents
 | where TimeGenerated > ago (30d)
 | where ActionType == "SmartScreenUrlWarning"
 | parse RemoteUrl with * '://' Domain '/' *
 | where isnotempty(Domain)
-| summarize DomainCount=count()by Domain
-| sort by DomainCount
-| render piechart 
+| summarize Count=count()by Domain
+| sort by Count
+| render barchart  
