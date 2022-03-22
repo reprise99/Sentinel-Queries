@@ -1,4 +1,4 @@
-//Find sign ins where your users signed into other Azure AD tenants as guests.
+//Find sign ins where your users signed into other Azure AD tenants as outbound guests
 SigninLogs
 | where AADTenantId == HomeTenantId
 | where ResourceTenantId != AADTenantId
@@ -10,4 +10,4 @@ SigninLogs
     ResultType,
     Location,
     IPAddress,
-    ResourceTenantId
+    ['Guest Tenant Id']=ResourceTenantId

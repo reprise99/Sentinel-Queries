@@ -1,7 +1,6 @@
 //Detect when an Azure AD service principal signs in from an IP previously not seen
-let timeframe = 180d;
 AADServicePrincipalSignInLogs
-| where TimeGenerated > ago(timeframe) and TimeGenerated < ago(7d)
+| where TimeGenerated > ago(180d) and TimeGenerated < ago(7d)
 | distinct AppId, IPAddress
 | join kind=rightanti
     (

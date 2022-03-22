@@ -1,4 +1,11 @@
-//Audit usage of Azure Bastion, find which users have attempted to connect to virtual machines using RDP or SSH.
+//Find which users have attempted to connect to virtual machines using RDP or SSH in Azure Bastion
 MicrosoftAzureBastionAuditLogs
-| parse TargetResourceId with * 'VIRTUALMACHINES/' VMName
-| project TimeGenerated, Message, UserName, Protocol, VMName, TargetVMIPAddress
+| parse TargetResourceId with * 'VIRTUALMACHINES/' ['Virtual Machine Name']
+| project
+    TimeGenerated,
+    Message,
+    UserName,
+    Protocol,
+    ['Virtual Machine Name'],
+    ['Virtual Machine IP']=TargetVMIPAddress
+| sort by TimeGenerated desc 

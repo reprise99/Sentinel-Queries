@@ -1,13 +1,9 @@
 //Visualize the MFA types used by your users - phone sign in, mobile passcode, push or text message, over time
 SigninLogs
-| where TimeGenerated > ago(180d)
+| where TimeGenerated > ago (180d)
 | where AuthenticationRequirement == "multiFactorAuthentication"
-| extend x=todynamic(AuthenticationDetails)
-| mv-expand x
-| project TimeGenerated, x
-| where x.RequestSequence != "1"
-| where x.authenticationStepRequirement == "Multi-factor authentication"
-| extend MFAMethod = tostring(x.authenticationMethod)
-| summarize MFAMethodCount=count() by MFAMethod, bin(TimeGenerated, 7d)
-| where MFAMethod != "Previously satisfied" and isnotempty(MFAMethod)
-| render areachart with (ytitle="Count", xtitle="Day", title="MFA methods per week over time")
+| project TimeGenerated, AuthenticationDetails
+| extend ['MFA Method'] = tostring(parse_json(AuthenticationDetails)[1].authenticationMethod)
+| summarize Count=count()by ['MFA Method'], bin(TimeGenerated, 7d)
+| where ['MFA Method'] != "Previously satisfied" and isnotempty(['MFA Method']) 
+| render timechart with (ytitle="Count", xtitle="Day", title="MFA methods per week over time")

@@ -2,6 +2,6 @@
 OfficeActivity
 | where Operation == "New-RoleGroup"
 | where RecordType == "ExchangeAdmin"
-| parse Parameters with * 'Name","Value":"' RoleName '"' *
-| parse Parameters with * 'Roles","Value":"' PermissionsAdded '"' *
-| project TimeGenerated, Actor=UserId, RoleName, PermissionsAdded
+| parse Parameters with * 'Name","Value":"' ['Role Name'] '"' *
+| parse Parameters with * 'Roles","Value":"' ['Permissions Added'] '"' *
+| project TimeGenerated, Actor=UserId, ['Role Name'], ['Permissions Added']
