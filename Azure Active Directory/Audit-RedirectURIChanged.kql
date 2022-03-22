@@ -1,0 +1,13 @@
+//Alert when the redirect URI list is changed for a service principal
+AuditLogs
+| where OperationName == "Update service principal"
+| mv-expand TargetResources
+| extend modifiedProperties = parse_json(TargetResources).modifiedProperties
+| mv-expand modifiedProperties 
+| where modifiedProperties.displayName == "AppAddress" 
+| extend newValue = tostring(parse_json(modifiedProperties).newValue)
+| mv-expand todynamic(newValue)
+| extend RedirectURI = tostring(newValue.Address)
+| extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| extend ['Service Principal Name'] = tostring(TargetResources.displayName)
+| summarize ['List of Redirect URIs']=make_list(RedirectURI) by Actor, ['Service Principal Name']
