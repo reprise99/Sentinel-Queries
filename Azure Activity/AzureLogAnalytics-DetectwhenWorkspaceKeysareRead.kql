@@ -6,7 +6,7 @@ AzureActivity
 | project
     TimeGenerated,
     Actor=Caller,
-    ActorIPAddress=CallerIpAddress,
-    WorkspaceName,
-    SubscriptionId,
-    ResourceGroup
+    ['Log Analytics Workspace Name']=WorkspaceName,
+    ['Actor IP Address']=CallerIpAddress,
+    ['Azure Subscription Id']=SubscriptionId,
+    ['Azure Resource Group']=ResourceGroup
