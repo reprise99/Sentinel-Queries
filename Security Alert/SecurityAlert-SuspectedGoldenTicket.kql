@@ -1,10 +1,9 @@
 //When Defender for Identity detects suspected golden ticket usage, parse the relevant user accounts and host names
 SecurityAlert
 | where AlertName startswith "Suspected Golden Ticket usage"
-| extend x = todynamic(Entities)
-| mv-expand x
-| parse x with * 'HostName":"' HostName '","Id' *
-| parse x with * '"Name":"' AccountName '","Sid"' *
+| mv-expand todynamic(Entities)
+| extend AccountName = tostring(Entities.Name)
+| extend HostName = tostring(Entities.HostName)
 | summarize
     Accounts=make_list_if(AccountName, isnotempty(AccountName)),
     Hosts=make_list_if(HostName, isnotempty(HostName))

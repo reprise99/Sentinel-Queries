@@ -1,0 +1,16 @@
+//Detect changes to Azure AD Conditional Access policies on weekends or outside of business hours
+let Saturday = time(6.00:00:00);
+let Sunday = time(0.00:00:00);
+AuditLogs
+| where OperationName has "conditional access"
+// extend LocalTime to your time zone
+| extend LocalTime=TimeGenerated + 5h
+// Change hours of the day to suit your company, i.e this would find activations between 6pm and 6am
+| where dayofweek(LocalTime) in (Saturday, Sunday) or hourofday(LocalTime) !between (6 .. 18)
+| extend ['Conditional Access Policy Name'] = tostring(TargetResources[0].displayName)
+| extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| project LocalTime, 
+    OperationName, 
+    ['Conditional Access Policy Name'], 
+    Actor
+| sort by LocalTime desc 

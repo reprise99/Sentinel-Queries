@@ -8,8 +8,9 @@ OfficeActivity
 | project
     TimeGenerated,
     Actor=UserId,
-    TargetMailbox,
-    TargetMailboxDisplayName=OfficeObjectId,
-    UserGivenAccess,
-    AccessRights
+    ['Target Mailbox']=TargetMailbox,
+    ['Target Mailbox DisplayName']=OfficeObjectId,
+    ['User Granted Access']=UserGivenAccess,
+    ['Access Type']=AccessRights
 | where Actor != "NT AUTHORITY\\SYSTEM (Microsoft.Exchange.Servicehost)"
+| sort by TimeGenerated desc 

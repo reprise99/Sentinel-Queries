@@ -1,24 +1,21 @@
-//Detect when a user retrieves keys for Azure storage for the first time
-//Where timerange is the time to look back on and time frame is the alert period
-//i.e look back 90 days and alert on new users in the last day
-let timerange=90d;
-let timeframe=1d;
-AzureActivity
-| where TimeGenerated > ago(timerange) and TimeGenerated < ago(timeframe)
-| where OperationName == "List Storage Account Keys"
-| where ActivityStatus == "Succeeded"
-| project User=Caller
-| join kind=rightanti (
+//Detect when a user retrieves keys for Azure storage for the first time compared to the previous time range
+let knownusers=
     AzureActivity
-    | where TimeGenerated > ago(timeframe)
+    | where TimeGenerated > ago(90d) and TimeGenerated < ago(1d)
     | where OperationName == "List Storage Account Keys"
     | where ActivityStatus == "Succeeded"
-    | project-rename User=Caller)
-    on User
+    | project-rename Actor=Caller
+    | distinct Actor;
+AzureActivity
+| where TimeGenerated > ago(1d)
+| where OperationName == "List Storage Account Keys"
+| where ActivityStatus == "Succeeded"
+| project-rename Actor=Caller
+| where Actor !in (knownusers)
 | project
     TimeGenerated,
-    User,
-    CallerIpAddress,
+    Actor,
+    ['Actor IP Address']=CallerIpAddress,
     ['Storage Account Name']=Resource,
-    SubscriptionId,
-    ResourceGroup 
+    ['Azure Subscription Id']=SubscriptionId,
+    ['Azure Resource Group']=ResourceGroup 
