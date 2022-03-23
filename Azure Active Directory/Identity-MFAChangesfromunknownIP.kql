@@ -1,0 +1,19 @@
+//Detect when MFA details for a user are changed, deleted or registered from an IP address that user has never signed in successfully from
+//Cache all successful sign in data for users using materialize operator
+let signindata=materialize (
+union SigninLogs, AADNonInteractiveUserSignInLogs
+    | where TimeGenerated > ago(180d)
+    | where ResultType == 0
+    | distinct UserPrincipalName, IPAddress);
+//Search for audit events showing MFA registrations, deletions or changes in the last day
+AuditLogs
+| where TimeGenerated > ago(1d)
+| where OperationName in ("User registered security info", "User deleted security info", "User registered all required security info")
+| where Result == "success"
+| extend IPAddress = tostring(parse_json(tostring(InitiatedBy.user)).ipAddress)
+| extend UserPrincipalName = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| project UserPrincipalName, IPAddress, OperationName
+//Join those events back to our summarized sign in data looking for users who register MFA from an IP they have never signed in from
+| where isnotempty(IPAddress)
+| join kind=leftanti (signindata) on IPAddress, UserPrincipalName
+| distinct UserPrincipalName, IPAddress, OperationName
