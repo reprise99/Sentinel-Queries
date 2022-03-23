@@ -1,7 +1,7 @@
 //Detect when MFA details for a user are changed, deleted or registered from an IP address that user has never signed in successfully from
 //Cache all successful sign in data for users using materialize operator
 let signindata=materialize (
-union SigninLogs, AADNonInteractiveUserSignInLogs
+SigninLogs
     | where TimeGenerated > ago(180d)
     | where ResultType == 0
     | distinct UserPrincipalName, IPAddress);
