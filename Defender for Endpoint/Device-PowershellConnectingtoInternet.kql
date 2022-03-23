@@ -25,3 +25,6 @@ DeviceNetworkEvents
     RemoteIP,
     RemotePort,
     RemoteUrl
+//Exclude system initiated events as this is a user detection
+| where InitiatingProcessAccountName <> "local service"
+| sort by TimeGenerated desc 

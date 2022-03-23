@@ -5,7 +5,11 @@ SecurityEvent
 | where EventID == "4672"
 | where Account != "NT AUTHORITY\\SYSTEM" and Account !has "Window Manager"
 | where AccountType == "User"
+//The privilege list is stored in a string of text that we need to split
 | extend Privs=extract_all(@"Se(.*?)Privilege", PrivilegeList)
-| project TimeGenerated, Account, Computer, Privs
-| summarize Privileges=make_set(Privs) by Computer, Account
+//Once we retrieve the privileges from the string of text we can recreate the proper naming
+| mv-expand Privs
+| extend Privilege=strcat('Se', Privs, 'Privilege')
+| project TimeGenerated, Account, Computer, Privilege
+| summarize ['List of Privileges']=make_set(Privilege) by Computer, Account
 | sort by Computer asc  

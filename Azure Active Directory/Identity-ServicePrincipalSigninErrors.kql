@@ -14,9 +14,11 @@ AADServicePrincipalSignInLogs
     ResultType == "100007", strcat("AAD Regional ONLY supports auth either for MSIs OR for requests from MSAL using SN+I for 1P apps or 3P apps in Microsoft infrastructure tenants"),
     ResultType == "1100000", strcat("Non-retryable error has occurred"),
     ResultType == "90033", strcat("A transient error has occurred. Please try again"),
+    ResultType == "53003", strcat("Access has been blocked by Conditional Access policies. The access policy does not allow token issuance."),
     "Unknown"
     )
-| distinct
+| project
+    TimeGenerated,
     ServicePrincipalName,
     ServicePrincipalId,
     ErrorDescription,

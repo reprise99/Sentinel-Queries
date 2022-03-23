@@ -1,6 +1,7 @@
-//Provides a summary of Attack Surface Reduction rules, which rules are being hit and by which processes
+//Provides a summary of Attack Surface Reduction rules, which ASR rules are being hit and by which processes
 DeviceEvents
 | where TimeGenerated > ago(30d)
 | where ActionType startswith "Asr"
-| summarize ASRCount=count()by ActionType, InitiatingProcessCommandLine
-| sort by ActionType asc, ASRCount desc 
+| where isnotempty(InitiatingProcessCommandLine)
+| summarize ['ASR Hit Count']=count()by ActionType, InitiatingProcessCommandLine
+| sort by ['ASR Hit Count'] desc 

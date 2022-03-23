@@ -1,9 +1,13 @@
 //Find Azure AD conditional access policies that have no hits for 'success' or 'failure' over the last month
+//Check that these policies are configured correctly or still required
 SigninLogs
 | where TimeGenerated > ago (30d)
 | project TimeGenerated, ConditionalAccessPolicies
 | mv-expand ConditionalAccessPolicies
 | extend CAResult = tostring(ConditionalAccessPolicies.result)
-| extend CAPolicyName = tostring(ConditionalAccessPolicies.displayName)
-| summarize CAResults=make_set(CAResult) by CAPolicyName
-| where CAResults !has "success" and CAResults !has "failure"
+| extend ['Conditional Access Policy Name'] = tostring(ConditionalAccessPolicies.displayName)
+| summarize ['Conditional Access Result']=make_set(CAResult) by ['Conditional Access Policy Name']
+| where ['Conditional Access Result'] !has "success"
+    and ['Conditional Access Result'] !has "failure"
+    and ['Conditional Access Result'] !has "unknownFutureValue"
+| sort by ['Conditional Access Policy Name'] asc 
