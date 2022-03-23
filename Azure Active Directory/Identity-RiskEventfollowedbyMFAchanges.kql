@@ -7,7 +7,7 @@ AADUserRiskEvents
 | project RiskTime=TimeGenerated, UserPrincipalName, RiskEventType, RiskLevel, Source
 | join kind=inner (
     AuditLogs
-    | where OperationName in ("User registered security info", "User deleted security info")
+    | where OperationName in ("User registered security info", "User deleted security info","User registered all required security info")
     | where Result == "success"
     | extend UserPrincipalName = tostring(TargetResources[0].userPrincipalName)
     | project
