@@ -12,7 +12,6 @@ AADUserRiskEvents
 SigninLogs
 | where TimeGenerated > ago (1d))
 on CorrelationId
-| summarize arg_min(TimeGenerated, *) by CorrelationId
 | summarize ['Risky Signin Time']=min(TimeGenerated) by CorrelationId, UserPrincipalName
 //Join risky sign in UserPrincipalName to audit log for MFA events
 | join kind=inner (
