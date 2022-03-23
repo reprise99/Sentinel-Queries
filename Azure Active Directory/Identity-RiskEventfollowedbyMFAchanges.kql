@@ -4,7 +4,7 @@ let timeframe = 4h;
 AADUserRiskEvents
 | where TimeGenerated > ago(1d)
 | where RiskDetail != "aiConfirmedSigninSafe"
-| project RiskTime=TimeGenerated, UserPrincipalName, RiskEventType, RiskLevel, Source
+| project RiskTime=iff(isnotempty(ActivityDateTime), ActivityDateTime, TimeGenerated), UserPrincipalName, RiskEventType, RiskLevel, Source
 | join kind=inner (
     AuditLogs
     | where TimeGenerated > ago(1d)
