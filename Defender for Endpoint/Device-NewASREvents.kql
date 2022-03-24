@@ -1,14 +1,12 @@
 //Retrieve any new ASR alerts in your environment over the last week not previously seen in the prior 90 days and which devices have triggered them
 let timerange=90d;
+let existingalerts=
 DeviceEvents
 | where TimeGenerated > ago (timerange) and TimeGenerated < ago(7d)
 | where ActionType startswith "Asr"
-| distinct ActionType
-| join kind=rightanti
-    (
+| distinct ActionType;
     DeviceEvents
     | where TimeGenerated > ago(7d)
     | where ActionType startswith "Asr"
-    )
-    on ActionType
+    | where ActionType !in (existingalerts)
 | summarize ['Device List']=make_set(DeviceName) by ActionType

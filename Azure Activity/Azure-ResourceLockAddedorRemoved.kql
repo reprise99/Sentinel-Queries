@@ -14,7 +14,7 @@ AzureActivity
     TimeGenerated,
     Activity,
     ResourceName,
-    AzureResource,
-    SubscriptionId,
-    ResourceGroup,
+    ['Azure Resource']=AzureResource,
+    ['Azure Subscription Id']=SubscriptionId,
+    ['Azure Resource Group']=ResourceGroup,
     LockName

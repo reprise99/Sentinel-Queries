@@ -9,7 +9,7 @@ DeviceNetworkEvents
 | summarize ['RDP Client Count']=count()by InitiatingProcessFileName
 | where isnotempty(InitiatingProcessFileName)
 | sort by ['RDP Client Count'] desc
-| render piechart 
+| render barchart 
 
 //Advanced Hunting query
 DeviceNetworkEvents
@@ -21,4 +21,4 @@ DeviceNetworkEvents
 | summarize ['RDP Client Count']=count()by InitiatingProcessFileName
 | where isnotempty(InitiatingProcessFileName)
 | sort by ['RDP Client Count'] desc
-| render piechart 
+| render barchart 
