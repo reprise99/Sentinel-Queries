@@ -3,8 +3,9 @@ SecurityAlert
 | where TimeGenerated > ago (365d)
 | where ProviderName == "OATP"
 | where AlertName in ("Email messages containing malicious URL removed after delivery", "Email messages containing phish URLs removed after delivery")
-| extend x = todynamic(Entities)
-| mv-expand x
-| parse-where x with * 'MailboxPrimaryAddress":"' User '"' *
-| summarize PhishingCount=count()by User
-| order by PhishingCount
+| mv-expand todynamic(Entities)
+| project Entities
+| extend User = tostring(Entities.MailboxPrimaryAddress)
+| where isnotempty(User)
+| summarize ['Count of Phishing Attempts']=count()by User
+| order by ['Count of Phishing Attempts']

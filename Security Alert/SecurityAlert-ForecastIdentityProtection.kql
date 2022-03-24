@@ -1,4 +1,4 @@
-//Use KQL to forecast the count of Azure AD Identity Protection Events events for the next 14 days based on the previous 30 days
+//Forecast the count of Azure AD Identity Protection Events events for the next 14 days based on the previous 30 days
 SecurityAlert
 | where ProviderName == "IPC"
 | make-series ["Azure AD Identity Protection Events"]=count() on TimeGenerated from ago(30d) to now() + 14d step 1d

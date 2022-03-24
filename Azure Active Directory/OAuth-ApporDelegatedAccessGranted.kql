@@ -1,4 +1,4 @@
-//Find when either application or delegated access is granted to a service principal in Azure AD
+//Detect when either application or delegated access is granted to a service principal in Azure AD
 let delegatedaccess=
     AuditLogs
     | where OperationName has "Add delegated permission grant"
