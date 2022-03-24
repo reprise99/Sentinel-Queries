@@ -8,7 +8,7 @@ EmailEvents
 | summarize BlockedCount=count()by Domain
 | where isnotempty(Domain)
 | sort by BlockedCount desc
-| render piechart 
+| render barchart 
 
 //Advanced Hunting query
 EmailEvents
@@ -19,4 +19,4 @@ EmailEvents
 | summarize BlockedCount=count()by Domain
 | where isnotempty(Domain)
 | sort by BlockedCount desc
-| render piechart 
+| render barchart 
