@@ -1,0 +1,26 @@
+//Detects when a user activates a PIM role for the first time on weekends or after working hours
+let Saturday = time(6.00:00:00);
+let Sunday = time(0.00:00:00);
+let timeframe = 90d;
+//Find users who have previously activated PIM roles outside of business hours or on weekends in the last 90 days
+//In this example business hours are 6am to 6pm
+let knownusers=
+    AuditLogs
+    | where TimeGenerated > ago(timeframe) and TimeGenerated < ago(7d)
+    // extend LocalTime to your time zone
+    | extend LocalTime=TimeGenerated + 5h
+    // Change hours of the day to suit your company, i.e this would find activations between 6pm and 6am
+    | where dayofweek(LocalTime) in (Saturday, Sunday) or hourofday(LocalTime) !between (6 .. 18)
+    | where OperationName == "Add member to role completed (PIM activation)"
+    | extend User = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+    | distinct User;
+//Find users who activate a PIM role outside of business hours or on weekends for the first time in the last week
+AuditLogs
+| where TimeGenerated > ago(7d)
+| extend LocalTime=TimeGenerated + 5h
+| where dayofweek(LocalTime) in (Saturday, Sunday) or hourofday(LocalTime) !between (6 .. 18)
+| where OperationName == "Add member to role completed (PIM activation)"
+| extend ['Azure AD Role Name'] = tostring(TargetResources[0].displayName)
+| extend User = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| where User !in (knownusers)
+| project LocalTime, User, ['Azure AD Role Name'], ['Activation Reason']=ResultReason
