@@ -1,0 +1,16 @@
+//Detect when a user is made an admin on multiple Teams in a short time frame.
+//Define a time period to check and the threshold of how many Teams to alert on.
+//This example would find users added as an admin to 3 or more Teams within 30 minutes.
+let timeframe=30m;
+let threshold=3;
+OfficeActivity
+| where TimeGenerated > ago(1d)
+| where Operation == "MemberRoleChanged"
+| mv-expand Members
+| extend RoleAdded = tostring(Members.Role)
+| extend UserAdded = tostring(Members.UPN)
+//| where RoleAdded == 2
+| project TimeGenerated, RoleAdded, UserAdded, TeamName
+| summarize
+    ['Number of Teams Made Admin']=dcount(TeamName), ['Team Names']=make_set(TeamName) by UserAdded, bin(TimeGenerated, timeframe)
+| where ['Number of Teams Made Admin'] >= threshold
