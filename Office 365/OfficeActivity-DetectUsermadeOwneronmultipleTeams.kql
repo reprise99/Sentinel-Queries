@@ -9,7 +9,7 @@ OfficeActivity
 | mv-expand Members
 | extend RoleAdded = tostring(Members.Role)
 | extend UserAdded = tostring(Members.UPN)
-//| where RoleAdded == 2
+| where RoleAdded == 2
 | project TimeGenerated, RoleAdded, UserAdded, TeamName
 | summarize
     ['Number of Teams Made Owner']=dcount(TeamName), ['Team Names']=make_set(TeamName) by UserAdded, bin(TimeGenerated, timeframe)
