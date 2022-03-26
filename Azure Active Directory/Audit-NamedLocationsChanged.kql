@@ -1,0 +1,28 @@
+//Detect when Azure AD Named Locations are changed (either IP or Country) and retrieve the current list 
+let updatedip=
+    AuditLogs
+    | where OperationName == "Update named location"
+    | mv-expand TargetResources
+    | extend modifiedProperties = parse_json(TargetResources).modifiedProperties
+    | mv-expand modifiedProperties  
+    | extend newValue = tostring(parse_json(modifiedProperties).newValue)
+    | mv-expand todynamic(newValue)
+    | extend ipRanges = tostring(parse_json(newValue).ipRanges)
+    | mv-expand todynamic(ipRanges) 
+    | extend cidr = tostring(ipRanges.cidrAddress)
+    | where isnotempty(cidr)
+    | extend ['Named Location name'] = tostring(TargetResources.displayName)
+    | summarize ['IP List']=make_list(cidr) by ['Named Location name'];
+let updatedcountries=
+    AuditLogs
+    | where OperationName == "Update named location"
+    | mv-expand TargetResources
+    | extend modifiedProperties = parse_json(TargetResources).modifiedProperties
+    | mv-expand modifiedProperties  
+    | extend newValue = tostring(parse_json(modifiedProperties).newValue)
+    | extend countriesAndRegions = tostring(parse_json(newValue).countriesAndRegions)
+    | mv-expand todynamic(countriesAndRegions) 
+    | where isnotempty(countriesAndRegions)
+    | extend ['Named Location name'] = tostring(TargetResources.displayName)
+    | summarize ['Country List']=make_list(countriesAndRegions) by ['Named Location name'];
+union updatedip, updatedcountries
