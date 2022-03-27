@@ -1,0 +1,9 @@
+//Detect users trying to access multiple applications they haven't been granted access to over a short period of time
+//In this example alert when a user attempts to access 2 or more unique applications in an hour
+SigninLogs
+| where ResultType == "50105"
+| summarize
+    ['Denied Application List']=make_set(AppDisplayName),
+    ['Count of Applications']=dcount(AppDisplayName)
+    by UserPrincipalName, bin(TimeGenerated, 30m)
+| where ['Count of Applications'] >= 2
