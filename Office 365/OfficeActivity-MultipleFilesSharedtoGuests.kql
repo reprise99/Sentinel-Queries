@@ -1,0 +1,14 @@
+//Detect when a user shares multiple files to Azure AD guests over a short time frame.
+//Define a time period to check and the threshold of how many Teams to alert on.
+//In this example it would detect when a user shares 10 or more files to a guest within 30 minutes
+let timeframe=30m;
+let threshold=10;
+OfficeActivity
+| where TimeGenerated > ago(1d)
+| where Operation in ("SecureLinkCreated", "AddedToSecureLink")
+| where TargetUserOrGroupType == "Guest" or TargetUserOrGroupName contains "#ext#"
+| summarize
+    ['File Share Count']=dcount(OfficeObjectId),
+    ['List of Files']=make_set(OfficeObjectId)
+    by UserId, bin(TimeGenerated, timeframe)
+| where ['File Share Count'] >= threshold
