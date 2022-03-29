@@ -6,7 +6,7 @@ let threshold=10;
 OfficeActivity
 | where TimeGenerated > ago(1d)
 | where Operation in ("SecureLinkCreated", "AddedToSecureLink")
-| where TargetUserOrGroupType == "Guest" or TargetUserOrGroupName contains "#ext#"
+| where TargetUserOrGroupName contains "#ext#"
 | summarize
     ['File Share Count']=dcount(OfficeObjectId),
     ['List of Files']=make_set(OfficeObjectId)
