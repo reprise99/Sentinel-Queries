@@ -3,7 +3,7 @@ OfficeActivity
 | where TimeGenerated > ago(7d)
 | where OfficeWorkload == "OneDrive"
 | where Operation in ("SecureLinkCreated", "AddedToSecureLink")
-| where TargetUserOrGroupName contains "#EXT#"
+| where TargetUserOrGroupType == "Guest" or TargetUserOrGroupName contains "#EXT#"
 | project
     TimeGenerated,
     ['User Who Shared']=UserId,
