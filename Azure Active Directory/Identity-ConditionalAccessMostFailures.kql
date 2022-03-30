@@ -1,0 +1,14 @@
+//Find which users are failing the most Conditional Access policies, retrieve the total failure count, distinct policy count and the names of the failed policies
+SigninLogs
+| where TimeGenerated > ago (30d)
+| project TimeGenerated, ConditionalAccessPolicies, UserPrincipalName
+| mv-expand ConditionalAccessPolicies
+| extend CAResult = tostring(ConditionalAccessPolicies.result)
+| extend CAPolicyName = tostring(ConditionalAccessPolicies.displayName)
+| where CAResult == "failure"
+| summarize
+    ['Total Conditional Access Failures']=count(),
+    ['Distinct Policy Failure Count']=dcount(CAPolicyName),
+    ['Policy Names']=make_set(CAPolicyName)
+    by UserPrincipalName
+| sort by ['Distinct Policy Failure Count'] desc 
