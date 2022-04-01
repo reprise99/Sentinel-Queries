@@ -1,0 +1,24 @@
+//Find when a process modifies the primary access token and parse the relevant details such as any privilege attached to the token, whether it is system level and the token integrity level
+DeviceEvents
+| where TimeGenerated > ago(30m)
+| project
+    DeviceName,
+    ActionType,
+    AdditionalFields,
+    TimeGenerated,
+    InitiatingProcessParentFileName,
+    InitiatingProcessCommandLine
+| where ActionType == "ProcessPrimaryTokenModified"
+| extend TokenModificationProperties = AdditionalFields.TokenModificationProperties
+| where isnotempty(TokenModificationProperties)
+| parse TokenModificationProperties with * 'tokenChangeDescription":"' ['Token Change Description'] '","privilegesFlags":' ['Token Privileges'] ',"isChangedToSystemToken":' ['is Changed to System Token'] ',"originalTokenIntegrityLevelName":"' ['Original Token Level'] '","currentTokenIntegrityLevelName":"' ['Current Token Level'] '"' *
+| project
+    TimeGenerated,
+    DeviceName,
+    InitiatingProcessParentFileName,
+    InitiatingProcessCommandLine,
+    ['Original Token Level'],
+    ['Current Token Level'],
+    ['Token Privileges'],
+    ['is Changed to System Token'],
+    ['Token Change Description']
