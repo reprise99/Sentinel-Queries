@@ -1,0 +1,10 @@
+//Find any new operations audited in Office 365 in the last 14 days vs the previous 180 days
+let existingoperations=
+    OfficeActivity
+    | where TimeGenerated > ago(180d) and TimeGenerated < ago(14d)
+    | distinct Operation;
+OfficeActivity
+| where TimeGenerated > ago(14d)
+| summarize arg_min(TimeGenerated, *) by Operation
+| where Operation !in (existingoperations)
+| project ['Time First Seen']=TimeGenerated, Operation, OfficeWorkload
