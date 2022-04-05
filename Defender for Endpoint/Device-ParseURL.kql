@@ -1,0 +1,25 @@
+//Use the inbuilt KQL parse_url function to return the various components of a URL
+DeviceEvents
+| where ActionType == "BrowserLaunchedToOpenUrl"
+| extend Url = parse_url(RemoteUrl)
+| extend Hostname = tostring(Url.Host)
+| extend Fragment = tostring(Url.Fragment)
+| extend Password = tostring(Url.Password)
+| extend Path = tostring(Url.Path)
+| extend Port = tostring(Url.Port)
+| extend Query = tostring(Url.Query)
+| extend Schema = tostring(Url.Scheme)
+| extend Username = tostring(Url.Username)
+| where isnotempty(Hostname)
+| project
+    TimeGenerated,
+    DeviceName,
+    RemoteUrl,
+    Schema,
+    Port,
+    Hostname,
+    Path,
+    Query,
+    Username,
+    Password,
+    Fragment
