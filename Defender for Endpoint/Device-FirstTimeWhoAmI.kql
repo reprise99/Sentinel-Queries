@@ -1,7 +1,7 @@
 //Detect when a 'whoami' command is sent for the first time from a device & account combination not seen before
 DeviceProcessEvents
 | where TimeGenerated > ago (30d) and TimeGenerated < ago(1d)
-| project DeviceName, InitiatingProcessAccountName
+| project DeviceName, InitiatingProcessAccountName, InitiatingProcessCommandLine
 | where InitiatingProcessCommandLine contains "whoami"
 | distinct DeviceName, InitiatingProcessAccountName
 | join kind=rightanti (
