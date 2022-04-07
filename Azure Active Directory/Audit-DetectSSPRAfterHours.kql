@@ -1,0 +1,12 @@
+//Alert on successful self service password resets at suspicious times
+AuditLogs
+// extend LocalTime to your time zone
+| extend LocalTime=TimeGenerated + 5h
+| where LocalTime > ago(7d)
+| where OperationName == "Reset password (self-service)"
+| where ResultDescription == "Successfully completed reset."
+// Change hours of the day to suit your company, i.e this would find self service password reset events between 11pm and 4am
+| where hourofday(LocalTime) !between (4 .. 23)
+| extend User = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| extend ['IP Address of User'] = tostring(parse_json(tostring(InitiatedBy.user)).ipAddress)
+| project LocalTime, OperationName, ResultDescription, User, ['IP Address of User']
