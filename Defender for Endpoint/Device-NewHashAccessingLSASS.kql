@@ -1,0 +1,18 @@
+//Detect when a process with a hash not previously seen before in your environment accesses lsass.exe via an open process API call
+let knownhashes=
+    DeviceEvents
+    | where TimeGenerated > ago(30d) and TimeGenerated < ago (1d)
+    | where ActionType == "OpenProcessApiCall"
+    | where FileName == "lsass.exe"
+    | distinct InitiatingProcessSHA256, InitiatingProcessCommandLine;
+DeviceEvents
+| where TimeGenerated > ago (1d)
+| where ActionType == "OpenProcessApiCall"
+| where FileName == "lsass.exe"
+| where InitiatingProcessSHA256 !in (knownhashes)
+| extend DesiredAccess = tostring(AdditionalFields.DesiredAccess)
+| distinct
+    DeviceName,
+    InitiatingProcessAccountName,
+    InitiatingProcessCommandLine,
+    DesiredAccess
