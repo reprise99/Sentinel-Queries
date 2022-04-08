@@ -4,7 +4,7 @@ let knownhashes=
     | where TimeGenerated > ago(30d) and TimeGenerated < ago (1d)
     | where ActionType == "OpenProcessApiCall"
     | where FileName == "lsass.exe"
-    | distinct InitiatingProcessSHA256, InitiatingProcessCommandLine;
+    | distinct InitiatingProcessSHA256;
 DeviceEvents
 | where TimeGenerated > ago (1d)
 | where ActionType == "OpenProcessApiCall"
