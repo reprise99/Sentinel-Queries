@@ -1,0 +1,6 @@
+//Summarize the total count of all local group additions by group name
+DeviceEvents
+| where TimeGenerated > ago (30d)
+| where ActionType == "UserAccountAddedToLocalGroup"
+| summarize ['Local Group Addition Count']=count() by ['Local Group Name']=tostring(AdditionalFields.GroupName)
+| sort by ['Local Group Addition Count']
