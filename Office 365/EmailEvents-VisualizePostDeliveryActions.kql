@@ -1,0 +1,6 @@
+//Visualize any post delivery actions such as email being quarantined or deleted by admins
+EmailPostDeliveryEvents
+| where TimeGenerated > ago (90d)
+| where Action !in ("None", "Unknown")
+| make-series Count=count() on TimeGenerated from ago(45d) to now() step 1d by Action
+| render timechart with (title="Email post delivery actions over time")
