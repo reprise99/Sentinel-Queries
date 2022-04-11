@@ -18,8 +18,8 @@ DeviceEvents
     InitiatingProcessCommandLine,
     DesiredAccess
 
-//Advanced Hunting query
 //Detect when a process with a hash not previously seen before in your environment accesses lsass.exe via an open process API call
+//Advanced Hunting query
 let knownhashes=
     DeviceEvents
     | where Timestamp > ago(30d) and Timestamp < ago (1d)
