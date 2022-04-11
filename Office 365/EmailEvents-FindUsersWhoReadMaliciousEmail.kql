@@ -1,0 +1,25 @@
+//When a malicious email is received, list all the users who received it and all the users who read it
+//First find all the users who received the email
+EmailEvents
+| where EmailDirection == "Inbound"
+//Add in your malicious subject or malicious sender address
+| where Subject == "Malicious Subject Name" or SenderFromAddress == "malicioususer@domain.com"
+| project RecipientEmailAddress, Subject, InternetMessageId, SenderFromAddress
+//Combine that data with the OfficeActivity table which tracks whether an email was accessed
+| join kind=inner (
+    OfficeActivity
+    | where Operation == "MailItemsAccessed"
+    | mv-expand todynamic(Folders)
+    | extend FolderItems = Folders.FolderItems
+    | mv-expand FolderItems
+    | extend InternetMessageId = tostring(FolderItems.InternetMessageId)
+    | project UserId, InternetMessageId
+    )
+    on InternetMessageId
+//Create summary of data listing the count and all the users who received the email vs the list and count of those that read it
+| summarize
+    ['Receipient Count']=dcount(RecipientEmailAddress),
+    ['Users Who Received Email']=make_set(RecipientEmailAddress),
+    ['Reader Count']=dcount(UserId),
+    ['Users Who Read Email']=make_set(UserId)
+    by SenderFromAddress, Subject, InternetMessageId
