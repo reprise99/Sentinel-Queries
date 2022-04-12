@@ -1,0 +1,42 @@
+//Alert when a user triggers an Azure AD risk event followed closely by a mail forward being configured on their mailbox
+//Choose a threshold of the time between events you want to alert one, this example uses 240 minutes between risky event and mail forward creation
+let threshold=240;
+//First find any real time risk events in Azure AD
+AADUserRiskEvents
+| where TimeGenerated > ago (7d)
+| where DetectionTimingType == "realtime"
+| where RiskDetail <> "aiConfirmedSigninSafe"
+| project RiskTime=TimeGenerated, UserPrincipalName, RiskEventType, RiskyIP=IpAddress
+| join kind=inner (
+//Join to Defender for Cloud App events looking for email forward creation events
+    CloudAppEvents
+    | where TimeGenerated > ago (7d)
+    | where ActionType == "Set-Mailbox"
+    | extend UserId = tostring(RawEventData.UserId)
+    | extend ForwardingSetting = tostring(parse_json(tostring(RawEventData.Parameters))[1].Name)
+    | extend ForwardingAddress = tostring(parse_json(tostring(RawEventData.Parameters))[1].Value)
+    | extend StoreandForward = tostring(parse_json(tostring(RawEventData.Parameters))[2].Name)
+    | extend ['Email Stored and Forwarded'] = tostring(parse_json(tostring(RawEventData.Parameters))[2].Value)
+    | where ForwardingSetting == "ForwardingSmtpAddress" and isnotempty(ForwardingAddress)
+    | extend ['Forwarding Email Address']=split(ForwardingAddress, ":")[-1]
+    | project-away ForwardingSetting, StoreandForward
+    | project
+        MailForwardTime=TimeGenerated,
+        UserId,
+        MailForwardIP=IPAddress, ['Forwarding Email Address'], ['Email Stored and Forwarded']
+    ) 
+    on $left.UserPrincipalName == $right.UserId
+//Calculate the time between the two events and alert when less than the threshold
+| extend ['Minutes Between Events']=datetime_diff("minute", MailForwardTime, RiskTime)
+| where ['Minutes Between Events'] < threshold
+| project-away UserId
+| project-reorder
+    UserPrincipalName,
+    RiskTime,
+    MailForwardTime,
+    ['Minutes Between Events'],
+    ['Forwarding Email Address'],
+    ['Email Stored and Forwarded'],
+    RiskyIP,
+    MailForwardIP,
+    RiskEventType
