@@ -1,4 +1,5 @@
 //Detect when a process with a hash not previously seen before in your environment accesses lsass.exe via an open process API call
+//Microsoft Sentinel query
 let knownhashes=
     DeviceEvents
     | where TimeGenerated > ago(30d) and TimeGenerated < ago (1d)
@@ -16,3 +17,21 @@ DeviceEvents
     InitiatingProcessAccountName,
     InitiatingProcessCommandLine,
     DesiredAccess
+
+//Detect when a process with a hash not previously seen before in your environment accesses lsass.exe via an open process API call
+//Advanced Hunting query
+let knownhashes=
+    DeviceEvents
+    | where Timestamp > ago(30d) and Timestamp < ago (1d)
+    | where ActionType == "OpenProcessApiCall"
+    | where FileName == "lsass.exe"
+    | distinct InitiatingProcessSHA256;
+DeviceEvents
+| where Timestamp > ago (1d)
+| where ActionType == "OpenProcessApiCall"
+| where FileName == "lsass.exe"
+| where InitiatingProcessSHA256 !in (knownhashes)
+| distinct DeviceName,
+    InitiatingProcessAccountName,
+    InitiatingProcessCommandLine,
+    AdditionalFields
