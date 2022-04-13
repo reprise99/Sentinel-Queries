@@ -1,0 +1,11 @@
+//Visualize how much is email is being blocked as a percentage of total email over timeEmailEvents
+EmailEvents
+| where TimeGenerated > ago (30d)
+| where EmailDirection == "Inbound"
+| summarize
+    TotalCount=count(),
+    BlockedCount=countif(DeliveryAction in ("Blocked", "Junked"))
+    by bin(TimeGenerated, 6h)
+| extend Percentage=(todouble(BlockedCount) * 100 / todouble(TotalCount))
+| project-away TotalCount, BlockedCount
+| render timechart with (title="Percentage of email blocked over time", ymax=100)
