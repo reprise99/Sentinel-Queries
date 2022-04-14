@@ -1,0 +1,19 @@
+//Parses the user agent into its various components to allow hunting on specific browser versions or patch levels
+SigninLogs
+| extend UserAgentDetail = todynamic(parse_user_agent(UserAgent, "browser"))
+| extend UserAgentFamily = tostring(parse_json(tostring(UserAgentDetail.Browser)).Family)
+| extend UserAgentMajorVersion = tostring(parse_json(tostring(UserAgentDetail.Browser)).MajorVersion)
+| extend UserAgentMinorVersion = tostring(parse_json(tostring(UserAgentDetail.Browser)).MinorVersion)
+| extend UserAgentPatch = tostring(parse_json(tostring(UserAgentDetail.Browser)).Patch)
+| project
+    TimeGenerated,
+    UserPrincipalName,
+    AppDisplayName,
+    ResultType,
+    IPAddress,
+    Location,
+    UserAgentFamily,
+    UserAgentMajorVersion,
+    UserAgentMinorVersion,
+    UserAgentPatch,
+    UserAgent
