@@ -22,4 +22,4 @@ EmailEvents
     EmailDirection,
     Url,
     UrlDomain
-| where UrlDomain in (suspiciousdomains)
+| where UrlDomain in~ (suspiciousdomains)
