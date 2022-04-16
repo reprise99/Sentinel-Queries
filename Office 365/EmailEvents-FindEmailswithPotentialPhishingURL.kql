@@ -1,0 +1,25 @@
+//When Defender for Cloud detects a possible DNS lookup to a phishing domain attempt to find if the URL was part of an email phishing attack
+let suspiciousdomains=
+    SecurityAlert
+    | where AlertName startswith "Communication with possible phishing domain"
+    | mv-expand todynamic(Entities)
+    | extend DomainName = tostring(Entities.DomainName)
+    | where isnotempty(DomainName)
+    | distinct DomainName;
+EmailEvents
+| where EmailDirection == "Inbound"
+| project
+    TimeGenerated,
+    SenderMailFromAddress,
+    RecipientEmailAddress,
+    EmailDirection,
+    NetworkMessageId
+| join kind=inner (EmailUrlInfo) on NetworkMessageId
+| project
+    TimeGenerated,
+    SenderMailFromAddress,
+    RecipientEmailAddress,
+    EmailDirection,
+    Url,
+    UrlDomain
+| where UrlDomain in (suspiciousdomains)
