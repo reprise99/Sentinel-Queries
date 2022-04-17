@@ -2,9 +2,9 @@
 SigninLogs
 | extend UserAgentDetail = todynamic(parse_user_agent(UserAgent, "browser"))
 | extend UserAgentFamily = tostring(parse_json(tostring(UserAgentDetail.Browser)).Family)
-| extend UserAgentMajorVersion = tostring(parse_json(tostring(UserAgentDetail.Browser)).MajorVersion)
-| extend UserAgentMinorVersion = tostring(parse_json(tostring(UserAgentDetail.Browser)).MinorVersion)
-| extend UserAgentPatch = tostring(parse_json(tostring(UserAgentDetail.Browser)).Patch)
+| extend UserAgentMajorVersion = toint(parse_json(tostring(UserAgentDetail.Browser)).MajorVersion)
+| extend UserAgentMinorVersion = toint(parse_json(tostring(UserAgentDetail.Browser)).MinorVersion)
+| extend UserAgentPatch = toint(parse_json(tostring(UserAgentDetail.Browser)).Patch)
 | project
     TimeGenerated,
     UserPrincipalName,

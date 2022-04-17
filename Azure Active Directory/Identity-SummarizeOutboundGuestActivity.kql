@@ -1,0 +1,12 @@
+//Summarize outbound (your users connecting to other tenants) activity by listing the users and which applications they are accessing in each remote tenant
+| where TimeGenerated > ago(30d)
+| where UserType == "Guest"
+| where AADTenantId == HomeTenantId
+| where ResourceTenantId != AADTenantId
+| summarize
+    ['Count of Applications']=dcount(AppDisplayName),
+    ['List of Applications']=make_set(AppDisplayName),
+    ['Count of Users']=dcount(UserPrincipalName),
+    ['List of Users']=make_set(UserPrincipalName)
+    by ResourceTenantId
+| sort by ['Count of Users'] desc 
