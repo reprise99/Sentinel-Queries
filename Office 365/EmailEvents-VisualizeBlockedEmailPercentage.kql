@@ -1,4 +1,4 @@
-//Visualize how much is email is being blocked as a percentage of total email over timeEmailEvents
+//Visualize how much is email is being blocked as a percentage of total email over time
 EmailEvents
 | where TimeGenerated > ago (30d)
 | where EmailDirection == "Inbound"
