@@ -8,7 +8,7 @@ You can deploy the queries from this repo to your Azure environment by deploying
 
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Freprise99%2FSentinel-Queries%2Fmain%2FQuery%2520Pack%2Fazuredeploy.json)
 
-You will need to choose an Azure subscription, Azure resource group and Azure region to deploy to. You can rename the query pack if you want too.
+You will need to choose an Azure subscription, Azure resource group and Azure region to deploy to. You can rename the query pack if you want to.
 
 ![Deploy to Azure](https://github.com/reprise99/sentinel-queries/blob/main/Diagrams/deploytoazure.png?raw=true)
 
