@@ -42,3 +42,5 @@ They are organized into technology, and then into 4 sub categories
 5. Each query should have a description for what it looks for.
 
 ![Query Pack 5](https://github.com/reprise99/sentinel-queries/blob/main/Diagrams/querypack5.png?raw=true)
+
+6. Select run to run the query. You can also edit the queries to make them more relevant to your environment then re-save it to your deployed Query Pack.
