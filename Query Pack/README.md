@@ -6,7 +6,7 @@ This feature is currently in preview but the guidance can be found [here](https:
 
 You can deploy the queries from this repo to your Azure environment by deploying the following template.
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://google.com)
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Freprise99%2FSentinel-Queries%2Fmain%2FQuery%2520Pack%2Fazuredeploy.json)
 
 You will need to choose an Azure subscription, Azure resource group and Azure region to deploy to. You can rename the query pack if you want too.
 
