@@ -4,7 +4,7 @@ Query packs are an Azure Resource Manager object that acts as a container to sto
 
 This feature is currently in preview but the guidance can be found [here](https://docs.microsoft.com/en-us/azure/azure-monitor/logs/query-packs)
 
-You can deploy the query pack to your Azure environment by deploying the following template.
+You can deploy the queries from this repo to your Azure environment by deploying the following template.
 
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://google.com)
 
