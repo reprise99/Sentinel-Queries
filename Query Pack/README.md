@@ -1,6 +1,6 @@
 # Query Packs
 
-Query packs are an Azure Resource Manager object that acts as a container to store queries. This provides a way to save KQL queries and share them across multiple workspaces, or to the community.
+Query packs are an Azure Resource Manager object that act as a container to store queries. This provides a way to save KQL queries and share them across multiple workspaces, or to the community.
 
 This feature is currently in preview but the guidance can be found [here](https://docs.microsoft.com/en-us/azure/azure-monitor/logs/query-packs)
 
