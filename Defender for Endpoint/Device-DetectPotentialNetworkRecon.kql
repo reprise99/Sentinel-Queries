@@ -1,5 +1,5 @@
 //Detect when the same device attempts to connect to multiple devices and is denied within a short time frame
-//This example will alert when the same device attempts to connect to three different devices in 30 minutes
+//This example will alert when the same device attempts to connect to three or more different devices in 30 minutes
 DeviceEvents
 | where ActionType == "FirewallInboundConnectionBlocked"
 | summarize
