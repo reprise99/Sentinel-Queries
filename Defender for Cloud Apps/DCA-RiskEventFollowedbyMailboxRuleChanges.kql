@@ -1,0 +1,28 @@
+//Alert when a user flags an Azure AD risk event followed by creating or updating inbox rules within a short time frame
+//In this example it will detect when the two events are less than 120 minutes apart
+AADUserRiskEvents
+| where TimeGenerated > ago (1d)
+| where DetectionTimingType == "realtime"
+| where RiskDetail <> "aiConfirmedSigninSafe"
+| project RiskTime=TimeGenerated, UserPrincipalName, RiskEventType, RiskyIP=IpAddress
+| join kind=inner (
+    CloudAppEvents
+    | where TimeGenerated > ago (1d)
+    | extend Operation = tostring(RawEventData.Operation)
+    | where Operation in ("New-InboxRule", "Set-InboxRule")
+    | extend UserId = tostring(RawEventData.UserId)
+    | project RuleTime=TimeGenerated, UserId, MailForwardIP=IPAddress, ActivityObjects
+    )
+    on $left.UserPrincipalName == $right.UserId
+| extend ['Minutes Between Events']=datetime_diff("minute", RuleTime, RiskTime)
+| where ['Minutes Between Events'] < 120
+| project-away UserId
+| project-reorder
+    UserPrincipalName,
+    RiskTime,
+    RuleTime,
+    ['Minutes Between Events'],
+    RiskyIP,
+    MailForwardIP,
+    RiskEventType,
+    ActivityObjects
