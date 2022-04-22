@@ -1,0 +1,26 @@
+// Save as a function in your workspace then invoke via its name, i.e if you save as ADGroupChanges
+// ADGroupChanges | where TimeGenerated > ago(1d) | where Action == "Add" and GroupName == "TestGroup1" // will all group additions to "TestGroup1"
+// ADGroupChanges | where TimeGenerated > ago(1d) | where Action == "Remove" and Actor == "User1" // will find all group removals by "User1"
+// This will parse the SecurityEvent log for any group additions or removals.
+SecurityEvent
+| project
+    TimeGenerated,
+    EventID,
+    AccountType,
+    MemberName,
+    SubjectUserName,
+    TargetUserName,
+    Activity,
+    MemberSid
+| where EventID in (4728, 4729, 4732, 4733, 4756, 4757)
+| parse MemberName with * 'CN=' Subject ',OU=' *
+| extend Action = case(EventID in ("4728", "4756", "4732"), strcat("Add"),
+    EventID in ("4729", "4757", "4733"), strcat("Remove"), "unknown")
+| project
+    TimeGenerated,
+    Action,
+    AccountType,
+    Actor=SubjectUserName,
+    Subject,
+    GroupName=TargetUserName,
+    Activity
