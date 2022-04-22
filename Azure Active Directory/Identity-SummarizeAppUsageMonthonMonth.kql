@@ -6,5 +6,5 @@ SigninLogs
     ['Last Month Signins']=dcountif(UserPrincipalName, TimeGenerated > ago(60d) and TimeGenerated < ago(30d)),
     ['This Month Signins']=dcountif(UserPrincipalName, TimeGenerated > ago(30d))
     by AppId, AppDisplayName
-| extend ['Percentage Change']=(todouble(['This Month Signins']) * 100 / todouble(['Last Month Signins']))
+| extend ['Percentage Change']=(todouble(['This Month Signins'] - todouble(['Last Month Signins'])) / todouble(['Last Month Signins']) * 100)
 | sort by AppDisplayName asc 
