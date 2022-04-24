@@ -1,0 +1,8 @@
+//Alert when a user starts a paid trial of a M365 product
+CloudAppEvents
+| extend Operation = tostring(RawEventData.Operation)
+| where Operation == "StartAPaidTrial"
+| extend UserId = tostring(RawEventData.UserId)
+| extend LicenseDisplayName = tostring(RawEventData.LicenseDisplayName)
+| extend Workload = tostring(RawEventData.Workload)
+| project TimeGenerated, Operation, UserId, LicenseDisplayName, Workload
