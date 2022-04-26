@@ -1,0 +1,11 @@
+//Detect when a domain is added or removed to either the allow or block list in Azure AD external identities
+AuditLogs
+| where OperationName == "Update policy"
+| extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| mv-expand TargetResources
+| extend modifiedProperties = parse_json(TargetResources).modifiedProperties
+| mv-expand modifiedProperties  
+| extend newValue = parse_json(modifiedProperties).newValue
+| mv-expand todynamic(newValue)
+| where newValue has "InvitationsAllowedAndBlockedDomainsPolicy"
+| project TimeGenerated, OperationName, Actor, ['New Domain Policy']=newValue
