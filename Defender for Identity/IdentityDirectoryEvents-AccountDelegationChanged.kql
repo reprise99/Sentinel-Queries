@@ -1,0 +1,13 @@
+//Alert when Defender for Identity detects a change in kerberos constrained delegation configuration on a device
+IdentityDirectoryEvents
+| where ActionType == "Account Constrained Delegation changed"
+| extend AF = parse_json(AdditionalFields)
+| extend ['Previous Delegation Setting'] = AF.["FROM AccountConstrainedDelegationState"]
+| extend ['Current Delegation Setting'] = AF.["TO AccountConstrainedDelegationState"]
+| extend ['Device Operating System'] = AF.TargetComputerOperatingSystem
+| project
+    TimeGenerated,
+    TargetDeviceName,
+    ['Device Operating System'],
+    ['Previous Delegation Setting'],
+    ['Current Delegation Setting']
