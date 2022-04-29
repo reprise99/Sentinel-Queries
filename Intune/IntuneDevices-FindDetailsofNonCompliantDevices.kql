@@ -1,0 +1,13 @@
+//When Azure AD flags a device as non compliant, retrieve the details about the devices from Intune
+//First find the device name from the 'device no longer compliant' action
+let devices=
+    AuditLogs
+    | where TimeGenerated > ago (1d)
+    | where OperationName == "Device no longer compliant"
+    | extend DeviceName = tostring(TargetResources[0].displayName)
+    | distinct DeviceName;
+//Lookup those devices in the IntuneDevices table, and retrieve the latest record
+IntuneDevices
+| where TimeGenerated > ago (7d)
+| summarize arg_max(TimeGenerated, *) by DeviceName
+| where DeviceName in (devices)
