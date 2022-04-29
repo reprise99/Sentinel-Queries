@@ -8,6 +8,3 @@ SigninLogs
 | where ['MFA Method'] != "Previously satisfied" and isnotempty(['MFA Method'])
 | sort by Count desc
 | render barchart with (title="Types of MFA Methods used")
-
-
-| where ['Authentication Method'] !in ("Previously satisfied", "Password", "Other")
