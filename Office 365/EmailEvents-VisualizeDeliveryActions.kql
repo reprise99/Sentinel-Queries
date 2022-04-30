@@ -1,0 +1,6 @@
+//Visualize inbound email actions (Delivered, Junked, Blocked) per day over time
+EmailEvents
+| where TimeGenerated > ago (90d)
+| where EmailDirection == "Inbound"
+| summarize Count=count()by DeliveryAction, bin(TimeGenerated, 1d)
+| render columnchart with (kind=unstacked, title="Email delivery actions over time")
