@@ -1,0 +1,16 @@
+//Detect when the role for a user changes to owner or back to standard member in your any of your Teams
+OfficeActivity
+| where Operation == "MemberRoleChanged"
+| mv-expand Members
+| extend User = tostring(Members.UPN)
+| extend x = tostring(Members.Role)
+| extend Action = case(x == "1", strcat("User changed to member"),
+    x == "2", strcat("User changed to owner"), "unknown")
+| where Action in ("User changed to member", "User changed to owner")
+| project
+    TimeGenerated,
+    TeamName,
+    ActorType=UserType,
+    Actor=UserId,
+    UserAdded=User,
+    Action
