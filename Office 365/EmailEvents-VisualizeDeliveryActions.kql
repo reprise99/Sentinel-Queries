@@ -1,6 +1,15 @@
 //Visualize inbound email actions (Delivered, Junked, Blocked) per day over time
+//Microsoft Sentinel query
 EmailEvents
 | where TimeGenerated > ago (90d)
 | where EmailDirection == "Inbound"
 | summarize Count=count()by DeliveryAction, bin(TimeGenerated, 1d)
 | render columnchart with (kind=unstacked, title="Email delivery actions over time")
+
+//Advanced Hunting query. Advanced hunting only retains 30 days data, so to show a similar visualization, we can slice the vents up into 6 hour blocks
+EmailEvents
+| where Timestamp > ago (30d)
+| where EmailDirection == "Inbound"
+| summarize count()by DeliveryAction, bin(Timestamp, 6h)
+//Advanced hunting cannot visualize column charts as well as Sentinel so rendering as a timechart produces a better result
+| render timechart  
