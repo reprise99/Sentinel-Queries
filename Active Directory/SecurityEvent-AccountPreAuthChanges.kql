@@ -1,0 +1,9 @@
+//Detect when Kerberos preauthentication is enabled or disabled for a user
+SecurityEvent
+| where EventID == 4738
+| where AccountType == "User"
+| where UserAccountControl has_any ("2064", "2096")
+| extend Action = case(UserAccountControl has "2096", strcat("Kerberos preauthentication disabled"),
+    UserAccountControl has "2064", strcat("Kerberos preauthentication enabled"),
+    "unknown")
+| project TimeGenerated, Actor=SubjectAccount, User=TargetAccount, Action
