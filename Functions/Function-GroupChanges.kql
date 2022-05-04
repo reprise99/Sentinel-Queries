@@ -1,7 +1,7 @@
 // Save as a function in your workspace then invoke via its name, i.e if you save as GroupChanges
-// GroupChanges | where TimeGenerated > ago(1d) | where Action == "Add" and GroupName == "TestGroup1" // will all group additions to "TestGroup1"
+// GroupChanges | where TimeGenerated > ago(1d) | where Action == "Add" and GroupName == "TestGroup1" // Will find all group additions to "TestGroup1"
 // GroupChanges | where TimeGenerated > ago(1d) | where Action == "Remove" and Actor == "User1" and Environment == "Azure Active Directory" // will find all group removals by "User1" in Azure Active Directory
-// GroupChanges | where TimeGenerated > ago(1d) | where Action == "Add" | will return all Add actions in both Active Directory and Azure Active Directory
+// GroupChanges | where TimeGenerated > ago(1d) | where Action == "Add" | Will find all Add actions in both Active Directory and Azure Active Directory
 let aaduseradded=
     AuditLogs
     | where OperationName == "Add member to group"
