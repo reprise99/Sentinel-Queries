@@ -27,7 +27,8 @@ let adchanges=
     | project TimeGenerated, EventID, AccountType, MemberName, SubjectUserName, TargetUserName
     | where AccountType == "User"
     | where EventID in (4728, 4729, 4732, 4733, 4756, 4757)
-    | parse MemberName with * 'CN=' Target ',OU=' *
+    | extend x = tolower(MemberName)
+    | parse x with * 'CN=' Target ',OU=' *
     | extend Action = case(EventID in ("4728", "4756", "4732"), strcat("Add"),
         EventID in ("4729", "4757", "4733"), strcat("Remove"), "unknown")
     | extend Environment = strcat("Active Directory")
