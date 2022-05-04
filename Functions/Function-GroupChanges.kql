@@ -1,0 +1,35 @@
+// Save as a function in your workspace then invoke via its name, i.e if you save as GroupChanges
+// GroupChanges | where TimeGenerated > ago(1d) | where Action == "Add" and GroupName == "TestGroup1" // will all group additions to "TestGroup1"
+// GroupChanges | where TimeGenerated > ago(1d) | where Action == "Remove" and Actor == "User1" and Environment == "Azure Active Directory" // will find all group removals by "User1" in Azure Active Directory
+// GroupChanges | where TimeGenerated > ago(1d) | where Action == "Add" | will return all Add actions in both Active Directory and Azure Active Directory
+let aaduseradded=
+    AuditLogs
+    | where OperationName == "Add member to group"
+    | extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+    | extend Target = tostring(TargetResources[0].userPrincipalName)
+    | extend GroupName = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[1].newValue)))
+    | where isnotempty(Actor) and isnotempty(Target)
+    | extend Environment = strcat("Azure Active Directory")
+    | extend Action = strcat("Add")
+    | project TimeGenerated, Action, Actor, Target, GroupName, Environment;
+let aaduserremoved=
+    AuditLogs
+    | where OperationName == "Remove member from group"
+    | extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+    | extend GroupName = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[1].oldValue)))
+    | extend Target = tostring(TargetResources[0].userPrincipalName)
+    | where isnotempty(Actor) and isnotempty(Target)
+    | extend Action = strcat("Remove")
+    | extend Environment = strcat("Azure Active Directory")
+    | project TimeGenerated, Action, Actor, Target, GroupName, Environment;
+let adchanges=
+    SecurityEvent
+    | project TimeGenerated, EventID, AccountType, MemberName, SubjectUserName, TargetUserName
+    | where AccountType == "User"
+    | where EventID in (4728, 4729, 4732, 4733, 4756, 4757)
+    | parse MemberName with * 'CN=' Target ',OU=' *
+    | extend Action = case(EventID in ("4728", "4756", "4732"), strcat("Add"),
+        EventID in ("4729", "4757", "4733"), strcat("Remove"), "unknown")
+    | extend Environment = strcat("Active Directory")
+    | project TimeGenerated, Action, Actor=SubjectUserName, Target, GroupName=TargetUserName, Environment;
+union aaduseradded, aaduserremoved, adchanges
