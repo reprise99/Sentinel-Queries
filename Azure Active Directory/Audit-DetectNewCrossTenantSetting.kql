@@ -1,0 +1,22 @@
+//Detect when another Azure AD tenant is added to cross-tenant settings and for each tenant added, retrieve any domain names from your sign in data.
+//First retrieve the event where a cross-tenant setting was added
+AuditLogs
+| where TimeGenerated > ago(1d)
+| where OperationName == "Add a partner to cross-tenant access setting"
+| where Result == "success"
+| extend GuestTenantId = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[0].newValue)))
+| extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| project TimeGenerated, OperationName, Actor, GuestTenantId
+//join back to Azure AD sign in logs for the last 30 days to retrieve inbound guest activity
+| join kind=inner (
+    SigninLogs
+    | where TimeGenerated > ago (180d)
+    | where UserType == "Guest"
+    | where ResultType == 0
+    | where AADTenantId != HomeTenantId and HomeTenantId != ResourceTenantId
+    //Split all the domains belonging to inbound guest domains and summarize the list per TenantId
+    | extend ['Guest Domains'] = split(UserPrincipalName, '@')[-1]
+    | summarize ['Guest Domain Names']=make_set(['Guest Domains']) by HomeTenantId)
+    //Join back to the audit even where the TenantId from the added setting matches the sign in data
+    on $left.GuestTenantId == $right.HomeTenantId
+| project-away HomeTenantId
