@@ -1,0 +1,16 @@
+//First find the SessionId of any medium or high risk sign ins (where risk level is 50 or 100)
+let riskysignins=
+    AADSignInEventsBeta
+    | where Timestamp > ago(7d)
+    | where RiskLevelDuringSignIn in (50, 100)
+    | distinct SessionId;
+CloudAppEvents
+| where Timestamp > ago(7d)
+| extend RawEventData = parse_json(RawEventData)
+| extend SessionId = RawEventData.SessionId
+| where isnotempty(SessionId)
+//Match on the risky sign in SessionId from above
+| where SessionId in (riskysignins)
+| extend Activity = strcat(Application, " - ", ActionType)
+//Create pivot table of all actions by each user
+| evaluate pivot(Activity, count(), AccountDisplayName)
