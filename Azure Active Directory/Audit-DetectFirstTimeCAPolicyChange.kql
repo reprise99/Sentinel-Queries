@@ -1,0 +1,17 @@
+//Detects users who add, delete or update a Azure AD Conditional Access policy for the first time.
+//First find users who have previously made CA policy changes
+let knownusers=
+    AuditLogs
+    | where TimeGenerated > ago(90d) and TimeGenerated < ago(1d)
+    | where OperationName in ("Update conditional access policy", "Add conditional access policy", "Delete conditional access policy")
+    | extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+    | distinct Actor;
+//Find new events from users not in the known user list
+AuditLogs
+| where TimeGenerated > ago(1d)
+| where OperationName in ("Update conditional access policy", "Add conditional access policy", "Delete conditional access policy")
+| extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| extend ['Policy Name'] = tostring(TargetResources[0].displayName)
+| extend ['Policy Id'] = tostring(TargetResources[0].id)
+| where Actor !in (knownusers)
+| project TimeGenerated, Actor, ['Policy Name'], ['Policy Id']
