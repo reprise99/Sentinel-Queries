@@ -1,5 +1,5 @@
 //Detects users who add, delete or update a Azure AD Conditional Access policy for the first time.
-//First find users who have previously made CA policy changes
+//First find users who have previously made CA policy changes, this example looks back 90 days
 let knownusers=
     AuditLogs
     | where TimeGenerated > ago(90d) and TimeGenerated < ago(1d)
