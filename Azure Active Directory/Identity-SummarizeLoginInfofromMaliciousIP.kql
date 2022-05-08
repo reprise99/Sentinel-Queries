@@ -1,0 +1,25 @@
+//When Azure AD Identity Protection flags an IP Address as malicious, find any successful or failed logon events in your tenant from that IP
+//First create a list of success and erorr codes in Azure AD
+let failureCodes = dynamic([50053, 50126, 50055]);
+let successCodes = dynamic([0, 50055, 50057, 50155, 50105, 50133, 50005, 50076, 50079, 50173, 50158, 50072, 50074, 53003, 53000, 53001, 50129]);
+//Find the suspicious IP information from the SecurityAlert table, this example looks back 7 days as this is an offline detection
+let suspiciousip=
+    SecurityAlert
+    | where TimeGenerated > ago (7d)
+    | where AlertName == "Malicious IP address"
+    | extend IPAddress = tostring(parse_json(ExtendedProperties).["Client IP Address"])
+    | distinct IPAddress;
+//Look back 21 days for any other sign in data from that IP address
+SigninLogs
+| where TimeGenerated > ago(14d)
+| where IPAddress in (suspiciousip)
+| where ResultType in(successCodes) or ResultType in(failureCodes)
+//Create a summary showing successful and failed logons from that IP address and which users are affected
+| summarize
+    ['Count of distinct successful sign ins'] = dcountif(UserPrincipalName, (ResultType in(successCodes))),
+    ['List of successful users']=make_set_if(UserPrincipalName, (ResultType in(successCodes))),
+    ['Successful result codes'] = make_set_if(ResultType, (ResultType in(successCodes))),
+    ['Count of distinct failed sign ins'] = dcountif(UserPrincipalName, (ResultType in(failureCodes))),
+    ['List of failed users'] = make_set_if(UserPrincipalName, (ResultType in(failureCodes))),
+    ['Failed result codes'] = make_set_if(ResultType, (ResultType in(failureCodes)))
+    by IPAddress
