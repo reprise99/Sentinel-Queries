@@ -1,0 +1,24 @@
+//Detect when a local user account is created on an endpoint
+//Microsoft Sentinel query
+DeviceEvents
+| where TimeGenerated > ago(7d)
+| where ActionType == "UserAccountCreated"
+//Exclude defaultuser1 which is created by Windows through different processes 
+| where AccountName != "defaultuser1"
+| project
+    TimeGenerated,
+    DeviceName,
+    ['Account Created Name']=AccountName,
+    Actor=InitiatingProcessAccountName
+
+//Advanced Hunting query
+DeviceEvents
+| where Timestamp > ago(7d)
+| where ActionType == "UserAccountCreated"
+//Exclude defaultuser1 which is created by Windows through different processes 
+| where AccountName != "defaultuser1"
+| project
+    Timestamp,
+    DeviceName,
+    ['Account Created Name']=AccountName,
+    Actor=InitiatingProcessAccountName
