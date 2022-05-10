@@ -9,5 +9,5 @@ SigninLogs
 | summarize
     ['List of Failed Application']=make_set(AppDisplayName),
     ['Count of Failed Application']=dcount(AppDisplayName)
-    by UserPrincipalName, 1h
+    by UserPrincipalName, bin(TimeGenerated, 1h)
 | where ['Count of Failed Application'] >= 5
