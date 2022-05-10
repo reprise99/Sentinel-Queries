@@ -1,0 +1,13 @@
+//Alert when a user fails Azure AD Conditional Access policies to 5 or more unique applications within a short time period, this example uses 1 hour.
+SigninLogs
+| where TimeGenerated > ago (1d)
+| project TimeGenerated, ConditionalAccessPolicies, UserPrincipalName, AppDisplayName
+| mv-expand ConditionalAccessPolicies
+| extend CAResult = tostring(ConditionalAccessPolicies.result)
+| extend CAPolicyName = tostring(ConditionalAccessPolicies.displayName)
+| where CAResult == "failure"
+| summarize
+    ['List of Failed Application']=make_set(AppDisplayName),
+    ['Count of Failed Application']=dcount(AppDisplayName)
+    by UserPrincipalName, 1h
+| where ['Count of Failed Application'] >= 5
