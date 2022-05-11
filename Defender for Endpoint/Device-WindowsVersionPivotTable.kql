@@ -1,0 +1,19 @@
+//Create a pivot table of all Windows OS versions in your environment
+//Microsoft Sentinel query
+DeviceInfo
+| where TimeGenerated > ago(30d)
+| where isnotempty(OSBuild)
+| summarize arg_max(TimeGenerated, *) by DeviceId
+| where isnotempty(OSPlatform)
+| evaluate pivot(OSBuild, count(), OSPlatform)
+| sort by OSPlatform desc 
+
+//Advanced Hunting query
+DeviceInfo
+| where Timestamp > ago(30d)
+| where isnotempty(OSBuild)
+| summarize arg_max(Timestamp, *) by DeviceName
+| where isnotempty(OSPlatform)
+| evaluate pivot(OSBuild, count(), OSPlatform)
+| where OSPlatform contains "Windows"
+| sort by OSPlatform desc 
