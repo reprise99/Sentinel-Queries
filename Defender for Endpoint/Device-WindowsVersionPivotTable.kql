@@ -6,6 +6,7 @@ DeviceInfo
 | summarize arg_max(TimeGenerated, *) by DeviceId
 | where isnotempty(OSPlatform)
 | evaluate pivot(OSBuild, count(), OSPlatform)
+| where OSPlatform contains "Windows"
 | sort by OSPlatform desc 
 
 //Advanced Hunting query

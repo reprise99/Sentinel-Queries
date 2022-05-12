@@ -1,0 +1,26 @@
+//Detect anomalies in the amount of files shared to guests in your Office 365 tenant from your users.
+//Starttime and endtime = which period of data to look at, i.e from 21 days ago until today.
+let startdate=21d;
+let enddate=1d;
+//Timeframe = time period to break the data up into, i.e 1 hour blocks.
+let timeframe=1h;
+//Sensitivity = the lower the number the more sensitive the anomaly detection is, i.e it will find more anomalies, default is 1.5
+let sensitivity=2;
+//Threshold = set a threshold to account for low volume anomailies, i.e moving from 1 file shared to 2 within an hour
+let threshold = 5;
+let outlierusers=
+OfficeActivity
+| where Operation in ("AddedToSecureLink","SecureLinkCreated","SecureLinkUpdated")
+| where TargetUserOrGroupType == "Guest" or TargetUserOrGroupName contains "#ext#"
+| make-series GuestFileShares=count() on TimeGenerated from startofday(ago(startdate)) to startofday(ago(enddate)) step timeframe by UserId
+| extend outliers=series_decompose_anomalies(GuestFileShares, sensitivity)
+| mv-expand TimeGenerated, GuestFileShares, outliers
+| where outliers == 1 and GuestFileShares > threshold
+//Optionally visualize the anomalies - remove everything below this line to just retrieve the data instead of visualizing
+| distinct UserId;
+OfficeActivity
+| where Operation in ("AddedToSecureLink","SecureLinkCreated","SecureLinkUpdated")
+| where TargetUserOrGroupType == "Guest" or TargetUserOrGroupName contains "#ext#"
+| where UserId in (outlierusers)
+| make-series GuestFileShares=count() default=0 on TimeGenerated from startofday(ago(startdate)) to startofday(ago(enddate)) step timeframe by UserId 
+| render timechart with (ytitle="Share Count",title="Anomalous Files Shared to Guests")
