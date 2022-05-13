@@ -1,0 +1,26 @@
+//Alert when the phishing status of a Microsoft Form is changed, this could be a sign one of your accounts has been compromised and being used to host malicious Forms
+//Microsoft Sentinel query
+CloudAppEvents
+| where TimeGenerated > ago (7d)
+| extend Operation = tostring(RawEventData.Operation)
+| where Operation == "UpdatePhishingStatus"
+| extend UserId = tostring(RawEventData.UserId)
+| extend Workload = tostring(RawEventData.Workload)
+| extend FormStatus = tostring(parse_json(tostring(RawEventData.ActivityParameters)).FormPhishingStatus)
+| extend FormId = tostring(RawEventData.FormId)
+| extend FormName = tostring(RawEventData.FormName)
+| where FormStatus == "Auto Blocked"
+| project TimeGenerated, Operation, UserId, FormStatus, FormName, FormId
+
+//Advanced Hunting query
+CloudAppEvents
+| where Timestamp > ago (7d)
+| extend Operation = tostring(RawEventData.Operation)
+| where Operation == "UpdatePhishingStatus"
+| extend UserId = tostring(RawEventData.UserId)
+| extend Workload = tostring(RawEventData.Workload)
+| extend FormStatus = tostring(parse_json(tostring(RawEventData.ActivityParameters)).FormPhishingStatus)
+| extend FormId = tostring(RawEventData.FormId)
+| extend FormName = tostring(RawEventData.FormName)
+| where FormStatus == "Auto Blocked"
+| project Timestamp, Operation, UserId, FormStatus, FormName, FormId
