@@ -1,0 +1,17 @@
+//Find Azure AD applications that have more guests than members accessing them
+//Microsoft Sentinel Query
+SigninLogs
+| where TimeGenerated > ago(30d)
+| where ResultType == "0"
+| summarize Guests=dcountif(UserPrincipalName,UserType == "Guest"), Members=dcountif(UserPrincipalName,UserType == "Member") by AppDisplayName
+| where Guests > Members
+| sort by Guests desc 
+
+//Advanced Hunting query
+AADSignInEventsBeta
+| where Timestamp > ago(30d)
+| where LogonType == @"[""interactiveUser""]"
+| where ErrorCode == "0"
+| summarize Guests=dcountif(AccountUpn,IsGuestUser == "true"), Members=dcountif(AccountUpn,IsGuestUser == "false") by Application
+| where Guests > Members
+| sort by Guests desc 
