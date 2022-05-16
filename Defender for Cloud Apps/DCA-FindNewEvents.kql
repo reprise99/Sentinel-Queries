@@ -1,0 +1,51 @@
+//Find new events in Defender for Cloud Apps seen in the last week vs the previously 90 days
+//Microsoft Sentinel query
+//First find all the activities from the last 90 days prior to this week
+let knownactivities=
+    CloudAppEvents
+    | where TimeGenerated > ago(90d) and TimeGenerated < ago (7d)
+    | extend Operation = tostring(RawEventData.Operation)
+    | extend UserId = tostring(RawEventData.UserId)
+    | extend Workload = tostring(RawEventData.Workload)
+    //Create a new column that adds workload and operation together to make the events more readable
+    | extend Activity = strcat(Workload, " - ", Operation)
+    | distinct Activity;
+//Find activities from the last week
+CloudAppEvents
+| where TimeGenerated > ago(7d)
+| extend Operation = tostring(RawEventData.Operation)
+| extend UserId = tostring(RawEventData.UserId)
+| extend Workload = tostring(RawEventData.Workload)
+//Create a new column that adds workload and operation together to make the events more readable
+| extend Activity = strcat(Workload, " - ", Operation)
+//Exclude activities we have already seen
+| where Activity !in (knownactivities)
+//Find the time the new activity was first seen and how many counts seen this week
+| summarize ['First Time Seen']=min(TimeGenerated), Count=count() by Activity
+| sort by Count desc 
+
+
+//Advanced Hunting query, only 30 days of data is retained in Advanced Hunting so we can instead look at events new in the last 3 compared to the prior 30, but you can change the times around if needed
+//First find all the activities from the last 30 days prior to this week
+let knownactivities=
+    CloudAppEvents
+    | where Timestamp > ago(30d) and Timestamp < ago (3d)
+    | extend Operation = tostring(RawEventData.Operation)
+    | extend UserId = tostring(RawEventData.UserId)
+    | extend Workload = tostring(RawEventData.Workload)
+    //Create a new column that adds workload and operation together to make the events more readable
+    | extend Activity = strcat(Workload, " - ", Operation)
+    | distinct Activity;
+//Find activities from the last week
+CloudAppEvents
+| where Timestamp > ago(3d)
+| extend Operation = tostring(RawEventData.Operation)
+| extend UserId = tostring(RawEventData.UserId)
+| extend Workload = tostring(RawEventData.Workload)
+//Create a new column that adds workload and operation together to make the events more readable
+| extend Activity = strcat(Workload, " - ", Operation)
+//Exclude activities we have already seen
+| where Activity !in (knownactivities)
+//Find the time the new activity was first seen and how many counts seen this week
+| summarize ['First Time Seen']=min(Timestamp), Count=count() by Activity
+| sort by Count desc 
