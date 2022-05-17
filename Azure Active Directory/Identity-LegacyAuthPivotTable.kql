@@ -1,0 +1,16 @@
+//Create a pivot table showing all your users who have signed in with legacy auth, which applications they are using (such as IMAP or ActiveSync) and the count of each
+//Microsoft Sentinel query
+SigninLogs
+| where TimeGenerated > ago(30d)
+| where ResultType == 0
+| where ClientAppUsed !in ("Mobile Apps and Desktop clients", "Browser")
+| where isnotempty(ClientAppUsed)
+| evaluate pivot(ClientAppUsed, count(), UserPrincipalName)
+
+//Advanced Hunting query
+AADSignInEventsBeta
+| where Timestamp > ago(30d)
+| where ErrorCode == 0
+| where ClientAppUsed !in ("Mobile Apps and Desktop clients", "Browser")
+| where isnotempty(ClientAppUsed)
+| evaluate pivot(ClientAppUsed, count(), AccountUpn)
