@@ -1,0 +1,56 @@
+//Detect when a user flags a risky sign in within 8 hours of installing a service principal, could be a sign of OAuth consent phishing. This example uses 8 hours between events.
+//Microsoft Sentinel query. This query could also use Azure AD audit logs as a trigger but this example uses Defender for Cloud App logs.
+let threshold=8;
+CloudAppEvents
+| where ActionType == "Add service principal."
+| where AccountType == "Regular"
+| extend UserId = tostring(RawEventData.UserId)
+| project
+    ['Service Principal Install Time']=TimeGenerated,
+    UserId,
+    ['Service Principal Name']=ObjectName
+| join kind=inner (
+    AADUserRiskEvents
+    | where DetectionTimingType == "realtime"
+    | where RiskDetail !in ("aiConfirmedSigninSafe", "userPerformedSecuredPasswordReset")
+    | project
+        ['Risk Event Time']=TimeGenerated,
+        UserId=UserPrincipalName,
+        ['Risk Event IP']=IpAddress
+    )
+    on UserId
+| extend ['Minutes Between Events']=datetime_diff("hour", ['Service Principal Install Time'], ['Risk Event Time'])
+| where ['Minutes Between Events'] < threshold
+| project
+    UserId,
+    ['Risk Event Time'],
+    ['Service Principal Install Time'],
+    ['Minutes Between Events'],
+    ['Risk Event IP'],
+    ['Service Principal Name']
+
+//Advanced Hunting query
+let threshold=8;
+CloudAppEvents
+| where ActionType == "Add service principal."
+| where AccountType == "Regular"
+| extend UserId = tostring(RawEventData.UserId)
+| project
+    ['Service Principal Install Time']=Timestamp,
+    UserId,
+    ['Service Principal Name']=ObjectName
+| join kind=inner (
+    AADSignInEventsBeta
+    | where RiskLevelDuringSignIn in (50, 100)
+    | project ['Risk Event Time']=Timestamp, UserId=AccountUpn, ['Risk Event IP']=IPAddress
+    )
+    on UserId
+| extend ['Minutes Between Events']=datetime_diff("hour", ['Service Principal Install Time'], ['Risk Event Time'])
+| where ['Minutes Between Events'] < threshold
+| project
+    UserId,
+    ['Risk Event Time'],
+    ['Service Principal Install Time'],
+    ['Minutes Between Events'],
+    ['Risk Event IP'],
+    ['Service Principal Name']
