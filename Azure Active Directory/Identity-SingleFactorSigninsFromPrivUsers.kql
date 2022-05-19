@@ -1,0 +1,18 @@
+//Finds users who hold a privileged Azure Active Directory role who are signing into applications using single factor
+let privusers=
+    IdentityInfo
+    | where TimeGenerated > ago(21d)
+    | summarize arg_max(TimeGenerated, *) by AccountUPN
+    | where isnotempty(AssignedRoles)
+    | where AssignedRoles != "[]"
+    | distinct AccountUPN;
+SigninLogs
+| where TimeGenerated > ago(30d)
+| where UserPrincipalName in~ (privusers)
+| where ResultType == 0
+| where AuthenticationRequirement == "singleFactorAuthentication"
+| summarize
+    ['List of Applications']=make_set(AppDisplayName),
+    ['Count of Applications']=dcount(AppDisplayName)
+    by UserPrincipalName
+| sort by ['Count of Applications'] desc 
