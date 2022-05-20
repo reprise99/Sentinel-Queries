@@ -1,6 +1,6 @@
 // Save as a function in your workspace then invoke via its name, i.e if you save as DeviceLookup
 // DeviceLookup | where IPAddresses has "10.10.10.10" // will find all devices that have had the IPAddress 10.10.10.10
-// DeviceLookup | where ['Logged on Admins'] has "user1" // will all devices user1 has logged onto as an admin
+// DeviceLookup | where ['Logged on Admins'] has "user1" // will find all devices user1 has logged onto as an admin
 // DeviceLookup | where array_length( ['Logged on Admins']) > 10 // will find devices with more than 10 local admins logged on 
 // This will parse the last 14 days of the DeviceInfo, DeviceLogonEvents and DeviceNetworkInfo tables for information
 let deviceinfo=
