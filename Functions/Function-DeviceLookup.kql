@@ -1,0 +1,40 @@
+// Save as a function in your workspace then invoke via its name, i.e if you save as DeviceLookup
+// DeviceLookup | where IPAddresses has "10.10.10.10" // will find all devices that have had the IPAddress 10.10.10.10
+// DeviceLookup | where ['Logged on Admins'] has "user1" // will all devices user1 has logged onto as an admin
+// DeviceLookup | where array_length( ['Logged on Admins']) > 10 // will find devices with more than 10 local admins logged on 
+// This will parse the last 14 days of the DeviceInfo, DeviceLogonEvents and DeviceNetworkInfo tables for information
+let deviceinfo=
+    DeviceInfo
+    | where TimeGenerated > ago (14d)
+    | where isnotempty(OSBuild)
+    | summarize arg_max(TimeGenerated, *) by DeviceId
+    | project DeviceName, DeviceId, OSPlatform, OSBuild;
+let logons=
+    DeviceLogonEvents
+    | where TimeGenerated > ago(14d)
+    | project
+        DeviceName,
+        ActionType,
+        LogonType,
+        AccountName,
+        DeviceId,
+        InitiatingProcessCommandLine,
+        AdditionalFields,
+        IsLocalAdmin
+    | where ActionType == "LogonSuccess"
+    | where LogonType == "Interactive"
+    | where AdditionalFields.IsLocalLogon == true
+    | where InitiatingProcessCommandLine == "lsass.exe"
+    | summarize
+        ['Logged on Users']=make_set_if(AccountName, IsLocalAdmin == "false"),
+        ['Logged on Admins']=make_set_if(AccountName, IsLocalAdmin == "true")
+        by DeviceId;
+let ipaddresses=
+    DeviceNetworkInfo
+    | where TimeGenerated > ago (14d)
+    | mv-expand IPAddresses
+    | extend IPAddress = tostring(IPAddresses.IPAddress)
+    | summarize IPAddresses=make_set(IPAddress) by DeviceId;
+deviceinfo
+| lookup logons on DeviceId
+| lookup ipaddresses on DeviceId
