@@ -1,0 +1,15 @@
+//Find new applications your users are signing into in the last month vs the previous 6 months. For each find the first time the app was used, how many total signins and distinct users accessing each one
+let knownapps=
+    SigninLogs
+    | where TimeGenerated > ago(180d) and TimeGenerated < ago (30d)
+    | distinct AppId;
+SigninLogs
+| where TimeGenerated > ago(30d)
+| where AppId !in (knownapps)
+| where isnotempty(AppDisplayName)
+| summarize
+    ['First Time Seen']=min(TimeGenerated),
+    Count=count(),
+    ['User Count']=dcount(UserPrincipalName)
+    by AppDisplayName
+| sort by Count desc 
