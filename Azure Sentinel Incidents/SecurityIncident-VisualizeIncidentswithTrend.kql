@@ -1,0 +1,6 @@
+SecurityIncident
+| summarize arg_min(TimeGenerated, *) by IncidentNumber
+| make-series TotalIncidents=count() default=0 on TimeGenerated in range(ago(90d), now(), 1d)
+| extend (RSquare, SplitIdx, Variance, RVariance, TrendLine)=series_fit_2lines(TotalIncidents)
+| project TimeGenerated, TotalIncidents, TrendLine
+| render timechart with (title="Microsoft Sentinel incidents over time with trend")
