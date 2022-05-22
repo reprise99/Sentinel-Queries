@@ -1,0 +1,12 @@
+//Create a summary of PIM activations for all your users per week
+AuditLogs
+| where TimeGenerated > ago (30d)
+| where OperationName == "Add member to role completed (PIM activation)"
+| extend User = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| extend Role = tostring(TargetResources[0].displayName)
+| where isnotempty(User)
+| summarize
+    ['Roles Activated']=make_list(Role),
+    ['Times Activated']=make_list(TimeGenerated)
+    by User, ['Week Starting']=startofweek(TimeGenerated)
+| sort by User asc, ['Week Starting'] desc 
