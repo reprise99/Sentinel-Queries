@@ -1,0 +1,13 @@
+//Find new devices onboarded to Defender in the last month
+let knowndevices=
+    DeviceNetworkInfo
+    | where TimeGenerated > ago (180d) and TimeGenerated < ago(30d)
+    | distinct DeviceName;
+DeviceNetworkInfo
+| where TimeGenerated > ago (30d)
+| summarize arg_min(TimeGenerated, *) by DeviceName
+| where DeviceName !in (knowndevices)
+| project TimeGenerated, DeviceName
+| extend ['Days Since First Seen']=datetime_diff("day", now(), TimeGenerated)
+| project ['Time First Seen']=TimeGenerated, ['Days Since First Seen'], DeviceName
+| sort by ['Days Since First Seen'] desc  
