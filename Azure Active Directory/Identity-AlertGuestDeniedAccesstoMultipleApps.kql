@@ -1,0 +1,23 @@
+//Alert when Azure AD guest accounts are denied access (either by Conditional Access) or because they aren't granted specific access to multiple applications in a short time period
+//This query uses 3 or more applications within an hour
+//Microsoft Sentinel query
+SigninLogs
+| where TimeGenerated > ago (7d)
+| where UserType == "Guest"
+| where ResultType in ("53003", "50105")
+| summarize
+    ['Application Count']=dcount(AppDisplayName),
+    ['Application List']=make_set(AppDisplayName)
+    by UserPrincipalName, bin(TimeGenerated, 1h)
+| where ['Application Count'] >= 3
+
+//Advanced Hunting query
+AADSignInEventsBeta
+| where Timestamp > ago (7d)
+| where IsGuestUser == 1
+| where ErrorCode  in ("53003", "50105")
+| summarize
+    ['Application Count']=dcount(Application),
+    ['Application List']=make_set(Application)
+    by AccountUpn, bin(Timestamp, 1h)
+| where ['Application Count'] >= 3
