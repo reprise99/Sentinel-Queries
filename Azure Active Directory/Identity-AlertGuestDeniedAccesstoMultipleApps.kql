@@ -1,4 +1,4 @@
-//Alert when Azure AD guest accounts are denied access (either by Conditional Access) or because they aren't granted specific access to multiple applications in a short time period
+//Alert when Azure AD guest accounts are denied access (either by Conditional Access or because they aren't granted specific access) to multiple applications in a short time period
 //This query uses 3 or more applications within an hour
 //Microsoft Sentinel query
 SigninLogs
