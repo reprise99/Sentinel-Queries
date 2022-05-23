@@ -1,0 +1,6 @@
+//Visualize the severity of your MDE alerts (Informational, Low, Medium, High) per day
+SecurityAlert
+| where TimeGenerated > ago (14d)
+| where ProviderName == "MDATP"
+| summarize Count=count()by AlertSeverity, startofday(TimeGenerated)
+| render columnchart with (kind=unstacked, ytitle="Alert Count", xtitle="Day", title="Defender for Endpoint alert severity per day")
