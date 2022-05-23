@@ -1,0 +1,24 @@
+//When an Intune admin initiates a remote wipe of a managed device, retrieve all the relevant information about the device
+IntuneAuditLogs
+| where TimeGenerated > ago (1d)
+| where OperationName == "wipe ManagedDevice"
+| extend DeviceId = tostring(parse_json(tostring(parse_json(Properties).TargetObjectIds))[0])
+| project TimeGenerated, Actor=Identity, DeviceId
+| join kind=inner(
+    IntuneDevices
+//Go back 7 days to make sure we have information on the device and retrieve the lastest record
+    | where TimeGenerated > ago(7d)
+    | summarize arg_max(TimeGenerated, *) by DeviceId
+    )
+    on DeviceId
+| project
+    TimeGenerated,
+    Actor,
+    DeviceId,
+    Model,
+    SerialNumber,
+    OS,
+    PrimaryUser=UserEmail,
+    Ownership,
+    ManagedBy,
+    LastContact
