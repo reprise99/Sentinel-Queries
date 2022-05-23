@@ -1,0 +1,10 @@
+//Summarize the applications installed into Teams in the last month. Apps are grouped into the scope they were installed to - Team, Chat or User and by name and application id
+OfficeActivity
+| where TimeGenerated > ago (30d)
+| where Operation == "AppInstalled"
+| summarize
+    ['App Installed to Team Scope']=countif(OperationScope == "Team"),
+    ['App Installed to Chat Scope']=countif(OperationScope == "Chat"),
+    ['App Installed to User Scope']=countif(OperationScope == "User")
+    by AddonName, AzureADAppId
+| sort by AddonName asc  
