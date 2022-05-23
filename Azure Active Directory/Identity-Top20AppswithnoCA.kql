@@ -1,0 +1,18 @@
+//Find the top 20 most popular applications in your tenant that have had no Conditional Access policies (success or failure) applied
+let apps=
+    SigninLogs
+    | where TimeGenerated > ago (30d)
+    | project TimeGenerated, ConditionalAccessPolicies, AppDisplayName
+//Exclude native Microsoft apps that you can't enforce policy on or that are covered natively in Office 365
+    | where AppDisplayName !in ("Microsoft Office Web Apps Service", "Microsoft App Access Panel", "Office Online Core SSO", "Microsoft Authentication Broker", "Microsoft Account Controls V2", "Microsoft 365 Support Service","Office Online Maker SSO","My Apps","My Profile")
+    | mv-expand ConditionalAccessPolicies
+    | extend CAResult = tostring(ConditionalAccessPolicies.result)
+    | summarize ResultSet=make_set(CAResult) by AppDisplayName
+    | where ResultSet !has "success" or ResultSet !has "failure"
+    | project AppDisplayName;
+SigninLogs
+| where TimeGenerated > ago(30d)
+| where ResultType == 0
+| where AppDisplayName in (apps)
+| summarize Count=count()by AppDisplayName
+| top 20 by Count
