@@ -1,0 +1,47 @@
+// Save as a function in your workspace then invoke via its name, i.e if you save as UserLookup
+// UserLookup | where UserPrincipalName == "user1@domain.com" // will find information for user1@domain.com
+// UserLookup | where Countries has "AU" and ['Authentication Methods'] has "Windows Hello for Business" // will find all users who have signed in from Australia and have used WHFB
+// UserLookup | where JobTitle == "Chief Astronaut" and IPAddresses has "10.10.10.10" // will find all Chief Astronauts who have signed on from 10.10.10.10
+// This will parse the last 14 days of the IdentityInfo, SigninLogs and SecurityAlerts tables for information
+let identity=
+    IdentityInfo
+    | where TimeGenerated > ago (14d)
+    | summarize arg_max(TimeGenerated, *) by AccountUPN
+    | project
+        UserPrincipalName=AccountUPN,
+        AccountName,
+        AccountDisplayName,
+        JobTitle,
+        City,
+        Country;
+let signininfo=
+    SigninLogs
+    | where TimeGenerated > ago(14d)
+    | where ResultType == 0
+    | extend City = tostring(LocationDetails.city)
+    | extend Country = tostring(LocationDetails.countryOrRegion)
+    | extend DeviceName = tostring(DeviceDetail.displayName)
+    | summarize
+        Applications=make_set(AppDisplayName),
+        IPAddresses=make_set(IPAddress),
+        Countries=make_set_if(Country, isnotempty(Country)),
+        Cities=make_set_if(City, isnotempty(City)),
+        Devices=make_set_if(DeviceName, isnotempty(DeviceName))
+        by UserPrincipalName;
+let authmethods=
+    SigninLogs
+    | where TimeGenerated > ago(14d)
+    | where ResultType == 0
+    | mv-expand todynamic(AuthenticationDetails)
+    | extend AuthMethod = tostring(AuthenticationDetails.authenticationMethod)
+    | where AuthMethod !in ("Previously satisfied", "Password", "Other")
+    | summarize ['Authentication Methods']=make_set(AuthMethod) by UserPrincipalName;
+let alerts=
+    SecurityAlert
+    | where TimeGenerated > ago(14d)
+    | extend Alert = strcat(AlertName, " - ", ProductName)
+    | summarize Alerts=make_set(Alert) by UserPrincipalName=CompromisedEntity;
+identity
+| lookup signininfo on UserPrincipalName
+| lookup authmethods on UserPrincipalName
+| lookup alerts on UserPrincipalName
