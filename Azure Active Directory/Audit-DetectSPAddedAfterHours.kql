@@ -1,0 +1,16 @@
+//Detect when a service principal is added to Azure AD after working hours or on weekends
+let Saturday = time(6.00:00:00);
+let Sunday = time(0.00:00:00);
+AuditLogs
+| where TimeGenerated > ago(7d)
+// extend LocalTime to your time zone
+| extend LocalTime=TimeGenerated + 5h
+// Change hours of the day to suit your company, i.e this would find activations between 6pm and 6am
+| where dayofweek(LocalTime) in (Saturday, Sunday) or hourofday(LocalTime) !between (6 .. 18)
+| where OperationName == "Add service principal"
+//Exclude service principals created by managed identities (if you have automation tasks running this may trigger), but you can remove the exclusion if required
+| where parse_json(tostring(InitiatedBy.app)).displayName != "Managed Service Identity"
+| extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| extend AppId = tostring(AdditionalDetails[1].value)
+| extend ['Actor IP Address'] = tostring(parse_json(tostring(InitiatedBy.user)).ipAddress)
+| project LocalTime, Actor, ['Actor IP Address'], AppId
