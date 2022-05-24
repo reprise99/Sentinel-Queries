@@ -1,0 +1,20 @@
+//Detect anomalies in the amount of data being ingested into your Sentinel workspace
+//Sensitivity = the lower the number the more sensitive the anomaly detection is, i.e it will find more anomalies, default is 1.5
+let sensitivity = 1.5;
+//Threshold = set a threshold to account for low volume anomailies, i.e moving from 1 GB of data to 2 GB. This example uses tables larger than 2 GB every 3 hours as a threshold
+let threshold = 2;
+//First find the anomalies by creating a series of all the data ingestion and using series_decompose_anomalies
+let outliers=
+Usage
+| where IsBillable = true
+| make-series TableSize=sum(Quantity / 1024) default=0 on TimeGenerated from ago(7d) to now() step 3h by DataType
+| extend outliers=series_decompose_anomalies(TableSize, sensitivity)
+| mv-expand TimeGenerated, TableSize, outliers
+| where outliers == 1 and TableSize > threshold
+//Optionally visualize the anomalies - remove everything below this line to just retrieve the data instead of visualizing
+| distinct DataType;
+Usage
+| where IsBillable = true
+| where DataType in (outliers)
+| make-series TableSize=sum(Quantity / 1024) default=0 on TimeGenerated from ago(7d) to now() step 3h by DataType
+| render timechart with (ytitle="Table Size",title="Anomalous data ingestion")
