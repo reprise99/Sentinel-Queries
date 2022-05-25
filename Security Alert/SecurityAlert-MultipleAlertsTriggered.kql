@@ -1,0 +1,10 @@
+//Detect when a user or device triggers 3 or more unique alerts within a short time frame. This example uses a period of 4 hours
+SecurityAlert
+| where TimeGenerated > ago(1d)
+| where isnotempty(CompromisedEntity) and CompromisedEntity != "CompromisedEntity"
+| project TimeGenerated, ProviderName, AlertName, CompromisedEntity
+| summarize
+    ['Alert Names']=make_set(AlertName),
+    ['Count of Unique Alerts']=dcount(AlertName)
+    by CompromisedEntity, bin(TimeGenerated, 4h)
+| where ['Count of Unique Alerts'] >= 3
