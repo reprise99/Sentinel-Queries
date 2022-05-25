@@ -1,0 +1,6 @@
+OfficeActivity
+| where Operation == "New-ApplicationAccessPolicy"
+| extend GroupPolicyAppliedTo = tostring(parse_json(Parameters)[1].Value)
+| extend AppId = tostring(parse_json(Parameters)[0].Value)
+| extend AccessRight = tostring(parse_json(Parameters)[2].Value)
+| project TimeGenerated, Actor=UserId, Operation, AccessRight, GroupPolicyAppliedTo, AppId
