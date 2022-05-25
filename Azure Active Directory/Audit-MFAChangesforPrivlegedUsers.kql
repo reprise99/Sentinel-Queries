@@ -11,7 +11,6 @@ let privusers=
 AuditLogs
 | where TimeGenerated > ago(1d)
 | where OperationName in~ ("Admin registered security info", "Admin updated security info", "Admin deleted security info", "User registered security info", "User changed default security info", "User deleted security info")
-| where OperationName in ("Admin registered security info", "Admin updated security info", "Admin deleted security info", "User registered security info", "User changed default security info", "User deleted security info")
 | extend UserPrincipalName = tostring(TargetResources[0].userPrincipalName)
 | where UserPrincipalName in~ (privusers)
 | project TimeGenerated, OperationName, UserPrincipalName
