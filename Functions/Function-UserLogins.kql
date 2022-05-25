@@ -1,0 +1,34 @@
+// Save as a function in your workspace then invoke via its name, i.e if you save as UserLogins
+// UserLogins | where UserPrincipalName == "user1@domain.com" or AccountName == "user2" // will find information for Azure AD user user1@domain.com or AD user user2
+// UserLogins | where Department has "Human Resources" // will find information for all Human Resources staff
+// UserLogins | where AccountDisplayName has "Matt" and ['Last Azure AD Sign In'] > ago(30m) // will find information for anyone with "Matt" in their Azure AD displayname and has signed into Azure AD in the last 30 minutes
+// This will parse the last 30 days of the IdentityInfo, SigninLogs and SecurityEvent tables for logon information
+let idinfo=
+    IdentityInfo
+    | where TimeGenerated > ago(21d)
+    | summarize arg_max (TimeGenerated, *) by AccountUPN
+    | project
+        UserPrincipalName=AccountUPN,
+        AccountName,
+        AccountDisplayName,
+        JobTitle,
+        Country,
+        City,
+        Department;
+let aad=
+    SigninLogs
+    | where TimeGenerated > ago(30d)
+    | where ResultType == 0
+    | summarize arg_max(TimeGenerated, *) by UserPrincipalName
+    | project ['Last Azure AD Sign In']=TimeGenerated, UserPrincipalName;
+let ad=
+    SecurityEvent
+    | where TimeGenerated > ago(30d)
+    | project TimeGenerated, Computer, EventID, TargetUserName
+    | where EventID == "4624"
+    | summarize arg_max(TimeGenerated, TargetUserName) by AccountName=TargetUserName
+    | project ['Last AD Sign In']=TimeGenerated, AccountName;
+idinfo
+| lookup aad on UserPrincipalName
+| lookup ad on AccountName
+| project-reorder UserPrincipalName, AccountName, ['Last AD Sign In'], ['Last Azure AD Sign In']
