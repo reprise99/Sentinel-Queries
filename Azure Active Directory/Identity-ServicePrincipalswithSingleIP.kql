@@ -1,0 +1,33 @@
+//Find Azure AD service principals that have only signed in from a single IP address in the last month. You should apply Conditional Access for workloads on them - https://docs.microsoft.com/en-us/azure/active-directory/conditional-access/workload-identity
+//Microsoft Sentinel query
+//First create a distinct count of IP addresses for each AppId and return any AppId with only 1 distinct IP
+let appid=
+    AADServicePrincipalSignInLogs
+    | where TimeGenerated > ago (30d)
+    | where ResultType == 0
+    | summarize dcount(IPAddress) by AppId
+    | where dcount_IPAddress == 1
+    | distinct AppId;
+//Query the same data for only those AppIds and summarize each IP by the AppId and friendly service principal names
+AADServicePrincipalSignInLogs
+| where TimeGenerated > ago (30d)
+| where ResultType == 0
+| where AppId in (appid)
+| summarize ['Application Ids']=make_set(AppId) by IPAddress, ServicePrincipalName
+
+//Advanced Hunting query
+//First create a distinct count of IP addresses for each AppId and return any AppId with only 1 distinct IP
+let appid=
+    AADSpnSignInEventsBeta
+    | where Timestamp > ago (30d)
+    | where ErrorCode == 0
+    | where IsManagedIdentity == 0
+    | summarize dcount(IPAddress) by ApplicationId
+    | where dcount_IPAddress == 1
+    | distinct ApplicationId;
+//Query the same data for only those AppIds and summarize each IP by the AppId and friendly service principal names
+AADSpnSignInEventsBeta
+| where Timestamp > ago (30d)
+| where ErrorCode == 0
+| where ApplicationId in (appid)
+| summarize ['Application Ids']=make_set(ApplicationId) by IPAddress, ServicePrincipalName
