@@ -1,0 +1,10 @@
+//Visualize the guest domains that have had the most files shares to them from your Office 365 tenant
+OfficeActivity
+| where TimeGenerated > ago(30d)
+| where Operation in~ ("AddedToSecureLink", "SecureLinkCreated", "SecureLinkUpdated")
+| where TargetUserOrGroupType == "Guest" and TargetUserOrGroupName contains "#ext#"
+| extend ['Guest UserPrincipalName'] = tostring(split(TargetUserOrGroupName, "#")[0])
+| extend ['Guest Domain'] = tostring(split(['Guest UserPrincipalName'], "_")[-1])
+| summarize Count=count() by ['Guest Domain']
+| top 20 by Count
+| render barchart with (title="Top guest domains with files shared to")
