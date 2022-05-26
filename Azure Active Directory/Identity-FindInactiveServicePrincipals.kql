@@ -1,0 +1,20 @@
+//Find Azure AD Service Principals that have not successfully signed on for the last 30 days
+AADServicePrincipalSignInLogs
+| where TimeGenerated > ago(180d)
+| where ResultType == 0
+| summarize arg_max(TimeGenerated, *) by AppId
+| project
+    ['Last Successful Logon']=TimeGenerated,
+    ServicePrincipalName,
+    ServicePrincipalId,
+    AppId
+| join kind = leftanti (
+    AADServicePrincipalSignInLogs
+    | where TimeGenerated > ago(30d)
+    | where ResultType == 0
+    | summarize arg_max(TimeGenerated, *) by AppId
+    )
+    on AppId
+| extend ['Days Since Last Logon']=datetime_diff("day", now(), ['Last Successful Logon'])
+| project-reorder ['Days Since Last Logon'], ['Last Successful Logon'], ServicePrincipalName, AppId, ServicePrincipalId
+| sort by ['Last Successful Logon'] desc    

@@ -9,7 +9,8 @@ SigninLogs
     Id,
     ResourceTenantId,
     ResourceIdentity,
-    UserId
+    UserId,
+    AppDisplayName
 | where UserId != "00000000-0000-0000-0000-000000000000"
 | where ResourceIdentity != ''
 | where HomeTenantId != ''
@@ -19,5 +20,5 @@ SigninLogs
     ['Guest Domain Names']=make_set(GuestDomain),
     ['Distinct User Count']=dcount(UserPrincipalName),
     ['List of Guest Users']=make_set(UserPrincipalName)
-    by HomeTenantId
+    by HomeTenantId, AppDisplayName
 | sort by ['Distinct User Count'] desc 
