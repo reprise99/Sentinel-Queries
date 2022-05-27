@@ -1,0 +1,30 @@
+//Find Managed Identity service principals that have not successfully signed in in the last 30 days, for each Managed Identity list the Azure resources it has accessed
+//Hopefully it means the resource has already been decommissioned, if not, check to see if it still requires the access it has been granted
+//First find any Managed Identities that haven't successfully signed on for 30 days
+AADManagedIdentitySignInLogs
+| where TimeGenerated > ago(365d)
+| where ResultType == "0"
+| summarize arg_max(TimeGenerated, *) by AppId
+| extend ['Days Since Last Signin'] = datetime_diff("day", now(), TimeGenerated)
+| project
+    ['Last Sign in Time']=TimeGenerated,
+    ServicePrincipalName,
+    ServicePrincipalId,
+    ['Days Since Last Signin'],
+    AppId
+| where ['Days Since Last Signin'] > 30
+//Join that list of Managed Identities back to the sign in data and retrieve the Azure resources (such as Key Vault or Storage) it has accessed
+| join kind=inner (
+    AADManagedIdentitySignInLogs
+    | where TimeGenerated > ago(365d)
+    | where ResultType == "0"
+    | summarize ['Resources Accessed']=make_set(ResourceDisplayName) by AppId)
+    on AppId
+| project-reorder
+    ['Last Sign in Time'],
+    ['Days Since Last Signin'],
+    ServicePrincipalName,
+    ServicePrincipalId,
+    AppId,
+    ['Resources Accessed']
+| order by ['Days Since Last Signin'] desc
