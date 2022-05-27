@@ -1,0 +1,64 @@
+// Save as a function in your workspace then invoke via its name, i.e if you save as TeamsAccess
+// TeamsAccess | where TeamName == "Secret Project"  // will all events, user adds, removes and access changes for the "Secret Project" team
+// TeamsAccess | where Actor == "user1@domain.com" // will find all events, user adds, removes and changes performed by user1@domain.com
+// TeamsAccess | where TimeGenerated > ago(1d) and Activity == "User added as guest" // will find all guests being added in the last day
+// This functions makes the data structure for the different events consistent so you can query them quickly
+let memberadded=
+    OfficeActivity
+    | where Operation == "MemberAdded"
+    | where CommunicationType == "Team"
+    | mv-expand Members
+    | extend User = tostring(Members.UPN)
+    | extend x = tostring(Members.Role)
+    | extend Activity = case(x == "1", strcat("User added as member"),
+        x == "2", strcat("User added as owner"), 
+        x == "3", strcat("User added as guest"),
+        "unknown")
+    | extend Action = "Add"
+    | project
+        TimeGenerated,
+        Action,
+        Activity,
+        Actor=UserId,
+        User,
+        TeamName,
+        TeamGuid,
+        ActorType=UserType;
+let memberremoved=
+    OfficeActivity
+    | where Operation == "MemberRemoved"
+    | where CommunicationType == "Team"
+    | mv-expand Members
+    | extend User = tostring(Members.UPN)
+    | extend Activity = "User removed from Team"
+    | extend ActorType = "User"
+    | extend Action = "Remove"
+    | project
+        TimeGenerated,
+        Action,
+        Activity,
+        Actor=UserId,
+        User,
+        TeamName,
+        TeamGuid,
+        ActorType=UserType;
+let memberaccesschanged=
+    OfficeActivity
+    | where Operation == "MemberRoleChanged"
+    | mv-expand Members
+    | extend User = tostring(Members.UPN)
+    | extend x = tostring(Members.Role)
+    | extend Activity = case(x == "1", strcat("User changed to member"),
+        x == "2", strcat("User changed to owner"), "unknown")
+    | extend Action = "Change"
+    | project
+        TimeGenerated,
+        Action,
+        Activity,
+        Actor=UserId,
+        User,
+        TeamName,
+        TeamGuid,
+        ActorType=UserType;
+union memberadded, memberremoved, memberaccesschanged
+| project-reorder TimeGenerated, Action, Activity, User, Actor, ActorType, TeamName, TeamGuid
