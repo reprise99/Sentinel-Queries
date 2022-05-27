@@ -1,0 +1,13 @@
+//Calculate the percentage that each guest domain is contributing to total downloads from your Office 365 tenant
+OfficeActivity
+| where TimeGenerated > ago(30d)
+| where Operation in ("FileSyncDownloadedFull", "FileDownloaded")
+| where UserId contains "#EXT#"
+| extend ['Guest UserPrincipalName'] = tostring(split(UserId, "#")[0])
+| extend ['Guest Domain'] = tostring(split(['Guest UserPrincipalName'], "_")[-1])
+| summarize Count=count() by ['Guest Domain']
+| as T
+| extend Percentage = round(100.0 * Count / toscalar (T
+    | summarize sum(Count)), 2)
+| project-reorder ['Guest Domain'], Count, Percentage
+| sort by Percentage desc 
