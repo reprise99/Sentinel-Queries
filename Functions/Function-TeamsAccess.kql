@@ -2,7 +2,7 @@
 // TeamsAccess | where TeamName == "Secret Project"  // will all events, user adds, removes and access changes for the "Secret Project" team
 // TeamsAccess | where Actor == "user1@domain.com" // will find all events, user adds, removes and changes performed by user1@domain.com
 // TeamsAccess | where TimeGenerated > ago(1d) and Activity == "User added as guest" // will find all guests being added in the last day
-// This functions makes the data structure for the different events consistent so you can query them quickly
+// This function makes the data structure for the different events consistent so you can query them quickly
 let memberadded=
     OfficeActivity
     | where Operation == "MemberAdded"
