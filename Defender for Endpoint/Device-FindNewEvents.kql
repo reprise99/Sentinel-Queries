@@ -1,0 +1,12 @@
+//Find any new DeviceEvents found in your environment over the last week compared to the last 6 months
+//First find existing action types over the six months
+let knownevents=
+    DeviceEvents
+    | where TimeGenerated > ago (180d) and TimeGenerated < ago(7d)
+    | distinct ActionType;
+//Find new action types in the last week, the time they were first seen and how many counts seen this week
+DeviceEvents
+| where TimeGenerated > ago(7d)
+| where ActionType !in (knownevents)
+| summarize ['First Time Seen']=min(TimeGenerated), Count=count() by ActionType
+| sort by Count desc 
