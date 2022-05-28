@@ -1,0 +1,9 @@
+//Visualize signins from External Azure AD guests (those that belong to another Azure AD tenant) vs External Guests (such as Gmail) to your tenant
+SigninLogs
+| where TimeGenerated > ago (45d)
+| where UserType == "Guest"
+| summarize
+    ['External Guests']=countif(ResourceTenantId == HomeTenantId),
+    ['External Azure AD Guests']=countif(ResourceTenantId != HomeTenantId)
+    by bin(TimeGenerated, 1d)
+| render timechart with (title="External Azure AD Guests vs External Guests", ytitle="Count")
