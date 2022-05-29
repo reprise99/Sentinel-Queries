@@ -1,0 +1,38 @@
+//Detect the first time a service principal fails Conditional Access
+//Microsoft Sentinel query
+//First find service principals that have previously failed
+let knownfailures=
+    AADServicePrincipalSignInLogs
+    | where TimeGenerated > ago(30d) and TimeGenerated < ago (1d)
+    | where ResultType == "53003"
+    | distinct AppId;
+//Find any new failures in the last day
+AADServicePrincipalSignInLogs
+| where TimeGenerated > ago(1d)
+| where ResultType == "53003"
+| where AppId !in (knownfailures)
+| project
+    TimeGenerated,
+    ServicePrincipalName,
+    ServicePrincipalId,
+    AppId,
+    ConditionalAccessPolicies,
+    IPAddress
+
+//Detect the first time a service principal fails Conditional Access
+//Advanced Hunting query
+let knownfailures=
+    AADSpnSignInEventsBeta
+    | where Timestamp > ago(30d) and Timestamp < ago (1d)
+    | where ErrorCode == "53003"
+    | distinct ApplicationId;
+AADSpnSignInEventsBeta
+| where Timestamp > ago(1d)
+| where ErrorCode == "53003"
+| where ApplicationId  !in (knownfailures)
+| project
+    Timestamp,
+    ServicePrincipalName,
+    ServicePrincipalId,
+    ApplicationId,
+    IPAddress
