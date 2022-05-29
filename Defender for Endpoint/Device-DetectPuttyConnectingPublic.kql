@@ -1,0 +1,29 @@
+//Detect successful internal to public connections using Putty
+DeviceNetworkEvents
+| where ActionType == "ConnectionSuccess"
+| where LocalIPType == "Private"
+| where RemoteIPType == "Public"
+| where InitiatingProcessCommandLine contains "putty.exe"
+| project
+    TimeGenerated,
+    DeviceName,
+    InitiatingProcessAccountName,
+    LocalIP,
+    RemoteIP,
+    RemoteUrl,
+    RemotePort
+
+//Advanced Hunting query
+DeviceNetworkEvents
+| where ActionType == "ConnectionSuccess"
+| where LocalIPType == "Private"
+| where RemoteIPType == "Public"
+| where InitiatingProcessCommandLine contains "putty.exe"
+| project
+    Timestamp,
+    DeviceName,
+    InitiatingProcessAccountName,
+    LocalIP,
+    RemoteIP,
+    RemoteUrl,
+    RemotePort
