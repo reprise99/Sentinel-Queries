@@ -1,0 +1,27 @@
+//Summarize your devices by their RDP activity. The data is sorted to show total outbound RDP connections, a count of distinct RDP connections and the list of IP's connected to.
+//Data is sorted by the devices with the most unique outbound RDP connections. Those devices have the biggest lateral movement blast radius.
+//Microsoft Sentinel query
+DeviceNetworkEvents
+| where TimeGenerated > ago(30d)
+| where ActionType == "ConnectionSuccess"
+| where RemotePort == "3389"
+| where InitiatingProcessCommandLine <> "\"Microsoft.Tri.Sensor.exe\""
+| summarize
+    ['RDP Outbound Connection Count']=count(),
+    ['RDP Distinct Outbound Endpoint Count']=dcount(RemoteIP),
+    ['RDP Outbound Endpoints']=make_set(RemoteIP)
+    by DeviceName
+| sort by ['RDP Distinct Outbound Endpoint Count'] desc 
+
+//Advanced Hunting query
+DeviceNetworkEvents
+| where Timestamp > ago(30d)
+| where ActionType == "ConnectionSuccess"
+| where RemotePort == "3389"
+| where InitiatingProcessCommandLine <> "\"Microsoft.Tri.Sensor.exe\""
+| summarize
+    ['RDP Outbound Connection Count']=count(),
+    ['RDP Distinct Outbound Endpoint Count']=dcount(RemoteIP),
+    ['RDP Outbound Endpoints']=make_set(RemoteIP)
+    by DeviceName
+| sort by ['RDP Distinct Outbound Endpoint Count'] desc 
