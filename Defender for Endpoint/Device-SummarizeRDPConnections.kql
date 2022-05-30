@@ -5,6 +5,7 @@ DeviceNetworkEvents
 | where TimeGenerated > ago(30d)
 | where ActionType == "ConnectionSuccess"
 | where RemotePort == "3389"
+//Exclude Defender for Identity that uses an initial RDP connection to map your network
 | where InitiatingProcessCommandLine <> "\"Microsoft.Tri.Sensor.exe\""
 | summarize
     ['RDP Outbound Connection Count']=count(),
@@ -18,6 +19,7 @@ DeviceNetworkEvents
 | where Timestamp > ago(30d)
 | where ActionType == "ConnectionSuccess"
 | where RemotePort == "3389"
+//Exclude Defender for Identity that uses an initial RDP connection to map your network
 | where InitiatingProcessCommandLine <> "\"Microsoft.Tri.Sensor.exe\""
 | summarize
     ['RDP Outbound Connection Count']=count(),
