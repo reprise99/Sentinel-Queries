@@ -1,0 +1,84 @@
+//Detect when a user mounts an ISO file and then within 20 minutes launches a browser. These events could be unrelated because a BrowserLaunchedToOpenUrl event doesn't confirm if the lnk file was in the ISO file. 
+//The detection is just based on time between mounting an ISO file and then launching a URL.
+//Microsoft Sentinel query
+//Find events where an ISO file is mounted by detecting the creation of a .iso.lnk file
+DeviceFileEvents
+| where TimeGenerated > ago(1d)
+| where ActionType == "FileCreated"
+//This may create some false positives with files named iso.lnk at the end like summary-ciso.lnk
+| where FileName endswith "iso.lnk"
+| project
+    ISOMountTime=TimeGenerated,
+    DeviceName,
+    FileName,
+    FolderPath,
+    InitiatingProcessAccountName
+//Join to our DeviceEvents where a browser is opened to launch a URL
+| join kind=inner(
+    DeviceEvents
+    | where TimeGenerated > ago(1d)
+    | where ActionType == "BrowserLaunchedToOpenUrl"
+    //Find only RemoteURLs that are web sites
+    | where RemoteUrl startswith "http"
+    | project
+        URLOpenTime=TimeGenerated,
+        DeviceName,
+        InitiatingProcessAccountName,
+        RemoteIP,
+        RemoteUrl,
+        RemotePort
+    )
+    on DeviceName, InitiatingProcessAccountName
+//Find browser opened to URL events that happened within 20 minutes of the ISO file being mounted
+| where URLOpenTime between ((ISOMountTime - timespan(0min)) .. (ISOMountTime + timespan(20min)))
+| extend ['ISO FileName'] = trim(@".lnk", FileName)
+| project
+    ISOMountTime,
+    URLOpenTime,
+    ['ISO FileName'],
+    DeviceName,
+    InitiatingProcessAccountName,
+    RemoteUrl,
+    RemoteIP,
+    RemotePort
+
+//Advanced Hunting query
+DeviceFileEvents
+| where Timestamp > ago(1d)
+| where ActionType == "FileCreated"
+//This may create some false positives with files named iso.lnk at the end like summary-ciso.lnk
+| where FileName endswith "iso.lnk"
+| project
+    ISOMountTime=Timestamp,
+    DeviceName,
+    FileName,
+    FolderPath,
+    InitiatingProcessAccountName
+//Join to our DeviceEvents where a browser is opened to launch a URL
+| join kind=inner(
+    DeviceEvents
+    | where Timestamp > ago(1d)
+    | where ActionType == "BrowserLaunchedToOpenUrl"
+    //Find only RemoteURLs that are web sites
+    | where RemoteUrl startswith "http"
+    | project
+        URLOpenTime=Timestamp,
+        DeviceName,
+        InitiatingProcessAccountName,
+        RemoteIP,
+        RemoteUrl,
+        RemotePort
+    )
+    on DeviceName, InitiatingProcessAccountName
+//Find browser opened to URL events that happened within 20 minutes of the ISO file being mounted
+| where URLOpenTime between ((ISOMountTime - timespan(0min)) .. (ISOMountTime + timespan(20min)))
+| extend ['ISO FileName'] = trim(@".lnk", FileName)
+| project
+    ISOMountTime,
+    URLOpenTime,
+    ['ISO FileName'],
+    DeviceName,
+    InitiatingProcessAccountName,
+    RemoteUrl,
+    RemoteIP,
+    RemotePort
