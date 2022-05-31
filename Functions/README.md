@@ -17,3 +17,7 @@ Then you can run your saved function using a single line query.
 You can then query within the function as you would a normal query.
 
 ![Run function query](https://github.com/reprise99/Sentinel-Queries/blob/main/Functions/ReadmeImages/function4.png?raw=true)
+
+Some functions require a parameter specified, such as the UserInvestigation function. These functions take an input and pass them through to the function. This one requires a string called user, and you can leave default value.
+
+![Function parameter](https://github.com/reprise99/Sentinel-Queries/blob/main/Functions/ReadmeImages/function5.png?raw=true)
