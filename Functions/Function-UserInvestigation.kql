@@ -1,6 +1,7 @@
 //Single function to investigate potential suspicious activity across several data sources. The function will find the following information.
 //Azure AD Sign in Logs - legacy auth attempts, conditional access failures, new user agents or locations found in the last day
 //Azure AD Audit Logs - add service principals, consent to permissions, add credentials to service principals, any MFA configuration changes
+//Azure AD risk events - any non automatically dismissed risk events
 //Defender for Cloud Apps - mailbox rule changes
 //Security Alert - any alerts from the various products such as Azure AD Identity Protection, Defender for Office 365 etc
 //Save as a function in your workspace then invoke via its name, ie UserInvestigation("user@domain.com"). Your function requires a parameter as per https://github.com/reprise99/Sentinel-Queries/tree/main/Functions
