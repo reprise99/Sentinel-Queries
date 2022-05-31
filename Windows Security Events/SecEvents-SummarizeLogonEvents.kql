@@ -1,0 +1,16 @@
+//Create a summary of interactive and remote interactive (RDP) logons to your Windows devices using the security event logs
+SecurityEvent
+| where TimeGenerated > ago (30d)
+| where EventID == "4624"
+| where LogonType in ("2", "10")
+//Search for just domain logon events but matching subject and target domain name fields
+| where SubjectDomainName == TargetDomainName
+| summarize
+    ['Interactive logon count']=countif(LogonType == 2),
+    ['Interactive distinct logon count']=dcountif(Account, LogonType == 2),
+    ['List of interactive logons']=make_set_if(Account, LogonType == 2),
+    ['Remote interactive logon count']=countif(LogonType == 10),
+    ['Remote interactive distinct logon count']=dcountif(Account, LogonType == 10),
+    ['List of remote interactive logons']=make_set_if(Account, LogonType == 10)
+    by Computer
+| sort by Computer asc 
