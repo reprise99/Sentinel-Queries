@@ -1,0 +1,98 @@
+//Single function to investigate potential suspicious activity across several data sources. The function will find the following information.
+//Save as a function in your workspace then invoke via its name, ie UserInvestigation("user@domain.com"). Your function requires a parameter as per https://github.com/reprise99/Sentinel-Queries/tree/main/Functions
+//Azure AD Sign in Logs - legacy auth attempts, conditional access failures, new user agents or locations found in the last day
+//Azure AD Audit Logs - add service principals, consent to permissions, add credentials to service principals, any MFA configuration changes
+//Defender for Cloud Apps - mailbox rule changes
+//Security Alert - any alerts from the various products such as Azure AD Identity Protection, Defender for Office 365 etc
+let legacyauth=
+SigninLogs
+| where TimeGenerated > ago (30d)
+| where UserPrincipalName =~ user
+| where ClientAppUsed !in ("Mobile Apps and Desktop clients", "Browser") and isnotempty( ClientAppUsed)
+| extend Indicator = "Legacy auth attempts detected"
+| extend ['Event Source'] = "Azure AD Signin Logs"
+| project TimeGenerated, UserPrincipalName, AppDisplayName, ClientAppUsed, IPAddress, Location, UserAgent, ResultType, ResultDescription, Indicator, ['Event Source'], TableName=Type, CorrelationId;
+let cafailures=
+SigninLogs
+| where TimeGenerated > ago (30d)
+| where UserPrincipalName =~ user
+| where ResultType == "53003"
+| extend Indicator = "Conditional Access failures detected"
+| extend ['Event Source'] = "Azure AD Signin Logs"
+| project TimeGenerated, UserPrincipalName, AppDisplayName, ClientAppUsed, IPAddress, tostring(Location), UserAgent, ResultType, ResultDescription, Indicator, ['Event Source'], TableName=Type, CorrelationId;
+let newuseragents=
+SigninLogs
+| where TimeGenerated > ago(30d) and TimeGenerated < ago(1d)
+| where UserPrincipalName =~ user
+| distinct UserAgent
+| join kind=rightanti (
+SigninLogs
+| where TimeGenerated > ago (1d)
+| where UserPrincipalName =~ user
+) on UserAgent
+| extend Indicator = "New user agent detected in last day"
+| extend ['Event Source'] = "Azure AD Signin Logs"
+| project TimeGenerated, UserPrincipalName, AppDisplayName, ClientAppUsed, IPAddress, tostring(Location), UserAgent, ResultType, ResultDescription, Indicator, ['Event Source'], TableName=Type, CorrelationId;
+let newlocations=
+SigninLogs
+| where TimeGenerated > ago(30d) and TimeGenerated < ago(1d)
+| where UserPrincipalName =~ user
+| where TimeGenerated > ago(30d) and TimeGenerated < ago(1d)
+| distinct Location
+| join kind=rightanti (
+SigninLogs
+| where TimeGenerated > ago (1d)
+| where UserPrincipalName =~ user
+) on Location
+| extend Indicator = "New location detected in last day"
+| extend ['Event Source'] = "Azure AD Signin Logs"
+| project TimeGenerated, UserPrincipalName, AppDisplayName, ClientAppUsed, IPAddress, tostring(Location), UserAgent, ResultType, ResultDescription, Indicator, ['Event Source'], TableName=Type, CorrelationId;
+let riskevents=
+AADUserRiskEvents
+| where TimeGenerated > ago (30d)
+| where UserPrincipalName =~ (user)
+| where RiskDetail <> "aiConfirmedSigninSafe"
+| extend Indicator = "Azure AD risk event detected"
+| extend ['Event Source'] = "Azure AD Risky Signin Logs"
+| project TimeGenerated, UserPrincipalName, IPAddress=IpAddress, tostring(Location), RiskState, RiskLevel, RiskEventType, RiskDetail, Indicator, ['Event Source'], TableName=Type, CorrelationId;
+let audit=
+AuditLogs
+| where TimeGenerated > ago (30d)
+| where OperationName in~ ("Add service principal","Consent to application","Update application – Certificates and secrets management ","User registered security info", "User changed default security info", "User deleted security info")
+| extend UserPrincipalName = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| where UserPrincipalName =~ user
+| extend Indicator = case (
+    OperationName == "Add service principal", strcat("Azure AD service principal added"),
+    OperationName == "Consent to application", strcat("Azure AD service principal permissions consented to"),
+    OperationName == "Update application – Certificates and secrets management ", strcat("Azure AD service principal credentials added"),
+    OperationName == "User registered security info", strcat("MFA method registered"),
+    OperationName == "User changed default security info", strcat("MFA default method changed"),
+    OperationName == "User deleted security info", strcat("MFA method deleted"),
+    "unknown"
+    )
+| extend ['Event Source'] = "Azure AD Audit Logs"
+| extend IPAddress = tostring(parse_json(tostring(InitiatedBy.user)).ipAddress)
+| project TimeGenerated, IPAddress, Indicator, ['Event Source'], TableName=Type, CorrelationId;
+let cloudapp=
+CloudAppEvents
+| where TimeGenerated > ago (30d)
+| where ActionType in ("New-InboxRule","Remove-InboxRule","Set-InboxRule")
+| extend UserPrincipalName = tostring(RawEventData.UserId)
+| where UserPrincipalName =~ user
+| extend CorrelationId = tostring(RawEventData.Id)
+| extend ['Event Source'] = "Defender for Cloud Apps Logs"
+| extend Indicator = case (
+    ActionType == "New-InboxRule", strcat("Exchange Online inbox rule created"),
+    ActionType == "Remove-InboxRule", strcat("Exchange Online inbox rule deleted"),
+    ActionType == "Set-InboxRule", strcat("Exchange Online inbox rule changed"),
+    "unknown"
+    )
+| project TimeGenerated, UserPrincipalName, IPAddress, Indicator, TableName=Type, ['Event Source'];
+let alerts=
+SecurityAlert
+| where TimeGenerated > ago (30d)
+| where CompromisedEntity =~ user
+| project TimeGenerated, UserPrincipalName=CompromisedEntity, Indicator=AlertName, TableName=Type, ['Event Source']=ProductName;
+union legacyauth, cafailures, newuseragents, newlocations, riskevents, audit, cloudapp, alerts
+| project-reorder TimeGenerated, UserPrincipalName, Indicator, ['Event Source'], TableName, IPAddress
+| sort by Indicator asc, TimeGenerated desc
