@@ -1,0 +1,24 @@
+//Visualize the most common ISO files being mounted on your devices
+//Microsoft Sentinel query
+DeviceFileEvents
+| where TimeGenerated > ago(30d)
+| where ActionType == "FileCreated"
+//When an ISO file is mounted a .iso.lnk file is created, take that name and trim the .lnk out to retrieve the ISO name
+| where FileName endswith "iso.lnk"
+| extend ['ISO FileName'] = trim(@".lnk",FileName)
+//Summarize and visualize the files
+| summarize Count=count() by ['ISO FileName']
+| top 20 by Count
+| render barchart with (title="Most common ISO files being mounted")
+
+//Advanced Hunting query
+DeviceFileEvents
+| where Timestamp > ago(30d)
+| where ActionType == "FileCreated"
+//When an ISO file is mounted a .iso.lnk file is created, take that name and trim the .lnk out to retrieve the ISO name
+| where FileName endswith "iso.lnk"
+| extend ['ISO FileName'] = trim(@".lnk",FileName)
+//Summarize and visualize the files
+| summarize Count=count() by ['ISO FileName']
+| top 20 by Count
+| render columnchart 
