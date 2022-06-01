@@ -1,0 +1,17 @@
+//Detect when a user activates an Azure AD PIM role never seen by them before
+AuditLogs
+| where TimeGenerated > ago(180d) and TimeGenerated < ago(1d)
+| where OperationName == "Add member to role completed (PIM activation)"
+| extend User = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| extend ['Azure AD Role Name'] = tostring(TargetResources[0].displayName)
+| distinct User, ['Azure AD Role Name']
+| join kind=rightanti (
+    AuditLogs
+    | where TimeGenerated > ago(1d)
+    | where OperationName == "Add member to role completed (PIM activation)"
+    | extend User = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+    | extend ['Azure AD Role Name'] = tostring(TargetResources[0].displayName)
+    )
+    on User, ['Azure AD Role Name']
+| extend IPAddress = tostring(parse_json(tostring(InitiatedBy.user)).ipAddress)
+| project TimeGenerated, User, ['Azure AD Role Name']
