@@ -16,7 +16,7 @@ DeviceEvents
 //Advanced Hunting query
 DeviceEvents
 | where Timestamp > ago (30d)
-| where ActionType startswith "AsrOfficeChildProcessAudited"
+| where ActionType == "AsrOfficeChildProcessAudited"
 | project
     Timestamp,
     DeviceName,
