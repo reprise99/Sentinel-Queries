@@ -1,0 +1,14 @@
+//Use your Windows security log to find the users most at risk for lateral movement by finding those that have connected remotely to the most devices
+SecurityEvent
+| where TimeGenerated > ago (30d)
+| where EventID == "4624"
+| where LogonType == 10
+| where SubjectDomainName == TargetDomainName
+//Summarize total logins, distinct devices and then list all the devices each account has logged onto
+//Account is dropped to lower case to make sure each account is only listed once, i.e Reprise99 and reprise99 are combined
+| summarize
+    ['Total logon count']=count(),
+    ['Distinct device logon count']=dcount(Computer),
+    ['List of devices']=make_set(Computer)
+    by tolower(Account)
+| sort by ['Distinct device logon count'] desc 
