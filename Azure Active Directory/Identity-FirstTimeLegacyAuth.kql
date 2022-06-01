@@ -1,0 +1,38 @@
+//Find users that have connected successfully via legacy auth for the first time
+//First find users with existing successful legacy auth connections
+//Microsoft Sentinel query
+let knownusers=
+    SigninLogs
+    | where TimeGenerated > ago(90d) and TimeGenerated < ago(1d)
+    | where ResultType == 0
+    | where ClientAppUsed !in ("Mobile Apps and Desktop clients", "Browser")
+    | distinct UserPrincipalName;
+//Find any new connections in the last day from users not in the existing list
+SigninLogs
+| where TimeGenerated > ago(1d)
+| where ResultType == 0
+| where ClientAppUsed !in ("Mobile Apps and Desktop clients", "Browser")
+| where isnotempty(ClientAppUsed)
+| where UserPrincipalName !in (knownusers)
+| distinct UserPrincipalName, AppDisplayName, ClientAppUsed, IPAddress
+
+//Advanced Hunting query
+//First find users with existing successful legacy auth connections. Advanced Hunting only stores 30 days of data, but otherwise the same query works
+let knownusers=
+    AADSignInEventsBeta
+    | where Timestamp > ago(30d) and Timestamp < ago(1d)
+    | where LogonType == @"[""interactiveUser""]"
+    | where ErrorCode == 0
+    | where ClientAppUsed !in ("Mobile Apps and Desktop clients", "Browser")
+    | where isnotempty(ClientAppUsed)
+    | distinct AccountUpn;
+//Find any new connections in the last day from users not in the existing list
+AADSignInEventsBeta
+| where Timestamp > ago(1d)
+| where LogonType == @"[""interactiveUser""]"
+| where ErrorCode == 0
+| where ClientAppUsed !in ("Mobile Apps and Desktop clients", "Browser")
+| where isnotempty(ClientAppUsed)
+| where AccountUpn !in (knownusers)
+| distinct AccountUpn, Application, ClientAppUsed, IPAddress
+
