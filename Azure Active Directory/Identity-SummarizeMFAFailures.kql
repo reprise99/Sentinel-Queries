@@ -1,0 +1,10 @@
+//Summarize the count of the various types of MFA failures (such as user not responding, invalid codes, user declining the authentication)
+SigninLogs
+| where TimeGenerated > ago (90d)
+| where ResultType == "500121"
+| mv-expand todynamic(AuthenticationDetails)
+| project AuthenticationDetails, ResultType
+| extend ['MFA Failure Type'] = tostring(parse_json(AuthenticationDetails).authenticationStepResultDetail)
+| where ['MFA Failure Type'] startswith "MFA denied"
+| summarize Count=count()by ['MFA Failure Type']
+| sort by Count
