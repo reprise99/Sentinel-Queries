@@ -1,0 +1,26 @@
+//Find the guests in your tenant connecting to the most applications. They are the biggest risk and the best target for additional controls like Conditional Access.
+//Microsoft Sentinel query
+SigninLogs
+| where TimeGenerated > ago(30d)
+| where ResultType == 0
+| where UserType == "Guest"
+//Exclude the Microsoft apps for guest account management
+| where AppDisplayName !in ("My Apps", "Microsoft App Access Panel", "My Access", "My Profile", "Microsoft Invitation Acceptance Portal")
+| summarize
+    ['Count of Applications']=dcount(AppDisplayName),
+    ['List of Application']=make_set(AppDisplayName)
+    by UserPrincipalName
+| sort by ['Count of Applications'] desc 
+
+//Advanced Hunting query
+AADSignInEventsBeta
+| where Timestamp > ago(30d)
+| where ErrorCode == 0
+| where IsGuestUser == 1
+//Exclude the Microsoft apps for guest account management
+| where Application  !in ("My Apps", "Microsoft App Access Panel", "My Access", "My Profile", "Microsoft Invitation Acceptance Portal")
+| summarize
+    ['Count of Applications']=dcount(Application),
+    ['List of Application']=make_set(Application)
+    by AccountUpn
+| sort by ['Count of Applications'] desc 
