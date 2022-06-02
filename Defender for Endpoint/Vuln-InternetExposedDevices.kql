@@ -1,0 +1,21 @@
+//Use logon and network telemetry to find machines exposed to the internet, then count the critical and high severity vulnerabilities on those devices
+//This query only works in Advanced Hunting as the DeviceTvm* tables aren't sent to Sentinel yet
+//Look for logon events coming from a public IP - query adapted from https://github.com/alexverboon/MDATP/blob/master/AdvancedHunting/Failed%20Logon%20-%20Public%20IP.md
+let publicips = 
+    DeviceLogonEvents
+    | where Timestamp > ago(30d)
+    | where ActionType in ("LogonFailed", "LogonSuccess")
+    | where RemoteIPType == "Public"
+    | distinct RemoteIP;
+//Use that same list of IP addresses to search for network traffic coming from those IP's, suggesting the device is available on the internet
+let publicdevices=
+    DeviceNetworkEvents
+    | where Timestamp > ago (30d)
+    | where RemoteIPType == "Public"
+    | where RemoteIP in (publicips)
+    | distinct DeviceName;
+//Find the high and critical vulnerability count for those devices
+DeviceTvmSoftwareVulnerabilities
+| where DeviceName in (publicdevices)
+| summarize ['Vulnerability Count']=dcountif(CveId, VulnerabilitySeverityLevel in ("Critical", "High")) by DeviceName
+| sort by ['Vulnerability Count'] desc 
