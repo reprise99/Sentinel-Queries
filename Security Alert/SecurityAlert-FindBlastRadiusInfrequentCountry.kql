@@ -1,0 +1,53 @@
+//When Defender for Cloud Apps detects activity from an infrequent country, summarize the impact to your users
+let failureCodes = dynamic([50053, 50126, 50055]);
+let successCodes = dynamic([0, 50055, 50057, 50155, 50105, 50133, 50005, 50076, 50079, 50173, 50158, 50072, 50074, 53003, 53000, 53001, 50129]);
+//Microsoft Sentinel query
+//Using the Security Alert table find any locations detected. This query looks back 7 days to find alerts as this can be an offline detection, but you can adjust.
+let suspiciouslocation=
+    SecurityAlert
+    | where TimeGenerated > ago(7d)
+    | where AlertName == "Activity from infrequent country"
+    | mv-expand todynamic(Entities)
+    | project Entities
+    | extend Location = tostring(parse_json(tostring(Entities.Location)).CountryCode)
+    | where isnotempty(Location)
+    | distinct Location;
+//Take that location and send back through the sign in logs to find the blast radius
+SigninLogs
+| where TimeGenerated > ago(7d)
+| where Location in (suspiciouslocation)
+| summarize
+    ['Count of distinct successful sign ins'] = dcountif(UserPrincipalName, (ResultType in(successCodes))),
+    ['List of successful users']=make_set_if(UserPrincipalName, (ResultType in(successCodes))),
+    ['Successful result codes'] = make_set_if(ResultType, (ResultType in(successCodes))),
+    ['Count of distinct failed sign ins'] = dcountif(UserPrincipalName, (ResultType in(failureCodes))),
+    ['List of failed users'] = make_set_if(UserPrincipalName, (ResultType in(failureCodes))),
+    ['Failed result codes'] = make_set_if(ResultType, (ResultType in(failureCodes)))
+    by Location
+
+//Advanced Hunting query
+let failureCodes = dynamic([50053, 50126, 50055]);
+let successCodes = dynamic([0, 50055, 50057, 50155, 50105, 50133, 50005, 50076, 50079, 50173, 50158, 50072, 50074, 53003, 53000, 53001, 50129]);
+let alertid=
+AlertInfo
+| where Timestamp > ago(7d)
+| where Title == @"Activity from infrequent country"
+| distinct AlertId;
+let suspiciouslocation=
+AlertEvidence
+| where AlertId in (alertid)
+| extend AF=parse_json(AdditionalFields)
+| extend Location=tostring(AF.Location.CountryCode)
+| where isnotempty(Location)
+| distinct Location;
+AADSignInEventsBeta
+| where Timestamp > ago(7d)
+| where Country in (suspiciouslocation)
+| summarize
+    ['Count of distinct successful sign ins'] = dcountif(AccountUpn, (ErrorCode in(successCodes))),
+    ['List of successful users']=make_set_if(AccountUpn, (ErrorCode in(successCodes))),
+    ['Successful result codes'] = make_set_if(ErrorCode, (ErrorCode in(successCodes))),
+    ['Count of distinct failed sign ins'] = dcountif(AccountUpn, (ErrorCode in(failureCodes))),
+    ['List of failed users'] = make_set_if(AccountUpn, (ErrorCode in(failureCodes))),
+    ['Failed result codes'] = make_set_if(ErrorCode, (ErrorCode in(failureCodes)))
+    by Country
