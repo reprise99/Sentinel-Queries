@@ -1,0 +1,19 @@
+//Calculate the percentage of signins failing against each of your Conditional Access policies. If the percentage is high it may be worth evaulating the policy if it is fit for purpose.
+SigninLogs
+| where TimeGenerated > ago(30d)
+| project ConditionalAccessPolicies
+| extend CA = parse_json(ConditionalAccessPolicies)
+| mv-expand bagexpansion=array CA
+| extend ['CA Policy Name'] = tostring(CA.displayName)
+| extend  ['CA Outcome'] = tostring(CA.result)
+| summarize
+    ['Total Signin Count']=count(),
+    ['Total Failed Count']=countif(['CA Outcome'] == "failure")
+    by ['CA Policy Name']
+| extend ['Failed Percentage'] = todouble(['Total Failed Count']) * 100 / todouble(['Total Signin Count'])
+| project-reorder
+    ['CA Policy Name'],
+    ['Total Signin Count'],
+    ['Total Failed Count'],
+    ['Failed Percentage']
+| order by ['Failed Percentage']
