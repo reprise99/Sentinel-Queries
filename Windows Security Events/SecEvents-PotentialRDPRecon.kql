@@ -1,0 +1,13 @@
+//Detect when a user connects to 3 or more unique devices via RDP over a 30 minute period
+SecurityEvent
+| where TimeGenerated > ago (1d)
+| where EventID == "4624"
+| where LogonType == 10
+| where SubjectDomainName == TargetDomainName
+//Account is dropped to lower case to make sure each account is only listed once, i.e Reprise99 and reprise99 are combined
+| summarize
+    ['Distinct device logon count']=dcount(Computer),
+    ['List of devices']=make_set(Computer)
+    by tolower(Account), bin(TimeGenerated, 30m)
+//Find accounts that have logged on to 3 or more unique devices in less than 30 minutes
+| where ['Distinct device logon count'] >= 3
