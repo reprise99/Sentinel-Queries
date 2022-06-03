@@ -1,0 +1,29 @@
+//When a user holding a privileged role triggers an Azure AD risk event, retrieve the operations completed by that user
+//Lookup the IdentityInfo table for any users holding a privileged role
+let privusers=
+    IdentityInfo
+    | where TimeGenerated > ago(21d)
+    | summarize arg_max(TimeGenerated, *) by AccountUPN
+    | where isnotempty(AssignedRoles)
+    | where AssignedRoles != "[]"
+    | distinct AccountUPN;
+AADUserRiskEvents
+| where TimeGenerated > ago (7d)
+| where UserPrincipalName in (privusers)
+| where RiskDetail != "aiConfirmedSigninSafe"
+| project RiskTime=TimeGenerated, UserPrincipalName
+| join kind=inner
+    (
+    AuditLogs
+    | where TimeGenerated > ago(7d)
+    | extend UserPrincipalName = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+    )
+    on UserPrincipalName
+| project-rename OperationTime=TimeGenerated
+| project
+    RiskTime,
+    OperationTime,
+    ['Time Between Events']=datetime_diff("minute", OperationTime, RiskTime),
+    OperationName,
+    Category,
+    CorrelationId
