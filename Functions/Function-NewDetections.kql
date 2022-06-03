@@ -1,0 +1,68 @@
+// Save as a function in your workspace then invoke via its name, i.e if you save as NewDetections
+// NewDetections // will find any new detections from your Azure AD Audit logs, Defender for Cloud Apps, Security Alerts, Office Activity and Defender for Endpoint
+// NewDetections | where Source == "Office 365 Audit Events" // will find new detections from Office 365
+// TeamsAccess | where Count > 10 // will find new detections that have been seen more than 10 times
+// This function looks for new events in Azure AD Audit logs, Defender for Cloud Apps, Security Alerts, Office Activity and Defender for Endpoint in the last week compared to the last 180 days
+let newauditevents=
+    AuditLogs
+    | where TimeGenerated > ago(180d) and TimeGenerated < ago(7d)
+    | distinct OperationName, LoggedByService
+    | join kind=rightanti (
+        AuditLogs
+        | where TimeGenerated > ago(7d)
+        )
+        on OperationName, LoggedByService
+    | summarize ['First Time Seen']=min(TimeGenerated), Count=count() by Activity=OperationName, Application="Azure AD", Source="Azure AD Audit Events";
+let newdeviceevents=
+    DeviceEvents
+    | where TimeGenerated > ago(180d) and TimeGenerated < ago(7d)
+    | distinct ActionType
+    | join kind=rightanti (
+        DeviceEvents
+        | where TimeGenerated > ago(7d)
+        )
+        on ActionType
+    | summarize ['First Time Seen']=min(TimeGenerated), Count=count()
+        by
+        Activity=ActionType,
+        Application="Defender for EndPoint",
+        Source="Defender for Endpoint Device Events";
+let newnewofficeactivity=
+    OfficeActivity
+    | where TimeGenerated > ago(180d) and TimeGenerated < ago(7d)
+    | distinct Operation
+    | join kind=rightanti (
+        OfficeActivity
+        | where TimeGenerated > ago(7d)
+        )
+        on Operation
+    | summarize ['First Time Seen']=min(TimeGenerated), Count=count() by Activity=Operation, Application=OfficeWorkload, Source="Office 365 Audit Events";
+let newcloudappevents=
+    CloudAppEvents
+    | where TimeGenerated > ago(180d) and TimeGenerated < ago(7d)
+    | distinct ActionType
+    | join kind=rightanti (
+        CloudAppEvents
+        | where TimeGenerated > ago(7d)
+        )
+        on ActionType
+    | summarize ['First Time Seen']=min(TimeGenerated), Count=count() by Activity=ActionType, Application, Source="Defender for Cloud Apps Events";
+let newsecurityalerts=
+    SecurityAlert
+    | where TimeGenerated > ago(180d) and TimeGenerated < ago(7d)
+    | where ProviderName != "ASI Scheduled Alerts"
+    | distinct AlertName
+    | join kind=rightanti (
+        SecurityAlert
+        | where TimeGenerated > ago(7d)
+        | where ProviderName != "ASI Scheduled Alerts"
+        )
+        on AlertName
+    | summarize ['First Time Seen']=min(TimeGenerated), Count=count() by Activity=AlertName, Application=ProviderName, Source="Security Alert Events";
+union
+    newauditevents,
+    newdeviceevents,
+    newnewofficeactivity,
+    newcloudappevents,
+    newsecurityalerts
+| sort by Count desc 
