@@ -1,0 +1,8 @@
+//Summarize and visualize the roles being activated in Azure AD PIM
+AuditLogs
+| where TimeGenerated > ago(30d)
+| where OperationName == "Add member to role completed (PIM activation)"
+| extend ['Azure AD Role Name'] = tostring(TargetResources[0].displayName)
+| summarize Count=count()by ['Azure AD Role Name']
+| sort by Count
+| render barchart with (title="Count of Azure AD PIM activations by role")
