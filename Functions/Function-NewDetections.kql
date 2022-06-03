@@ -1,7 +1,7 @@
 // Save as a function in your workspace then invoke via its name, i.e if you save as NewDetections
 // NewDetections // will find any new detections from your Azure AD Audit logs, Defender for Cloud Apps, Security Alerts, Office Activity and Defender for Endpoint
 // NewDetections | where Source == "Office 365 Audit Events" // will find new detections from Office 365
-// TeamsAccess | where Count > 10 // will find new detections that have been seen more than 10 times
+// NewDetections | where Count > 10 // will find new detections that have been seen more than 10 times
 // This function looks for new events in Azure AD Audit logs, Defender for Cloud Apps, Security Alerts, Office Activity and Defender for Endpoint in the last week compared to the last 180 days
 let newauditevents=
     AuditLogs
