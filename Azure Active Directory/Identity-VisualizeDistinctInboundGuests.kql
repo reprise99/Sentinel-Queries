@@ -1,4 +1,4 @@
-//Visualize distinct inbound guests (guest accounts accessing your tenant) per week
+//Visualize distinct inbound guests (guest accounts accessing your tenant) per month
 SigninLogs
 | where TimeGenerated > ago(365d)
 | where UserType == "Guest"
