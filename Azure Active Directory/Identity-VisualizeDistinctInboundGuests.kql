@@ -1,0 +1,8 @@
+//Visualize distinct inbound guests (guest accounts accessing your tenant) per week
+SigninLogs
+| where TimeGenerated > ago(365d)
+| where UserType == "Guest"
+| where ResultType == 0
+//Find only inbound guests, i.e those guests accessing your tenant.
+| summarize Count=dcountif(UserPrincipalName, AADTenantId != HomeTenantId and HomeTenantId != ResourceTenantId) by startofmonth(TimeGenerated)
+| render columnchart with (title="Distinct guest accounts accessing your tenant per month")
