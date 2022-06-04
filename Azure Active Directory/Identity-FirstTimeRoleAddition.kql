@@ -1,0 +1,21 @@
+//Detect when a user adds someone to an Azure AD privileged role for the first time
+//First build a set of known users who have completed this action previously
+let knownusers=
+    AuditLogs
+    | where TimeGenerated > ago(90d) and TimeGenerated < ago(1d)
+    | where OperationName == "Add member to role"
+    //Exclude role additions made by the Azure AD PIM service
+    | where Identity != "MS-PIM"
+    | extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+    | distinct Actor;
+//Find events in the last day by users not in the known list
+AuditLogs
+| where TimeGenerated > ago(1d)
+| where OperationName == "Add member to role"
+| where Identity != "MS-PIM"
+| extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| extend ['Azure AD Role Name'] = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[1].newValue)))
+| extend Target = tostring(TargetResources[0].userPrincipalName)
+| where Actor !in (knownusers)
+| project TimeGenerated, Actor, Target, ['Azure AD Role Name']
+
