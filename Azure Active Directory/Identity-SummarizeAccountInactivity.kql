@@ -1,0 +1,12 @@
+//Summarize accounts (both members and guests) that haven't signed on for over 60 days, and summarize them into the month they last signed in
+SigninLogs
+| where TimeGenerated > ago (365d)
+| where ResultType == 0
+| where isnotempty(UserType)
+| summarize arg_max(TimeGenerated, *) by UserPrincipalName
+| where TimeGenerated < ago(60d)
+| summarize
+    ['Inactive Account List']=make_set(UserPrincipalName),
+    ['Count of Inactive Accounts']=dcount(UserPrincipalName)
+    by UserType, Month=startofmonth(TimeGenerated)
+| sort by Month desc, UserType asc   
