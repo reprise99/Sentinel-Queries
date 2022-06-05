@@ -1,0 +1,11 @@
+//Visualize how many files are being downloaded from your Office 365 tenant by guest accounts with trend
+let StartDate = now(-90d);
+let EndDate = now();
+OfficeActivity
+| where TimeGenerated > ago(90d)
+| where Operation in ("FileSyncDownloadedFull", "FileDownloaded")
+| where UserId contains "#ext#"
+| make-series TotalDownloads=count() on TimeGenerated in range(StartDate, EndDate, 1d)
+| extend (RSquare, SplitIdx, Variance, RVariance, TrendLine)=series_fit_2lines(TotalDownloads)
+| project TimeGenerated, TotalDownloads, TrendLine
+| render timechart with (title="Guest downloads from Office 365 per day over time with trend")
