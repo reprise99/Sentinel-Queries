@@ -1,0 +1,10 @@
+//Summarize all groups that have had users added to them via dynamic rules
+AuditLogs
+| where TimeGenerated > ago(1d)
+| where OperationName == "Add member to group"
+| where Identity == "Microsoft Approval Management"
+| where TargetResources[0].type == "User"
+| extend GroupName = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[1].newValue)))
+| extend User = tostring(TargetResources[0].userPrincipalName)
+| summarize ['Count of Users Added']=dcount(User), ['List of Users Added']=make_set(User) by GroupName
+| sort by GroupName asc  
