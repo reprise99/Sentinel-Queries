@@ -1,0 +1,14 @@
+//Create a summary of the devices with inbound LDAP and LDAPS connections, sorted by the devices with the most inbound LDAP
+//Query works in both Microsoft Sentinel and Advanced Hunting
+DeviceNetworkEvents
+| where ActionType == "InboundConnectionAccepted"
+| where LocalPort in ("389", "636", "3269")
+| summarize
+    ['Count of Inbound LDAP Connections']=countif(LocalPort == 389),
+    ['Count of Distinct Inbound LDAP Connections']=dcountif(RemoteIP, LocalPort == 389),
+    ['List of Inbound LDAP Connections']=make_set_if(RemoteIP, LocalPort == 389),
+    ['Count of Inbound LDAPS Connections']=countif(LocalPort in ("636", "3269")),
+    ['Count of Distinct Inbound LDAPS Connections']=dcountif(RemoteIP, LocalPort in ("636", "3269")),
+    ['List of Inbound LDAPS Connections']=make_set_if(RemoteIP, LocalPort in ("636", "3269"))
+    by DeviceName
+| sort by ['Count of Distinct Inbound LDAP Connections'] desc 
