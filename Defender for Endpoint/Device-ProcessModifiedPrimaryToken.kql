@@ -24,7 +24,7 @@ DeviceEvents
     ['is Changed to System Token'],
     ['Token Change Description']
 
-    //Advanced Hunting query
+//Advanced Hunting query
 DeviceEvents
 | where Timestamp > ago(30m)
 | project
