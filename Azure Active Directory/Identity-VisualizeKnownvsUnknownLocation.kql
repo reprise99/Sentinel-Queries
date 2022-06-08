@@ -1,0 +1,9 @@
+//Visualize sign in attempts to your Azure AD tenant by known or unknown network locations
+SigninLogs
+| where TimeGenerated > ago(30d)
+//If a location it will be populated by its name, i.e 'Corporate Internet', if known the NetworkLocationDetails array is empty so we can find it by searching on '[]'
+| summarize
+    ['Known Location']=countif(NetworkLocationDetails != '[]'),
+    ['Unknown Location']=countif(NetworkLocationDetails == '[]')
+    by bin (TimeGenerated, 1d)
+| render timechart with (title="Known vs Unknown signins to Azure AD", ytitle="Count")
