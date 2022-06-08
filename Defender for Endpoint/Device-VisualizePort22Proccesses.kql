@@ -1,0 +1,21 @@
+//Summarize and visualize the different parent filenames initiating TCP port 22 connections
+//Microsoft Sentinel query
+DeviceNetworkEvents
+| where TimeGenerated > ago(30d)
+| where ActionType == "ConnectionSuccess"
+| where RemotePort == 22
+| where isnotempty(InitiatingProcessFileName)
+| summarize Count=count() by InitiatingProcessFileName
+| top 20 by Count
+| render barchart with (title="Proccesses initiating TCP port 22 connections")
+
+//Advanced Hunting query
+DeviceNetworkEvents
+| where Timestamp > ago(30d)
+| where ActionType == "ConnectionSuccess"
+| where RemotePort == 22
+| where isnotempty(InitiatingProcessFileName)
+| summarize Count=count() by InitiatingProcessFileName
+| top 20 by Count
+//Advanced hunting doesn't support barcharts, so can render as a piechart or just remove the line below for a table
+| render piechart 
