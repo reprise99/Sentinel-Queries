@@ -1,0 +1,26 @@
+//When a user registers or updates MFA details, take that IP address and summarize sign in events for that user and IP address for the last 30 days.
+//If they have never signed in or signed in a few times from that IP it may a sign the account has been compromised and a threat actor has added MFA details
+let failureCodes = dynamic([50053, 50126, 50055]);
+let successCodes = dynamic([0, 50055, 50057, 50155, 50105, 50133, 50005, 50076, 50079, 50173, 50158, 50072, 50074, 53003, 53000, 53001, 50129]);
+AuditLogs
+| where TimeGenerated > ago(1d)
+| where OperationName in~ ("Admin registered security info", "Admin updated security info", "Admin deleted security info", "User registered security info", "User changed default security info", "User deleted security info")
+| extend UserPrincipalName = tostring(TargetResources[0].userPrincipalName)
+| extend IPAddress = tostring(parse_json(tostring(InitiatedBy.user)).ipAddress)
+| project ['MFA Event Time']=TimeGenerated, OperationName, UserPrincipalName, IPAddress
+| join kind=inner(
+    SigninLogs
+    | where TimeGenerated > ago (30d)
+    )
+    on UserPrincipalName, IPAddress
+| project
+    TimeGenerated,
+    ['MFA Event Time'],
+    OperationName,
+    ResultType,
+    UserPrincipalName,
+    IPAddress
+| summarize
+    ['Count of successful sign ins from MFA IP Address'] = countif(ResultType in(successCodes)),
+    ['Count of failed sign ins from MFA IP Address'] = countif(ResultType in(failureCodes))
+    by UserPrincipalName, OperationName, IPAddress, ['MFA Event Time']
