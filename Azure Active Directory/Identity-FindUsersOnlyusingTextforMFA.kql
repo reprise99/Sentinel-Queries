@@ -1,0 +1,15 @@
+//Find users who are only using text message as their MFA method
+SigninLogs
+| where TimeGenerated > ago(30d)
+//You can exclude guests if you want, they may be harder to move to more secure methods, comment out the below line to include all users
+| where UserType == "Member"
+| mv-expand todynamic(AuthenticationDetails)
+| extend ['Authentication Method'] = tostring(AuthenticationDetails.authenticationMethod)
+| where ['Authentication Method'] !in ("Previously satisfied", "Password", "Other")
+| where isnotempty(['Authentication Method'])
+| summarize
+    ['Count of distinct MFA Methods']=dcount(['Authentication Method']),
+    ['List of MFA Methods']=make_set(['Authentication Method'])
+    by UserPrincipalName
+//Find users with only one method found and it is text message
+| where ['Count of distinct MFA Methods'] == 1 and ['List of MFA Methods'] has "text"
