@@ -10,3 +10,17 @@ SecurityAlert
 | where DecodedCommand != ""
 //
 | project TimeGenerated, CompromisedEntity, AlertName, CommandLine, DecodedCommand
+
+//Advanced Hunting query - depending on the content of the decoded string AH can struggle to render the command occasionally
+let alertid=
+AlertInfo
+| where Title == @"Suspicious PowerShell command line"
+| distinct AlertId;
+AlertEvidence
+| where AlertId in (alertid)
+| where EntityType == "Process"
+| extend EncodedCommand = extract(@'\s+([A-Za-z0-9+/]{20}\S+$)', 1, ProcessCommandLine)
+| where EncodedCommand != ""
+| extend DecodedCommand = base64_decode_tostring(EncodedCommand)
+| where DecodedCommand != ""
+| project Timestamp, AlertId, ProcessCommandLine, DecodedCommand
