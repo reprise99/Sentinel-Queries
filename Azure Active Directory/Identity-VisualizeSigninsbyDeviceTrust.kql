@@ -1,0 +1,9 @@
+//Visualize sign in attempts to your Azure AD tenant by device trust type
+SigninLogs
+| where TimeGenerated > ago(30d)
+| extend DeviceTrustType = tostring(DeviceDetail.trustType)
+| extend ['Trust Type']=case(isnotempty(DeviceTrustType), strcat=DeviceTrustType,
+    isempty(DeviceTrustType), strcat="Untrusted",
+    "unknown")
+| summarize Count=count()by ['Trust Type'], bin(TimeGenerated, 1d)
+| render timechart with (title="Signins to Azure AD by trust type")
