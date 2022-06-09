@@ -1,0 +1,48 @@
+//Summarize the local (non domain) logon activity for your devices for both successful and failed logons. You may have users using a local account to bypass security policy
+//Microsoft Sentinel query
+DeviceLogonEvents
+| where TimeGenerated > ago(30d)
+//Find logons where AccountDomain == DeviceName indicating a local logon
+| where AccountDomain == DeviceName
+| where AdditionalFields.IsLocalLogon == true
+| where LogonType == "Interactive"
+| where RemoteIPType != "Loopback"
+| summarize
+    ['Count of successful local logon attempts']=countif(ActionType == "LogonSuccess"),
+    ['Distinct count of successful local logon attempts']=dcountif(AccountName, ActionType == "LogonSuccess"),
+    ['List of succesful local account logons']=make_set_if(AccountName, ActionType == "LogonSuccess"),
+    ['Count of failed local logon attempts']=countif(ActionType == "LogonFailed"),
+    ['Distinct count of failed local logon attempts']=dcountif(AccountName, ActionType == "LogonFailed"),
+    ['List of failed local account logons']=make_set_if(AccountName, ActionType == "LogonFailed")
+    by DeviceName
+| project-reorder
+    DeviceName,
+    ['Count of successful local logon attempts'],
+    ['Distinct count of successful local logon attempts'],
+    ['List of succesful local account logons'],
+    ['Count of failed local logon attempts'],
+    ['Distinct count of failed local logon attempts'],
+    ['List of failed local account logons']
+
+//Advanced Hunting query
+DeviceLogonEvents
+| where Timestamp > ago(30d)
+| where AccountDomain == DeviceName
+| where LogonType == @"Interactive"
+| where RemoteIPType != "Loopback"
+| summarize
+    ['Count of successful local logon attempts']=countif(ActionType == "LogonSuccess"),
+    ['Distinct count of successful local logon attempts']=dcountif(AccountName, ActionType == "LogonSuccess"),
+    ['List of succesful local account logons']=make_set_if(AccountName, ActionType == "LogonSuccess"),
+    ['Count of failed local logon attempts']=countif(ActionType == "LogonFailed"),
+    ['Distinct count of failed local logon attempts']=dcountif(AccountName, ActionType == "LogonFailed"),
+    ['List of failed local account logons']=make_set_if(AccountName, ActionType == "LogonFailed")
+    by DeviceName
+| project-reorder
+    DeviceName,
+    ['Count of successful local logon attempts'],
+    ['Distinct count of successful local logon attempts'],
+    ['List of succesful local account logons'],
+    ['Count of failed local logon attempts'],
+    ['Distinct count of failed local logon attempts'],
+    ['List of failed local account logons']
