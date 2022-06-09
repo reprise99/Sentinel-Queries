@@ -1,0 +1,32 @@
+//Find successful connections from a private to public network on TCP port 22
+//Microsoft Sentinel query
+DeviceNetworkEvents
+| where TimeGenerated > ago(1d)
+| where ActionType == "ConnectionSuccess"
+| where RemotePort == 22
+| where LocalIPType == "Private"
+| where RemoteIPType == "Public"
+| project
+    TimeGenerated,
+    DeviceName,
+    InitiatingProcessAccountName,
+    InitiatingProcessCommandLine,
+    LocalIP,
+    RemoteIP,
+    RemoteUrl
+
+//Advanced Hunting query
+DeviceNetworkEvents
+| where Timestamp > ago(1d)
+| where ActionType == "ConnectionSuccess"
+| where RemotePort == 22
+| where LocalIPType == "Private"
+| where RemoteIPType == "Public"
+| project
+    Timestamp,
+    DeviceName,
+    InitiatingProcessAccountName,
+    InitiatingProcessCommandLine,
+    LocalIP,
+    RemoteIP,
+    RemoteUrl
