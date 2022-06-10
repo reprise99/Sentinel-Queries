@@ -1,0 +1,52 @@
+//Single function to summarize a single guest domain. It will retrieve the following information about a specific domain.
+//Azure AD Sign in Logs - total sign in count, distinct sign in count, list of applications, count of applications, list of users
+//Azure AD Audit Logs - invites sent and redeemed from this domain
+//Office 365 - total files downloaded, distinct filese downloaded from this domain
+//Office 365 - count of users added to Teams, distinct count of users added to Teams and the list of Teams
+
+//Save as a function in your workspace then invoke via its name, ie UserInvestigation("user@domain.com"). Your function requires a parameter as per https://github.com/reprise99/Sentinel-Queries/tree/main/Functions
+//The function requires a parameter which is a string, with the name domain and a default value of "gmail.com" (or any domain you wish)
+
+let signins=
+SigninLogs
+| where TimeGenerated > ago(30d)
+| where UserPrincipalName endswith (domain)
+| summarize ['Total Signins']=count(), ['Count of Users']=dcount(UserPrincipalName), ['Count of Applications']=dcount(AppDisplayName), ['List of Applications Accessed']=make_set(AppDisplayName), ['List of Users']=make_set(UserPrincipalName), ['List of Locations']=make_set(Location) by Domain=(domain);
+let invitedusers=
+AuditLogs
+| where TimeGenerated > ago(30d)
+| where OperationName == "Invite external user"
+| extend UserPrincipalName = tostring(TargetResources[0].userPrincipalName)
+| where TargetResources contains (domain)
+| summarize ['Invited User Count']=dcount(UserPrincipalName), ['List of Users Invited']=make_set(UserPrincipalName) by Domain=(domain);
+let redeemedusers=
+AuditLogs
+| where TimeGenerated > ago(30d)
+| where OperationName == "Redeem external user invite"
+| extend UserPrincipalName = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| where UserPrincipalName endswith (domain)
+| summarize ['Invite Redeemed User Count']=dcount(UserPrincipalName), ['List of Redeemed Users']=make_set(UserPrincipalName) by Domain=(domain);
+let officedownloads=
+OfficeActivity
+| where TimeGenerated > ago(30d)
+| where Operation in ("FileSyncDownloadedFull", "FileDownloaded")
+| where UserId contains "#EXT#"
+| extend ['Guest UserPrincipalName'] = tostring(split(UserId,"#")[0])
+| extend ['Guest Domain'] = tostring(split(['Guest UserPrincipalName'],"_")[-1])
+| where ['Guest Domain'] =~ (domain)
+| summarize ['Total Guest Download Count']=count(), ['Distinct File Download Count']=dcount(OfficeObjectId) by Domain=(domain);
+let teamsaccess=
+OfficeActivity
+| where TimeGenerated > ago(30d)
+| where Operation == "MemberAdded"
+| mv-expand Members
+| extend UserPrincipalName = tostring(Members.UPN)
+| where UserPrincipalName contains "#EXT#"
+| where CommunicationType == "Team"
+| where UserPrincipalName contains (domain)
+| summarize ['Count of Guests Added to Teams']=count(), ['Distinct Count of Guests Added to Teams']=dcount(UserPrincipalName), ['Count of Teams with Guests Added']=dcount(TeamName), ['List of Teams with Guests Added']=make_set(TeamName) by Domain=(domain);
+signins
+| lookup invitedusers on Domain
+| lookup redeemedusers on Domain
+| lookup officedownloads on Domain
+| lookup teamsaccess on Domain
