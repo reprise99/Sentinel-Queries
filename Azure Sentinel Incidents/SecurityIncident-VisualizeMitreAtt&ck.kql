@@ -1,0 +1,10 @@
+//Visualize the incidents generated in Microsoft Sentinel by MITRE ATT&CK tactics
+SecurityIncident
+| where TimeGenerated > ago(30d)
+| summarize arg_min(TimeGenerated, *) by IncidentNumber
+| extend Tactics = tostring(AdditionalData.tactics)
+| where Tactics != "[]"
+| mv-expand todynamic(Tactics)
+| summarize Count=count()by tostring(Tactics)
+| sort by Count
+| render barchart with (title="Microsoft Sentinel incidents by MITRE ATT&CK tactic")
