@@ -1,0 +1,9 @@
+//Detect when a user flags 3 or more distinct Azure AD risk events within a single day
+AADUserRiskEvents
+| where TimeGenerated > ago(7d)
+| where RiskState != "dismissed"
+| summarize
+    ['Distinct count of risk events']=dcount(RiskEventType),
+    ['List of risk events']=make_set(RiskEventType)
+    by UserPrincipalName, bin(TimeGenerated, 1d)
+| where ['Distinct count of risk events'] >= 3
