@@ -1,0 +1,24 @@
+//Find when inbound Azure AD guests access applications for the first time
+//First find applications that have previously had Azure AD guest signins
+let knownapps=
+    SigninLogs
+    | where TimeGenerated > ago (90d) and TimeGenerated < ago(7d)
+    | where ResultType == 0
+    | where UserType == "Guest"
+//Include only inbound guests (guests accessing your tenant)
+    | where AADTenantId != HomeTenantId and HomeTenantId != ResourceTenantId
+    | distinct AppDisplayName;
+//Lookup signins from the last week and find guest sign ins to applications not on the known list
+SigninLogs
+| where TimeGenerated > ago (7d)
+| where ResultType == 0
+| where UserType == "Guest"
+| where AADTenantId != HomeTenantId and HomeTenantId != ResourceTenantId
+| where AppDisplayName !in (knownapps)
+//Summarize the access to those applications by time first seen and who is accessing each application
+| summarize
+    ['First Logon Time']=min(TimeGenerated),
+    ['Total Guest Signins']=count(),
+    ['Distinct Guest Signins']=dcount(UserPrincipalName),
+    ['List of Guest Users']=make_set(UserPrincipalName)
+    by AppDisplayName
