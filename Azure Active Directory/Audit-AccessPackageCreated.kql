@@ -1,0 +1,8 @@
+//Detect when an Azure AD Entitlement Package is created. You may want to review to see what resources and roles have been included in the package.
+AuditLogs
+| where TimeGenerated > ago(1d)
+| where OperationName == "Create access package"
+| where TargetResources[0].type == "AccessPackage"
+| extend AccessPackageName = tostring(TargetResources[0].displayName)
+| extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| project TimeGenerated, OperationName, AccessPackageName, Actor
