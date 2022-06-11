@@ -3,7 +3,9 @@ OfficeActivity
 | where TimeGenerated > ago(30d)
 | where Operation in ("TeamCreated", "TeamDeleted")
 | summarize
-    ['Teams Created']=make_set_if(TeamName, Operation == "TeamCreated"),
-    ['Teams Deleted']=make_set_if(TeamName, Operation == "TeamDeleted")
+    ['Count of Teams Created']=dcountif(TeamName, Operation == "TeamCreated"),
+    ['List of Teams Created']=make_set_if(TeamName, Operation == "TeamCreated"),
+    ['Count of Teams Deleted']=dcountif(TeamName, Operation == "TeamDeleted"),
+    ['List of Teams Deleted']=make_set_if(TeamName, Operation == "TeamDeleted")
     by Week=startofweek(TimeGenerated)
 | sort by Week desc 
