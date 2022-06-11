@@ -1,0 +1,12 @@
+//Calculate the size of the combined Device* tables from Defender for Endpoint by device name
+union withsource=_TableName Device*
+| where TimeGenerated > ago(7d)
+| summarize
+    Entries = count(), Size = sum(_BilledSize)
+    by DeviceName
+| project
+    ['Device Name'] = DeviceName,
+    ['Table Size'] = Size,
+    ['Table Entries'] = Entries,
+    ['Size per Entry'] = 1.0 * Size / Entries
+| order by ['Table Size']  desc
