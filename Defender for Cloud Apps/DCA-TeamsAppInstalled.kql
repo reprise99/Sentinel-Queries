@@ -1,0 +1,20 @@
+//Find when an app is installed into Teams using the Defender for Cloud App logs
+//Microsoft Sentinel query
+CloudAppEvents
+| where Application == "Microsoft Teams"
+| where ActionType == "AppInstalled"
+| extend AppDistributionMode = tostring(RawEventData.AppDistributionMode)
+| extend AzureADAppId = tostring(RawEventData.AzureADAppId)
+| extend UserId = tostring(RawEventData.UserId)
+| extend AppName = tostring(RawEventData.AddOnName)
+| project TimeGenerated, AppName, AzureADAppId, UserId, AppDistributionMode
+
+//Advanced Hunting query
+CloudAppEvents
+| where Application == "Microsoft Teams"
+| where ActionType == "AppInstalled"
+| extend AppDistributionMode = tostring(RawEventData.AppDistributionMode)
+| extend AzureADAppId = tostring(RawEventData.AzureADAppId)
+| extend UserId = tostring(RawEventData.UserId)
+| extend AppName = tostring(RawEventData.AddOnName)
+| project Timestamp, AppName, AzureADAppId, UserId, AppDistributionMode
