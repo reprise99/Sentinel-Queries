@@ -1,0 +1,17 @@
+//Summarize the most common files in your environment flagging Smartscreen untrusted warnings
+//Microsoft Sentinel query
+DeviceEvents
+| where TimeGenerated > ago (30d)
+| where ActionType startswith "SmartScreen"
+| extend SmartScreenExperience = tostring(AdditionalFields.Experience)
+| where SmartScreenExperience == "Untrusted"
+| summarize Count=count()by FileName
+| sort by Count
+
+//Advanced Hunting query
+DeviceEvents
+| where Timestamp > ago(30d)
+| where ActionType startswith "SmartScreen"
+| where AdditionalFields == @"{""Experience"":""Untrusted""}"
+| summarize Count=count()by FileName
+| sort by Count
