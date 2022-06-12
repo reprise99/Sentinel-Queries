@@ -1,0 +1,11 @@
+//Summarize your Bastion usage by which users are connecting to which devices via which protocl (RDP or SSH)
+MicrosoftAzureBastionAuditLogs 
+| where TimeGenerated > ago (30d)
+| where Message == "Successfully Connected."
+| summarize
+    ['Count of RDP Devices']=dcountif(TargetVMIPAddress, Protocol == "rdp"),
+    ['List of RDP Devices']=make_set_if(TargetVMIPAddress, Protocol == "rdp"),
+    ['Count of SSH Devices']=dcountif(TargetVMIPAddress, Protocol == "ssh"),
+    ['List of SSH Devices']=make_set_if(TargetVMIPAddress, Protocol == "ssh")
+    by UserName
+| sort by ['Count of RDP Devices'] desc 
