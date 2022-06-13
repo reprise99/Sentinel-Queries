@@ -1,0 +1,27 @@
+//Visualize the top 20 remote URL's that your users are connecting to via PowerShell
+//Microsoft Sentinel query
+DeviceNetworkEvents
+| where TimeGenerated > ago (7d)
+//Exclude system and local service processes as this visualization is user focused
+| where InitiatingProcessAccountName !in~ ("system", "local service")
+| where InitiatingProcessCommandLine has "powershell"
+| where LocalIPType == "Private"
+| where RemoteIPType == "Public"
+| summarize Count=count()by RemoteUrl
+| where isnotempty(RemoteUrl)
+| top 20 by Count
+| render barchart with (title="Remote URLs accessed by Powershell")
+
+//Advanced Hunting query
+DeviceNetworkEvents
+| where Timestamp > ago (7d)
+//Exclude system and local service processes as this visualization is user focused
+| where InitiatingProcessAccountName !in~ ("system", "local service")
+| where InitiatingProcessCommandLine has "powershell"
+| where LocalIPType == "Private"
+| where RemoteIPType == "Public"
+| summarize Count=count()by RemoteUrl
+| where isnotempty(RemoteUrl)
+| top 20 by Count
+//Advanced Hunting does not support barcharts so you can visualize as a piechart or simply remove this line for a table
+| render piechart with (title="Remote URLs accessed by Powershell")
