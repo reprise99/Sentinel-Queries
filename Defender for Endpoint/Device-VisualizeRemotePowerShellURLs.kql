@@ -1,4 +1,4 @@
-//Visualize the top 20 remote URL's that your users are connecting to via PowerShell
+//Visualize the top 20 remote URLs that your users are connecting to via PowerShell
 //Microsoft Sentinel query
 DeviceNetworkEvents
 | where TimeGenerated > ago (7d)
