@@ -1,0 +1,10 @@
+//Visualize signins to your Azure AD tenant with no controls (known device, known location or MFA) vs those with at least one of those controls
+SigninLogs
+| where TimeGenerated > ago(30d)
+| where ResultType == 0
+| extend DeviceTrustType = tostring(DeviceDetail.trustType)
+| summarize
+    ['Signins with no controls']=countif(NetworkLocationDetails == '[]' and AuthenticationRequirement == "singleFactorAuthentication" and isempty(DeviceTrustType)),
+    ['Signins with one or more controls']=countif(NetworkLocationDetails != '[]' or AuthenticationRequirement == "multiFactorAuthentication" or isnotempty(DeviceTrustType)) by
+    bin(TimeGenerated, 1d)
+| render timechart with (title="Azure AD signins no controls vs one or more controls")
