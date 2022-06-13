@@ -1,0 +1,22 @@
+//Find users who have successfully signed into Azure AD from 3 or more countries in the same day
+//Microsoft Sentinel query
+SigninLogs
+| where TimeGenerated > ago(7d)
+| where ResultType == 0
+| where isnotempty(Location)
+| summarize
+    ['Count of countries']=dcount(Location),
+    ['List of countries']=make_set(Location)
+    by UserPrincipalName, bin(TimeGenerated, 1d)
+| where ['Count of countries'] >= 3
+
+//Advanced Hunting query
+AADSignInEventsBeta
+| where Timestamp > ago(7d)
+| where ErrorCode == 0
+| where isnotempty(Country)
+| summarize
+    ['Count of countries']=dcount(Country),
+    ['List of countries']=make_set(Country)
+    by AccountUpn, bin(Timestamp, 1d)
+| where ['Count of countries'] >= 3
