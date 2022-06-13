@@ -1,0 +1,10 @@
+//Calculate the percentage of signins to all your Azure AD apps considered risky. Those requiring single factor authentication, coming from an unknown location and from an unknown device
+SigninLogs
+| where TimeGenerated > ago (30d)
+| where ResultType == 0
+| extend DeviceTrustType = tostring(DeviceDetail.trustType)
+| summarize
+    ['Total Signins']=count(),
+    ['At Risk Signins']=countif(NetworkLocationDetails == '[]' and isempty(DeviceTrustType) and AuthenticationRequirement == "singleFactorAuthentication")
+    by AppDisplayName
+| extend ['At Risk Percentage']=(todouble(['At Risk Signins']) * 100 / todouble(['Total Signins']))
