@@ -1,0 +1,15 @@
+//Detect when a is blocked by Conditional Access after failing 3 unique CA policies or 3 unique applications over a 2 hour period
+SigninLogs
+| where TimeGenerated > ago(1d)
+| where ResultType == "53003"
+| mv-expand ConditionalAccessPolicies
+| extend ['CA Policy Name'] = tostring(ConditionalAccessPolicies.displayName)
+| where ConditionalAccessPolicies.result == "failure"
+| summarize
+    ['Total count of logon failures']=count(),
+    ['Count of failed applications']=dcount(AppDisplayName),
+    ['List of failed applications']=make_set(AppDisplayName),
+    ['Count of failed policy names']=dcount(['CA Policy Name']),
+    ['List of failed policy names']=make_set(['CA Policy Name'])
+    by UserPrincipalName, bin(TimeGenerated, 2h)
+| where ['Count of failed applications'] >= 3 or ['Count of failed policy names'] >= 3
