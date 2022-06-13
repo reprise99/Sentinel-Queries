@@ -1,0 +1,25 @@
+//Find the devices in your environment triggering the most Defender SmartScreen events
+
+DeviceEvents
+| where TimeGenerated > ago (30d)
+| where ActionType startswith "SmartScreen"
+| extend Experience = tostring(AdditionalFields.Experience)
+| where isnotempty(Experience)
+| summarize
+    ['Count of SmartScreen Events']=count(),
+    ['List of SmartScreen Event Types']=make_set(Experience)
+    by DeviceName
+| sort by ['Count of SmartScreen Events'] desc 
+
+//Advanced Hunting query
+DeviceEvents
+| where Timestamp > ago(30d)
+| where ActionType startswith "SmartScreen"
+| extend AF = parse_json(AdditionalFields)
+| extend Experience = tostring(AF.Experience)
+| where isnotempty(Experience)
+| summarize
+    ['Count of SmartScreen Events']=count(),
+    ['List of SmartScreen Event Types']=make_set(Experience)
+    by DeviceName
+| sort by ['Count of SmartScreen Events'] desc 
