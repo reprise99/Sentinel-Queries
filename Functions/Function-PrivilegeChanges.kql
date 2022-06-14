@@ -1,0 +1,138 @@
+// Save as a function in your workspace then invoke via its name, i.e if you save as PrivilegeChanges
+// This function is designed to unify group or privilege changes across on-premises AD and Azure AD
+// It will find changes to privileged AD groups, changes to privileged AAD groups, changes to privileged AAD roles (both directly and via PIM)
+// Default groups and roles have been added, but add your own groups that you wish to monitor unique to your environment
+// By default it will look back one day
+
+let privADgroups=dynamic(["Domain Admins", "Enterprise Admins", "Schema Admins", "Account Operators", "DnsAdmins", "Backup Operators"]);
+let privAADgroups=dynamic(["azure.Privileged Group", "azure.Privileged App", "az.ConditionalAccessBypassGroup"]);
+let privAADroles=dynamic(["Global Administrator", "Application Administrator", "Privileged Authentication Administrator", "Privileged Role Administrator", "Security Administrator" "Identity Governance Administrator"]);
+let timeframe=1d;
+let adchanges=
+    SecurityEvent
+    | where TimeGenerated > ago (timeframe)
+    | project TimeGenerated, Account, MemberName, TargetAccount, TargetUserName, Activity, EventID
+    | where EventID in (4728, 4729, 4732, 4733, 4756, 4757) and TargetUserName in~ (privADgroups)
+    | project
+        TimeGenerated,
+        Activity,
+        ['Group or Role Name']=TargetUserName,
+        Actor=Account,
+        Target=MemberName,
+        Environment="Active Directory";
+let aaduseradded=
+    AuditLogs
+    | where TimeGenerated > ago (timeframe)
+    | where OperationName == "Add member to group"
+    | extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+    | extend Target = tostring(TargetResources[0].userPrincipalName)
+    | extend ['Group or Role Name']= tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[1].newValue)))
+    | where isnotempty(Actor) and isnotempty(Target)
+    | where ['Group or Role Name'] in~ (privAADgroups)
+    | project
+        TimeGenerated,
+        Activity="A member was added to a privleged Azure AD Group",
+        ['Group or Role Name'],
+        Actor,
+        Target,
+        Environment="Azure Active Directory";
+let aaduserremoved=
+    AuditLogs
+    | where TimeGenerated > ago (timeframe)
+    | where OperationName == "Remove member from group"
+    | extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+    | extend ['Group or Role Name'] = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[1].oldValue)))
+    | extend Target = tostring(TargetResources[0].userPrincipalName)
+    | where isnotempty(Actor) and isnotempty(Target)
+    | where ['Group or Role Name'] in~ (privAADgroups)
+    | extend Environment = strcat("Azure Active Directory")
+    | project
+        TimeGenerated,
+        Activity="A member was removed from a privleged Azure AD Group",
+        ['Group or Role Name'],
+        Actor,
+        Target,
+        Environment="Azure Active Directory";
+let aadroleadded=
+    AuditLogs
+    | where TimeGenerated > ago (timeframe)
+    | where OperationName == "Add member to role"
+    //Exclude PIM activations
+    | where Identity != "MS-PIM"
+    | extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+    | extend Target = tostring(TargetResources[0].userPrincipalName)
+    | extend ['Group or Role Name'] = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[1].newValue)))
+    | where isnotempty(Actor) and isnotempty(Target)
+    | where ['Group or Role Name'] in~ (privAADroles)
+    | project
+        TimeGenerated,
+        Activity="A member was added to a privleged Azure AD Role",
+        ['Group or Role Name'],
+        Actor,
+        Target,
+        Environment="Azure Active Directory";
+let aadroleremoved=
+    AuditLogs
+    | where TimeGenerated > ago (timeframe)
+    | where OperationName == "Remove member from role"
+   //Exclude PIM activations
+    | where Identity != "MS-PIM"
+    | extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+    | extend Target = tostring(TargetResources[0].userPrincipalName)
+    | extend ['Group or Role Name'] = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[1].oldValue)))
+    | where isnotempty(Actor) and isnotempty(Target)
+    | where ['Group or Role Name'] in~ (privAADroles)
+    | project
+        TimeGenerated,
+        Activity="A member was removed from a privleged Azure AD Role",
+        ['Group or Role Name'],
+        Actor,
+        Target,
+        Environment="Azure Active Directory";
+let addpim=
+    AuditLogs
+    | where TimeGenerated > ago (timeframe)
+    | where OperationName in ("Add member to role in PIM completed (permanent)", "Add member to role in PIM completed (timebound)", "Add eligible member to role in PIM completed (timebound)", "Add eligible member to role in PIM completed (permanent)")
+    | where TargetResources[2].type == "User"
+    | extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+    | extend Target = tostring(TargetResources[2].userPrincipalName)
+    | extend ['Group or Role Name'] = tostring(TargetResources[0].displayName)
+    | where isnotempty(Actor) and isnotempty(Target)
+    | where ['Group or Role Name'] in~ (privAADroles)
+    | extend Activity = case(OperationName == "Add member to role in PIM completed (permanent)", strcat="A member was assigned to a permanent active Azure AD PIM Role",
+        OperationName == "Add member to role in PIM completed (timebound)", strcat="A member was assigned to a timebound active Azure AD PIM Role",
+        OperationName == "Add eligible member to role in PIM completed (permanent)", strcat="A member was assigned to a permanent eligible Azure AD PIM Role",
+        OperationName == "Add eligible member to role in PIM completed (timebound)", strcat="A member was assigned to a timebound eligible Azure AD PIM Role",
+        "unknown")
+    | project
+        TimeGenerated,
+        Activity,
+        ['Group or Role Name'],
+        Actor,
+        Target,
+        Environment="Azure Active Directory";
+let removepim=
+    AuditLogs
+    | where TimeGenerated > ago (timeframe)
+    | where OperationName in ("Remove member from role in PIM completed (permanent)", "Remove member from role in PIM completed (timebound)", "Remove eligible member from role in PIM completed (permanent)", "Remove eligible member from role in PIM completed (timebound)")
+    | where TargetResources[2].type == "User"
+    | extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+    | extend Target = tostring(TargetResources[2].userPrincipalName)
+    | extend ['Group or Role Name'] = tostring(TargetResources[0].displayName)
+    | where isnotempty(Actor) and isnotempty(Target)
+    | where ['Group or Role Name'] in~ (privAADroles)
+    | extend Activity = case(OperationName == "Remove member from role in PIM completed (permanent)", strcat="A member was removed from a permanent active Azure AD PIM Role",
+        OperationName == "Remove member from role in PIM completed (timebound)", strcat="A member was removed from a timebound active Azure AD PIM Role",
+        OperationName == "Remove eligible member from role in PIM completed (permanent)", strcat="A member was removed from a permanent eligible Azure AD PIM Role",
+        OperationName == "Remove eligible member from role in PIM completed (timebound)", strcat="A member was removed from a timebound eligible Azure AD PIM Role",
+        "unknown")
+    | project
+        TimeGenerated,
+        Activity,
+        ['Group or Role Name'],
+        Actor,
+        Target,
+        Environment="Azure Active Directory";
+union adchanges, aaduseradded, aaduserremoved, aadroleadded, aadroleremoved, addpim, removepim
+| project-reorder TimeGenerated, Activity, ['Group or Role Name'], Actor, Target, Environment
+| sort by TimeGenerated desc 
