@@ -1,0 +1,21 @@
+//Find any devices enrolled into Defender that have created an inbound listening connection on port 22 and retrieve the process command line that opened the connection
+DeviceNetworkEvents
+| where TimeGenerated > ago(7d)
+| where ActionType == "ListeningConnectionCreated"
+| where LocalPort == 22
+| summarize
+    ['Total count of listening connections opened']=count(),
+    ['List of processes creating listening connections']=make_set(InitiatingProcessCommandLine)
+    by DeviceName
+| sort by ['Total count of listening connections opened'] desc 
+
+//Advanced Hunting query
+DeviceNetworkEvents
+| where Timestamp > ago(7d)
+| where ActionType == "ListeningConnectionCreated"
+| where LocalPort == 22
+| summarize
+    ['Total count of listening connections opened']=count(),
+    ['List of processes creating listening connections']=make_set(InitiatingProcessCommandLine)
+    by DeviceName
+| sort by ['Total count of listening connections opened'] desc 
