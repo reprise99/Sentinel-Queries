@@ -1,4 +1,4 @@
-// Save as a function in your workspace then invoke via its name, i.e if you save as PrivilegeChanges
+// Save as a function in your workspace then invoke via its name, i.e if you save as PrivilegeChanges then call via the same name
 // This function is designed to unify group or privilege changes across on-premises AD and Azure AD
 // It will find changes to privileged AD groups, changes to privileged AAD groups, changes to privileged AAD roles (both directly and via PIM)
 // Default groups and roles have been added, but add your own groups that you wish to monitor unique to your environment
