@@ -1,0 +1,23 @@
+//Summarize signins to your Azure AD tenant still using Internet Explorer. Data is grouped into each user and which applications they are accessing.
+SigninLogs
+| where ResultType == 0
+| extend UserAgentDetail = todynamic(parse_user_agent(UserAgent, "browser"))
+| extend UserAgentFamily = tostring(parse_json(tostring(UserAgentDetail.Browser)).Family)
+| extend UserAgentMajorVersion = toint(parse_json(tostring(UserAgentDetail.Browser)).MajorVersion)
+| extend UserAgentMinorVersion = toint(parse_json(tostring(UserAgentDetail.Browser)).MinorVersion)
+| extend UserAgentPatch = toint(parse_json(tostring(UserAgentDetail.Browser)).Patch)
+| project
+    TimeGenerated,
+    UserPrincipalName,
+    AppDisplayName,
+    ResultType,
+    IPAddress,
+    Location,
+    UserAgentFamily,
+    UserAgentMajorVersion,
+    UserAgentMinorVersion,
+    UserAgentPatch,
+    UserAgent
+| where UserAgentFamily == "IE"
+| summarize ['Total IE Signins']=count(), ['Count of Applications']=dcount(AppDisplayName), ['List of Applications']=make_set(AppDisplayName) by UserPrincipalName
+| sort by ['Count of Applications'] desc 
