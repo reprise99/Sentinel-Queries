@@ -1,0 +1,20 @@
+//Detect when one of your Exchange admins grants themselves access to another users mailbox
+CloudAppEvents
+| extend Operation= tostring(RawEventData.Operation)
+| where Operation == "Add-MailboxPermission"
+| extend TargetMailbox = tostring(parse_json(tostring(RawEventData.Parameters))[2].Value)
+| extend UserAdded = tostring(parse_json(tostring(RawEventData.Parameters))[3].Value)
+| extend AccessGranted = tostring(parse_json(tostring(RawEventData.Parameters))[4].Value)
+| extend Actor = tostring(RawEventData.UserId)
+| where Actor =~ UserAdded 
+| project TimeGenerated, Actor, TargetMailbox, UserAdded, AccessGranted
+
+CloudAppEvents
+| extend Operation= tostring(RawEventData.Operation)
+| where Operation == "Add-MailboxPermission"
+| extend TargetMailbox = tostring(parse_json(tostring(RawEventData.Parameters))[2].Value)
+| extend UserAdded = tostring(parse_json(tostring(RawEventData.Parameters))[3].Value)
+| extend AccessGranted = tostring(parse_json(tostring(RawEventData.Parameters))[4].Value)
+| extend Actor = tostring(RawEventData.UserId)
+| where Actor =~ UserAdded 
+| project Timestamp, Actor, TargetMailbox, UserAdded, AccessGranted
