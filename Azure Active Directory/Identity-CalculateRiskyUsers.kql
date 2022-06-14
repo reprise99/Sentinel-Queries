@@ -1,0 +1,13 @@
+//Calculate the percentage for all your Azure AD users considered risky. Those requiring single factor authentication, coming from an unknown location and from an unknown device
+SigninLogs
+| where TimeGenerated > ago (30d)
+| where ResultType == 0
+//Include only member accounts if you want to ignore guest signins
+| where UserType == "Member"
+| extend DeviceTrustType = tostring(DeviceDetail.trustType)
+| summarize
+    ['Total Signins']=count(),
+    ['At Risk Signins']=countif(NetworkLocationDetails == '[]' and isempty(DeviceTrustType) and AuthenticationRequirement == "singleFactorAuthentication")
+    by UserPrincipalName
+| extend ['At Risk Percentage']=(todouble(['At Risk Signins']) * 100 / todouble(['Total Signins']))
+| sort by ['At Risk Percentage'] desc 
