@@ -1,0 +1,22 @@
+//When Defender for Cloud detects communication with a possible phishing domain, use Defedner logs to find any network connections to that same domain
+let domain=
+    SecurityAlert
+    | where TimeGenerated > ago (7d)
+    | where AlertName startswith "Communication with possible phishing domain"
+    | mv-expand todynamic(Entities)
+    | extend DomainName = tostring(Entities.DomainName)
+    | where isnotempty(DomainName)
+    | distinct DomainName;
+DeviceNetworkEvents
+| where TimeGenerated > ago (7d)
+| where RemoteUrl in~ (domain)
+| project
+    TimeGenerated,
+    ActionType,
+    DeviceName,
+    InitiatingProcessAccountName,
+    InitiatingProcessCommandLine,
+    LocalIP,
+    RemoteIP,
+    RemoteUrl,
+    RemotePort
