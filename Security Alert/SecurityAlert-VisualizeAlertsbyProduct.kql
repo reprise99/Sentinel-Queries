@@ -1,0 +1,6 @@
+//Visualize the number of alerts generated per day by each Defender product
+SecurityAlert
+| where TimeGenerated > ago(14d)
+| summarize Count=count() by ProductName, bin(TimeGenerated, 1d)
+| where ProductName != "Azure Sentinel"
+| render columnchart with (kind=unstacked, title="Alerts by Defender product per day")
