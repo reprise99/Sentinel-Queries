@@ -1,0 +1,5 @@
+//Detect when a shared Teams channel is created
+OfficeActivity
+| where Operation == "ChannelAdded"
+| where ChannelType == "Shared"
+| project TimeGenerated, Actor=UserId, TeamName, ChannelType, ChannelName
