@@ -1,0 +1,24 @@
+//Detect when the same IP attempts to brute force a remote connection or attempts to connect to multiple devices and fails over a short time period
+//Microsoft Sentinel query
+DeviceLogonEvents
+| where TimeGenerated > ago (1d)
+| where LogonType == "RemoteInteractive"
+| where ActionType == "LogonFailed"
+| summarize
+    ['Count of logon attempts']=count(),
+    ['Count of distinct devices']=dcount(DeviceName),
+    ['List of devices']=make_set(DeviceName)
+    by RemoteIP, bin(TimeGenerated, 1h)
+| where ['Count of distinct devices'] >= 3 or ['Count of logon attempts'] >= 10
+
+//Advanced Hunting query
+DeviceLogonEvents
+| where Timestamp > ago (1d)
+| where LogonType == "RemoteInteractive"
+| where ActionType == "LogonFailed"
+| summarize
+    ['Count of logon attempts']=count(),
+    ['Count of distinct devices']=dcount(DeviceName),
+    ['List of devices']=make_set(DeviceName)
+    by RemoteIP, bin(Timestamp, 1h)
+| where ['Count of distinct devices'] >= 3 or ['Count of logon attempts'] >= 10
