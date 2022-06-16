@@ -1,0 +1,7 @@
+//Defender for Cloud Apps tracks administrative actions under the 'isAdminOperation' flag. This query will build a pivot table of all admin operations completed by your users
+//Works in both Sentinel and Advanced Hunting
+CloudAppEvents
+| where IsAdminOperation == "true"
+| where AccountType == "Regular"
+| extend UserPrincipalName = tostring(RawEventData.UserId)
+| evaluate pivot(ActionType, count(), UserPrincipalName)
