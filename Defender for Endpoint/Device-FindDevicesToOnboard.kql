@@ -1,0 +1,7 @@
+//Find the information of any devices found by Defender network device discovery that are able to onboarded to Defender
+//This query only works in Advanced Hunting
+DeviceInfo
+| summarize arg_max(Timestamp, *) by DeviceId 
+| where OnboardingStatus == "Can be onboarded"
+| where isempty(MergedToDeviceId)
+| project ['Time last seen']=Timestamp, DeviceName, DeviceId, OSDistribution, OSVersion, DeviceCategory, IsAzureADJoined, JoinType
