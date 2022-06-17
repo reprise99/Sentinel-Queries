@@ -1,0 +1,12 @@
+//Detect users who are trying to use self service password reset but failing as they don't have any authentication methods listed
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
+AuditLogs
+| where LoggedByService == "Self-service Password Management"
+| extend User = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| extend ['User IP Address'] = tostring(parse_json(tostring(InitiatedBy.user)).ipAddress)
+| sort by TimeGenerated asc 
+| summarize ['SSPR Actions']=make_list(ResultReason) by CorrelationId, User, ['User IP Address']
+| where ['SSPR Actions'] has "User's account has insufficient authentication methods defined. Add authentication info to resolve this"
+| sort by User desc 
