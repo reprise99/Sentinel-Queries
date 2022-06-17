@@ -1,4 +1,8 @@
 //Find any devices enrolled into Defender that have created an inbound listening connection on port 22 and retrieve the process command line that opened the connection
+
+//Data connector required for this query - M365 Defender - Device* tables
+
+//Microsoft Sentinel query
 DeviceNetworkEvents
 | where TimeGenerated > ago(7d)
 | where ActionType == "ListeningConnectionCreated"
@@ -10,6 +14,9 @@ DeviceNetworkEvents
 | sort by ['Total count of listening connections opened'] desc 
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting license
+
 DeviceNetworkEvents
 | where Timestamp > ago(7d)
 | where ActionType == "ListeningConnectionCreated"
