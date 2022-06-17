@@ -1,0 +1,22 @@
+//Summarize the machines in your environment that are triggering the most total ASR and distinct ASR rule events
+DeviceEvents
+| where TimeGenerated > ago (30d)
+| where ActionType startswith "Asr"
+| summarize
+    ['Total ASR hit count']=count(),
+    ['Distinct ASR rules count']=dcount(ActionType),
+    ['List of ASR rules triggered']=make_set(ActionType),
+    ['List of processess triggering ASR']=make_set(InitiatingProcessCommandLine)
+    by DeviceName
+| sort by ['Total ASR hit count'] desc 
+
+DeviceEvents
+| where Timestamp > ago (30d)
+| where ActionType startswith "Asr"
+| summarize
+    ['Total ASR hit count']=count(),
+    ['Distinct ASR rules count']=dcount(ActionType),
+    ['List of ASR rules triggered']=make_set(ActionType),
+    ['List of processess triggering ASR']=make_set(InitiatingProcessCommandLine)
+    by DeviceName
+| sort by ['Total ASR hit count'] desc 
