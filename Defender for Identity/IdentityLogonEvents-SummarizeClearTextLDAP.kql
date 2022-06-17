@@ -1,0 +1,22 @@
+//Summarize the accounts in your environment using cleartext LDAP connections
+//Microsoft Sentinel query
+IdentityLogonEvents
+| where TimeGenerated > ago (30d)
+| where LogonType == "LDAP cleartext"
+| summarize
+    ['Total connection count']=count(),
+    ['Distinct destination device count']=dcount(DestinationDeviceName),
+    ['List of destination devices']=make_set(DestinationDeviceName)
+    by AccountUpn
+| sort by ['Distinct destination device count'] desc 
+
+//Advanced Hunting query
+IdentityLogonEvents
+| where Timestamp > ago (30d)
+| where LogonType == "LDAP cleartext"
+| summarize
+    ['Total connection count']=count(),
+    ['Distinct destination device count']=dcount(DestinationDeviceName),
+    ['List of destination devices']=make_set(DestinationDeviceName)
+    by AccountUpn
+| sort by ['Distinct destination device count'] desc 
