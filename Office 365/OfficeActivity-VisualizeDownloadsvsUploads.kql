@@ -1,4 +1,7 @@
 //Visualize uploads vs downloads in your Office 365 tenant per day
+
+//Data connector required for this query - Office 365
+
 OfficeActivity
 | where TimeGenerated > ago(30d)
 | project TimeGenerated, Operation

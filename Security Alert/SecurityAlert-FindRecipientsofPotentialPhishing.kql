@@ -1,4 +1,8 @@
 //When a user reports an email as potential phishing find all other users who received that email
+
+//Data connector required for this query - Security Alert (free table that other Defender products send alert info to)
+//Data connector required for this query - M365 Defender - Email* tables
+
 SecurityAlert
 | where TimeGenerated > ago(1d)
 | where ProviderName == "OATP"

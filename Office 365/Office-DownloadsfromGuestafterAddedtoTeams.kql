@@ -1,4 +1,7 @@
 // Finds guest accounts who were added to a Team and then downloaded documents straight away. 
+
+//Data connector required for this query - Office 365
+
 // Startime = Amount of time to look back on, i.e last 7 days.
 // Timeframe = looks for downloads for this period after being added to the Team, i.e 2 hours after being added.
 let starttime = 7d;

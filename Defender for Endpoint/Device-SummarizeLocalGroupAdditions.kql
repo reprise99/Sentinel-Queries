@@ -1,4 +1,7 @@
 //Summarize the total count of all local group additions by group name
+
+//Data connector required for this query - M365 Defender - Device* tables
+
 DeviceEvents
 | where TimeGenerated > ago (30d)
 | where ActionType == "UserAccountAddedToLocalGroup"

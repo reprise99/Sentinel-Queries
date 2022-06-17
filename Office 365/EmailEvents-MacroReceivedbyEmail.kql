@@ -1,4 +1,7 @@
 //When a macro is received via email from an external sender, find all users who receieved the same file
+
+//Data connector required for this query - M365 Defender - Email* tables
+
 //Microsoft Sentinel query
 EmailEvents
 | where EmailDirection == "Inbound"
@@ -17,6 +20,9 @@ EmailEvents
 | summarize Recipient=make_set(RecipientEmailAddress) by FileName, SenderMailFromAddress
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting license
+
 EmailEvents
 | where EmailDirection == "Inbound"
 | project

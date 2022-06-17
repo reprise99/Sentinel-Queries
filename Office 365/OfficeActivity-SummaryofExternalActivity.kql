@@ -1,4 +1,7 @@
 //Create a set of users external to your organization who have accessed Office files after being shared. Events are grouped by the user who shared the document, and what activities were performed against it and by which external account.
+
+//Data connector required for this query - Office 365
+
 OfficeActivity
 | project LinkCreatedTime=TimeGenerated, Operation, UserWhoShared=UserId, OfficeObjectId
 | where Operation in ('AddedToSecureLink', 'SecureLinkCreated', 'SecureLinkUpdated', 'SharingInvitationCreated')

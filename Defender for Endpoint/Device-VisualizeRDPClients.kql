@@ -1,4 +1,7 @@
 //Visualize the different RDP clients, such as rMemoteNG or RoyalTS being used in your environment
+
+//Data connector required for this query - M365 Defender - Device* tables
+
 //Microsoft Sentinel query
 DeviceNetworkEvents
 | where TimeGenerated > ago(7d)
@@ -12,6 +15,9 @@ DeviceNetworkEvents
 | render barchart 
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting license
+
 DeviceNetworkEvents
 | where Timestamp > ago(7d)
 | where ActionType == "ConnectionSuccess"

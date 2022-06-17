@@ -1,4 +1,7 @@
 //When Defender for Identity detects suspected golden ticket usage, parse the relevant user accounts and host names
+
+//Data connector required for this query - Security Alert (free table that other Defender products send alert info to)
+
 SecurityAlert
 | where AlertName startswith "Suspected Golden Ticket usage"
 | mv-expand todynamic(Entities)

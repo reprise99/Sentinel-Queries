@@ -1,4 +1,7 @@
 //Find users that are connecting to internet endpoints via PowerShell commands
+
+//Data connector required for this query - M365 Defender - Device* tables
+
 DeviceNetworkEvents
 | project
     TimeGenerated,
@@ -13,6 +16,7 @@ DeviceNetworkEvents
     RemoteUrl
 //Exclude system processes
 | where InitiatingProcessAccountName != "system"
+| where InitiatingProcessAccountName != "local service"
 | where InitiatingProcessCommandLine contains "powershell"
 | where LocalIPType == "Private"
 | where RemoteIPType == "Public"
@@ -25,6 +29,4 @@ DeviceNetworkEvents
     RemoteIP,
     RemotePort,
     RemoteUrl
-//Exclude system initiated events as this is a user detection
-| where InitiatingProcessAccountName <> "local service"
 | sort by TimeGenerated desc 

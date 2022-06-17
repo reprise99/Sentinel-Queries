@@ -1,5 +1,9 @@
 //Detects successful TeamViewer connections from internal to external IP addresses
+
+//Data connector required for this query - M365 Defender - Device* tables or Advanced Hunting license
+
 //If TeamViewer is a sanctioned app then you will get lots of hits.
+//Works in both Microsoft Sentinel and Advanced Hunting
 DeviceNetworkEvents
 | where InitiatingProcessFileName contains "teamviewer.exe"
 | where ActionType == "ConnectionSuccess"

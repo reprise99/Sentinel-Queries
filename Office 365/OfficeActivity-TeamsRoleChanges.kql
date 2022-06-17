@@ -1,4 +1,7 @@
 //Detect when the role for a user changes to owner or back to standard member in your any of your Teams
+
+//Data connector required for this query - Office 365
+
 OfficeActivity
 | where Operation == "MemberRoleChanged"
 | mv-expand Members

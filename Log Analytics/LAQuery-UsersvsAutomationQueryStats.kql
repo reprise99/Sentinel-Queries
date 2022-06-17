@@ -1,4 +1,7 @@
 //Visualizes queries against your log analytics workspace categorized by users and service principals
+
+//Data connector required for this query - Log Analytics diagnostic settings enabled on your Sentinel workspace
+
 let timeframe=45d;
 LAQueryLogs
 | where TimeGenerated > ago (timeframe)

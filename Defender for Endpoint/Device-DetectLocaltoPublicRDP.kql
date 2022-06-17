@@ -1,4 +1,7 @@
 //Detect allowed RDP connections from private to public networks
+
+//Data connector required for this query - M365 Defender - Device* tables
+
 //Microsoft Sentinel query
 DeviceNetworkEvents
 | where ActionType == "ConnectionSuccess"
@@ -14,6 +17,9 @@ DeviceNetworkEvents
     RemoteUrl
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting license
+
 DeviceNetworkEvents
 | where ActionType == "ConnectionSuccess"
 | where RemotePort == "3389"

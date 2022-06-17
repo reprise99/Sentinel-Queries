@@ -1,4 +1,8 @@
 // Detects when a user downgrades a label on a file and that file is then emailed outbound 
+
+//Data connector required for this query - Azure Information Protection
+//Data connector required for this query - M365 Defender - Email* tables
+
 // Starttime = the amount of data to look back on
 // Timeframe = the time between the label downgrade and email event
 let starttime=7d;

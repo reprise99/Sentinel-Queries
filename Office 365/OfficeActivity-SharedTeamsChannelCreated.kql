@@ -1,4 +1,7 @@
 //Detect when a shared Teams channel is created
+
+//Data connector required for this query - Office 365
+
 OfficeActivity
 | where Operation == "ChannelAdded"
 | where ChannelType == "Shared"

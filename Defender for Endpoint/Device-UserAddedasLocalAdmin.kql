@@ -1,4 +1,8 @@
 //Detect when an admin adds another user to the local administrators group on a device and optionally query IdentityInfo to return the UPN of the user added
+
+//Data connector required for this query - M365 Defender - Device* tables
+//Data connector required for this query - Microsoft Sentinel UEBA
+
 DeviceEvents
 | where TimeGenerated > ago(7d)
 | where ActionType == "UserAccountAddedToLocalGroup"
@@ -25,7 +29,10 @@ DeviceEvents
     Actor
 
 
-//Use the below for the equivalent query in M365 advanced hunting
+//Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting license
+
 DeviceEvents
 | where Timestamp > ago(30d)
 | where ActionType == "UserAccountAddedToLocalGroup"

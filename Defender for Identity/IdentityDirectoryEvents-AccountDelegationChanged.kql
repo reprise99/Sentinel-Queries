@@ -1,4 +1,7 @@
 //Alert when Defender for Identity detects a change in kerberos constrained delegation configuration on a device
+
+//Data connector required for this query - M365 Defender - Identity* tables
+
 IdentityDirectoryEvents
 | where ActionType == "Account Constrained Delegation changed"
 | extend AF = parse_json(AdditionalFields)

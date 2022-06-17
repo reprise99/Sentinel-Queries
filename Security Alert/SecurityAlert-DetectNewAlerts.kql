@@ -1,4 +1,7 @@
 //List any new alert types found by the Defender product suite in the last week compared to the previous year
+
+//Data connector required for this query - Security Alert (free table that other Defender products send alert info to)
+
 //First find all the existing alerts from the last year excluding the last week
 let existingalerts=
     SecurityAlert

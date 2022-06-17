@@ -1,4 +1,7 @@
 //Visualize distinct computers per month sending data
+
+//Data connector required for this query - Heartbeat (created automatically when you onboard machines to Sentinel)
+
 Heartbeat
 | where TimeGenerated > ago(365d)
 | summarize Count=dcount(Computer)by Month=startofmonth(TimeGenerated)

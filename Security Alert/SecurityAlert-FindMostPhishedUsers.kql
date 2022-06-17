@@ -1,4 +1,7 @@
 //Find the most phished users from the last 365 days
+
+//Data connector required for this query - Security Alert (free table that other Defender products send alert info to)
+
 SecurityAlert
 | where TimeGenerated > ago (365d)
 | where ProviderName == "OATP"

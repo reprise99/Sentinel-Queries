@@ -1,4 +1,7 @@
 //Detect anomalies in the amount of downloads from your Office 365 tenant by guest accounts.
+
+//Data connector required for this query - Office 365
+
 //Starttime and endtime = which period of data to look at, i.e from 21 days ago until today.
 let startdate=21d;
 let enddate=1d;

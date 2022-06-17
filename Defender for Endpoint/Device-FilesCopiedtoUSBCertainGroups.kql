@@ -1,4 +1,8 @@
 //Lookup members of a specific group and find any USB file copies completed by those users
+
+//Data connector required for this query - M365 Defender - Device* tables
+//Data connector required for this query - Microsoft Sentinel UEBA
+
 let id=
     IdentityInfo
     | where GroupMembership has "Group Name"

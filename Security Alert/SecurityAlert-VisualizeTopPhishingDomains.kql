@@ -1,4 +1,7 @@
 //Visualize the most popular weaponized domains in the phishing emails your users receive
+
+//Data connector required for this query - Security Alert (free table that other Defender products send alert info to)
+
 SecurityAlert
 | where TimeGenerated > ago(365d)
 | where ProviderName == "OATP"

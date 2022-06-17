@@ -1,4 +1,8 @@
 //Detects users with global or exchange administrator roles who have accessed email items from mailboxes other than their own
+
+//Data connector required for this query - Office 365
+//Data connector required for this query - Microsoft Sentinel UEBA
+
 let timeframe=30d;
 let adminusers=
 IdentityInfo

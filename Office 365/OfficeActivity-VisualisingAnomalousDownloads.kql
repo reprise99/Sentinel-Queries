@@ -1,4 +1,7 @@
 //Visualises potentially anomalous download activities in your Office tenant over the set period. Time frames can be adjusted to suit. 
+
+//Data connector required for this query - Office 365
+
 //Starttime and timeframe = how many days of data to look at and in what grouping, i.e 7 days of data over 1 hour periods.
 //Threshold = the amount of total downloads required to be included in anomaly calculations. Reduces noise from low level anomalies, e.g going from 1 download to 3 downloads total.
 //sensitivity = adjust to make the query more or less sensitive, the higher the value, the greater the anomaly required to be detected.

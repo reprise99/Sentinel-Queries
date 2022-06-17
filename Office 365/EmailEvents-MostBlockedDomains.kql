@@ -1,4 +1,7 @@
 //Visualize the most blocked domains sending email inbound to your users
+
+//Data connector required for this query - M365 Defender - Email* tables
+
 //Microsoft Sentinel query
 EmailEvents
 | where TimeGenerated > ago (7d)
@@ -11,6 +14,9 @@ EmailEvents
 | render barchart 
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting license
+
 EmailEvents
 | where Timestamp > ago (7d)
 | where EmailDirection == "Inbound"

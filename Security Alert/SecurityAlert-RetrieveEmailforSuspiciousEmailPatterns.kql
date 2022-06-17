@@ -1,4 +1,8 @@
-//When a user is flagged for suspicious email sending patterns retrieve all the email they have sent around the time of the alert
+//When a user is flagged for suspicious email sending patterns retrieve all the email they have sent around the time of the Alert
+
+//Data connector required for this query - Security Alert (free table that other Defender products send alert info to)
+//Data connector required for this query - M365 Defender - Email* tables
+
 SecurityAlert
 | where TimeGenerated > ago (7d)
 | where ProviderName == "OATP"

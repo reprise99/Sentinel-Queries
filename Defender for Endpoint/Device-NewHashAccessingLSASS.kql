@@ -1,4 +1,7 @@
 //Detect when a process with a hash not previously seen before in your environment accesses lsass.exe via an open process API call
+
+//Data connector required for this query - M365 Defender - Device* tables
+
 //Microsoft Sentinel query
 let knownhashes=
     DeviceEvents
@@ -19,6 +22,9 @@ DeviceEvents
     DesiredAccess
 
 //Detect when a process with a hash not previously seen before in your environment accesses lsass.exe via an open process API call
+
+//Data connector required for this query - Advanced Hunting license
+
 //Advanced Hunting query
 let knownhashes=
     DeviceEvents

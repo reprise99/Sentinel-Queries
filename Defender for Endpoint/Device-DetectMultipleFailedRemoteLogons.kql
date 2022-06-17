@@ -1,4 +1,7 @@
 //Detect when the same IP attempts to brute force a remote connection or attempts to connect to multiple devices and fails over a short time period
+
+//Data connector required for this query - M365 Defender - Device* tables
+
 //Microsoft Sentinel query
 DeviceLogonEvents
 | where TimeGenerated > ago (1d)
@@ -12,6 +15,9 @@ DeviceLogonEvents
 | where ['Count of distinct devices'] >= 3 or ['Count of logon attempts'] >= 10
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting license
+
 DeviceLogonEvents
 | where Timestamp > ago (1d)
 | where LogonType == "RemoteInteractive"

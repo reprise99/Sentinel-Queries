@@ -1,4 +1,7 @@
 //Find the information of any devices found by Defender network device discovery that are able to onboarded to Defender
+
+//Data connector required for this query - Advanced Hunting license
+
 //This query only works in Advanced Hunting
 DeviceInfo
 | summarize arg_max(Timestamp, *) by DeviceId 

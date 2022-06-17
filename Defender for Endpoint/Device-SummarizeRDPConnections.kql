@@ -1,4 +1,7 @@
 //Summarize your devices by their RDP activity. The data is sorted to show total outbound RDP connections, a count of distinct RDP connections and the list of IP's connected to.
+
+//Data connector required for this query - M365 Defender - Device* tables
+
 //Data is sorted by the devices with the most unique outbound RDP connections. Those devices have the biggest lateral movement blast radius.
 //Microsoft Sentinel query
 DeviceNetworkEvents
@@ -15,6 +18,9 @@ DeviceNetworkEvents
 | sort by ['RDP Distinct Outbound Endpoint Count'] desc 
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting license
+
 DeviceNetworkEvents
 | where Timestamp > ago(30d)
 | where ActionType == "ConnectionSuccess"

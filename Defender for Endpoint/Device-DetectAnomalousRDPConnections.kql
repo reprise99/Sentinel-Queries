@@ -1,4 +1,7 @@
 //Visualizes potentially anomalous RDP connections from your devices.
+
+//Data connector required for this query - M365 Defender - Device* tables
+
 //Starttime and timeframe = how many days of data to look at to build your data set and in what grouping, i.e 30 days of data over 2 hour periods.
 //Threshold = the amount of total RDP connections required to be included in anomaly calculations. Reduces noise from low level anomalies, e.g going from 1 connection to 2.
 //Sensitivity = adjust to make the query more or less sensitive, the higher the value, the greater the anomaly required to be detected.

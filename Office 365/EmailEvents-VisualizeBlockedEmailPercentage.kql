@@ -1,4 +1,7 @@
 //Visualize how much is email is being blocked as a percentage of total email over time
+
+//Data connector required for this query - M365 Defender - Email* tables
+
 EmailEvents
 | where TimeGenerated > ago (30d)
 | where EmailDirection == "Inbound"

@@ -1,4 +1,7 @@
 //Detect when a user or process attempts to tamper with Defender for Endpoint registry settings
+
+//Data connector required for this query - M365 Defender - Device* tables
+
 DeviceEvents
 | where ActionType == "TamperingAttempt"
 | extend OriginalRegistryValue = tostring(AdditionalFields.OriginalValue)

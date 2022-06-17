@@ -1,4 +1,8 @@
 //Detect successful internal to public connections using Putty
+
+//Data connector required for this query - M365 Defender - Device* tables
+
+//Microsoft Sentinel query
 DeviceNetworkEvents
 | where ActionType == "ConnectionSuccess"
 | where LocalIPType == "Private"
@@ -14,6 +18,9 @@ DeviceNetworkEvents
     RemotePort
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting license
+
 DeviceNetworkEvents
 | where ActionType == "ConnectionSuccess"
 | where LocalIPType == "Private"

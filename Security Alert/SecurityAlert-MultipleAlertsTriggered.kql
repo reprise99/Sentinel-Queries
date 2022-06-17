@@ -1,4 +1,7 @@
 //Detect when a user or device triggers 3 or more unique alerts within a short time frame. This example uses a period of 4 hours
+
+//Data connector required for this query - Security Alert (free table that other Defender products send alert info to)
+
 SecurityAlert
 | where TimeGenerated > ago(1d)
 | where isnotempty(CompromisedEntity) and CompromisedEntity != "CompromisedEntity"

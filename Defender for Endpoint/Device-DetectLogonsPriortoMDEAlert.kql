@@ -1,4 +1,8 @@
 //When a Defender for Endpoint alert is triggered, search for the most recent interactive logon to the device prior to the alert.
+
+//Data connector required for this query - M365 Defender - Device* tables
+//Data connector required for this query - Security Alert (free table that other Defender products send alert info to)
+
 //Also returns if that user is a local admin on the device.
 let timeframe = 48h;
 SecurityAlert

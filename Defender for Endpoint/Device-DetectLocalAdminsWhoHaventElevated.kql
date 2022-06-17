@@ -1,4 +1,7 @@
 // Searches for local admin log on events and then on process events that require full token elevation, query returns users who have logged on as an admin but not required admin access for 30 days
+
+//Data connector required for this query - M365 Defender - Device* tables
+
 // Exclude a list of known processes in your environment that require TokenElevationTypeFull such as conhost, DismHost
 let process = dynamic(["conhost.exe", "DismHost.exe", "git.exe", "HPUpdate.exe"]);
 let devices =

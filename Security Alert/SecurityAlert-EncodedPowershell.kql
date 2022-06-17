@@ -1,4 +1,7 @@
 //Detect when Defender for Endpoint alerts on suspicious PowerShell usage. If command is encoded it will be decoded.
+
+//Data connector required for this query - Security Alert (free table that other Defender products send alert info to)
+
 SecurityAlert
 | where AlertName == "Suspicious PowerShell command line"
 | mv-expand todynamic(Entities)
@@ -12,6 +15,9 @@ SecurityAlert
 | project TimeGenerated, CompromisedEntity, AlertName, CommandLine, DecodedCommand
 
 //Advanced Hunting query - depending on the content of the decoded string AH can struggle to render the command occasionally
+
+//Data connector required for this query - Advanced Hunting license
+
 let alertid=
 AlertInfo
 | where Title == @"Suspicious PowerShell command line"

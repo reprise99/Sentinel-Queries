@@ -1,4 +1,28 @@
 //Detects when certutil is used to connect to a public IP. This could indicate abuse of cert util, see - https://www.avira.com/en/blog/certutil-abused-by-attackers-to-spread-threats
+
+//Data connector required for this query - M365 Defender - Device* tables
+
+//Microsoft Sentinel query
+DeviceNetworkEvents
+| where TimeGenerated > ago (7d)
+| project
+    TimeGenerated,
+    DeviceName,
+    InitiatingProcessAccountName,
+    InitiatingProcessCommandLine,
+    LocalIPType,
+    LocalIP,
+    RemoteIPType,
+    RemoteIP,
+    RemoteUrl,
+    RemotePort
+| where InitiatingProcessCommandLine contains "certutil"
+| where RemoteIPType == "Public"
+
+//Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting license
+
 DeviceNetworkEvents
 | where TimeGenerated > ago (7d)
 | project

@@ -1,4 +1,7 @@
 //Detect when the encryption types on a device are changed and parse the previous and current encryption types.
+
+//Data connector required for this query - M365 Defender - Identity* tables or Advanced Hunting license
+
 //If you don't send Defender for Id logs to Sentinel you can use the query in M365 Advanced Hunting directly
 IdentityDirectoryEvents
 | where ActionType == "Account Supported Encryption Types changed"

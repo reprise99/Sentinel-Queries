@@ -1,4 +1,7 @@
 //Detect when the same user or device triggers 3 or more low severity alerts in the space of a day
+
+//Data connector required for this query - Security Alert (free table that other Defender products send alert info to)
+
 SecurityAlert
 | where TimeGenerated > ago (7d)
 | where AlertSeverity == "Low"

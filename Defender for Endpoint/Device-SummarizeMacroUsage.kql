@@ -1,4 +1,7 @@
 //Summarize macro usage on your devies by creating a list all macros used, a count of how many users are using each one and the account names
+
+//Data connector required for this query - M365 Defender - Device* tables
+
 //Macro usage may be double counted if the same file is executed from two locations, i.e from a network share and a local drive.
 //Microsoft Sentinel query
 union DeviceFileEvents, DeviceNetworkEvents
@@ -15,6 +18,9 @@ union DeviceFileEvents, DeviceNetworkEvents
 | sort by ['Count of Users'] desc 
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting license
+
 union DeviceFileEvents, DeviceNetworkEvents
 | where Timestamp > ago(30d)
 | project InitiatingProcessCommandLine, InitiatingProcessAccountName

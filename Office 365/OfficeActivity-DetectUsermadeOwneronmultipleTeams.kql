@@ -1,4 +1,7 @@
 //Detect when a user is made an owner on multiple Teams in a short time frame.
+
+//Data connector required for this query - Office 365
+
 //Define a time period to check and the threshold of how many Teams to alert on.
 //This example would find users added as an owner to 3 or more Teams within 30 minutes.
 let timeframe=30m;

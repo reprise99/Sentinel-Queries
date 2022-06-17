@@ -1,4 +1,7 @@
 //Create a summary of each device showing all users who have logged on, separated into normal and local admin logons
+
+//Data connector required for this query - M365 Defender - Device* tables
+
 //Microsoft Sentinel query
 DeviceLogonEvents
 | where TimeGenerated > ago(30d)
@@ -16,6 +19,9 @@ DeviceLogonEvents
 | sort by ['Local Admin Count'] desc  
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting license
+
 DeviceLogonEvents
 | where Timestamp > ago(30d)
 | project DeviceName, ActionType, LogonType, AdditionalFields, InitiatingProcessCommandLine, AccountName, IsLocalAdmin

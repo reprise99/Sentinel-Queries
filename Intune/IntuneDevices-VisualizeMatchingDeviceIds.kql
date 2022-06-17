@@ -1,4 +1,7 @@
 //Visualize devices in intune with the same intune and Azure AD Id per week by join type
+
+//Data connector required for this query - Intune data sent to Sentinel workspace
+
 IntuneDevices
 | where TimeGenerated > ago (180d)
 | summarize arg_max(TimeGenerated, *) by DeviceName, startofweek(TimeGenerated)

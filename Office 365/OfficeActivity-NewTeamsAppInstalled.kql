@@ -1,4 +1,7 @@
 //Detect when an app is installed into Teams for the first time compared to the previous timerange
+
+//Data connector required for this query - Office 365
+
 let knownapps=
     OfficeActivity
     | where TimeGenerated > ago(180d) and TimeGenerated < ago(7d)

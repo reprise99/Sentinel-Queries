@@ -1,4 +1,7 @@
 //Detect when an Exchange admin grants full mailbox access to another user
+
+//Data connector required for this query - Office 365
+
 OfficeActivity
 | where RecordType == "ExchangeAdmin"
 | where Operation == "Add-MailboxPermission"

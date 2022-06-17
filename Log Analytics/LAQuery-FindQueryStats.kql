@@ -1,4 +1,7 @@
 //Create a list of all tables in Sentinel, then iterate through the list to audit the LAQuery log table to see which are being actively used
+
+//Data connector required for this query - Log Analytics diagnostic settings enabled on your Sentinel workspace
+
 let tablenames = search * 
     | summarize make_set($table);
 LAQueryLogs

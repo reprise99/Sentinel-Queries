@@ -1,4 +1,8 @@
 //Lookup Identity info table to find the most recent device a user has logged onto and any macro usage from that device and return identity info
+
+//Data connector required for this query - M365 Defender - Device* tables
+//Data connector required for this query - Microsoft Sentinel UEBA
+
 let id=
     IdentityInfo
     | where TimeGenerated > ago (21d)

@@ -1,4 +1,7 @@
 //Summarize the most common files in your environment flagging Smartscreen untrusted warnings
+
+//Data connector required for this query - M365 Defender - Device* tables
+
 //Microsoft Sentinel query
 DeviceEvents
 | where TimeGenerated > ago (30d)
@@ -9,6 +12,9 @@ DeviceEvents
 | sort by Count
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting license
+
 DeviceEvents
 | where Timestamp > ago(30d)
 | where ActionType startswith "SmartScreen"

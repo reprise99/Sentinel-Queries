@@ -1,4 +1,8 @@
 //Find which users clicked on a phishing link after it was detected by Defender for Office 365
+
+//Data connector required for this query - M365 Defender - Device* tables
+//Data connector required for this query - Security Alert (free table that other Defender products send alert info to)
+
 SecurityAlert
 | where ProviderName == "OATP"
 | where AlertName in ("Email messages containing malicious URL removed after delivery​","Email messages containing phish URLs removed after delivery")

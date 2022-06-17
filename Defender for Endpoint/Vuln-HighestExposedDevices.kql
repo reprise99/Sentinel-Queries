@@ -1,4 +1,7 @@
 //Summarize your devices by which Microsoft CVEs they are vulnerable too. The data is summarized into severity and ordered by the most exposed devices.
+
+//Data connector required for this query - Advanced Hunting license
+
 //This query only works in Advanced Hunting as the DeviceTvm* tables aren't sent to Sentinel yet
 DeviceTvmSoftwareVulnerabilities
 | summarize ['Critical Severity Vulnerabilities']=make_set_if(CveId, SoftwareVendor == "microsoft" and VulnerabilitySeverityLevel == "Critical"),

@@ -1,4 +1,8 @@
 //When an anomalous token alert is flagged, find the specific risk events that flagged the alert
+
+//Data connector required for this query - Security Alert (free table that other Defender products send alert info to)
+//Data connector required for this query - Azure Active Directory - AAD User Risk Events
+
 let alerts=
     SecurityAlert
     | where TimeGenerated > ago(1d)

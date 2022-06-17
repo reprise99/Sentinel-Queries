@@ -1,4 +1,8 @@
 //When Defender for Cloud detects communication with a possible phishing domain, use Defedner logs to find any network connections to that same domain
+
+//Data connector required for this query - Security Alert (free table that other Defender products send alert info to)
+//Data connector required for this query - M365 Defender - Device* tables
+
 let domain=
     SecurityAlert
     | where TimeGenerated > ago (7d)

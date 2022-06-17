@@ -1,4 +1,8 @@
 // Detects when a user downgrades a label on a file and that file is then copied to USB
+
+//Data connector required for this query - Azure Information Protection
+//Data connector required for this query - M365 Defender - Device* tables
+
 // Timeframe = the time between the label downgrade and file copy event
 let timeframe=4h;
 InformationProtectionEvents

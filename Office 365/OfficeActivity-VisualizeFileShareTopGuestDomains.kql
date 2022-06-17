@@ -1,4 +1,7 @@
 //Visualize the guest domains that have had the most files shares to them from your Office 365 tenant
+
+//Data connector required for this query - Office 365
+
 OfficeActivity
 | where TimeGenerated > ago(30d)
 | where Operation in~ ("AddedToSecureLink", "SecureLinkCreated", "SecureLinkUpdated")

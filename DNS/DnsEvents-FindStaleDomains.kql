@@ -1,5 +1,8 @@
 //Find DNS domains that have not been queried in the last 30 days. These are potentially stale and should be removed.
-let domain="fmgl.com.au";
+
+//Data connector required for this query - DNS
+
+let domain="yourdomain.com";
 DnsEvents
 | where TimeGenerated > ago(180d)
 | where SubType == "LookupQuery"

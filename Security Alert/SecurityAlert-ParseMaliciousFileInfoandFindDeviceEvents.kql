@@ -1,4 +1,8 @@
 //When Defender for Office 365 removes a malicious file from an email track down all device events with the same file hash
+
+//Data connector required for this query - Security Alert (free table that other Defender products send alert info to)
+//Data connector required for this query - M365 Defender - Email* tables
+
 let filehashes=
 SecurityAlert
 | where TimeGenerated > ago (7d)

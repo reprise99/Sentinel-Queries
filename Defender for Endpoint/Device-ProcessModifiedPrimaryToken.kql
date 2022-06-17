@@ -1,4 +1,7 @@
 //Find when a process modifies the primary access token and parse the relevant details such as any privilege attached to the token, whether it is system level and the token integrity level
+
+//Data connector required for this query - M365 Defender - Device* tables
+
 //Microsoft Sentinel query
 DeviceEvents
 | where TimeGenerated > ago(30m)
@@ -25,6 +28,9 @@ DeviceEvents
     ['Token Change Description']
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting license
+
 DeviceEvents
 | where Timestamp > ago(30m)
 | project

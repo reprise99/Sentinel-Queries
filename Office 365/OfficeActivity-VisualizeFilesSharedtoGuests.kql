@@ -1,4 +1,7 @@
 //Visualize the files shared to guests from Office 365 over time
+
+//Data connector required for this query - Office 365
+
 let timerange=90d;
 OfficeActivity
 | where TimeGenerated > ago(timerange)

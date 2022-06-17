@@ -1,4 +1,7 @@
 //Detect when a new Exchange admin role is created and parse the permissions
+
+//Data connector required for this query - Office 365
+
 OfficeActivity
 | where Operation == "New-RoleGroup"
 | where RecordType == "ExchangeAdmin"

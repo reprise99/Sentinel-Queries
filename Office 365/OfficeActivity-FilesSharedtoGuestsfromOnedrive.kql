@@ -1,4 +1,7 @@
 //Find when files are shared from OneDrive to third party guests
+
+//Data connector required for this query - Office 365
+
 OfficeActivity
 | where TimeGenerated > ago(7d)
 | where OfficeWorkload == "OneDrive"

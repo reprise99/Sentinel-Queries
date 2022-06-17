@@ -1,4 +1,7 @@
 //Detect when a device triggers a Defender for Endpoint alert where Defender for Identity has also detected a lateral movement path
+
+//Data connector required for this query - Security Alert (free table that other Defender products send alert info to)
+
 SecurityAlert
 | where ProviderName == "MDATP"
 | project TimeGenerated, AlertName, CompromisedEntity

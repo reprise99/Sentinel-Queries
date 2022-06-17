@@ -1,4 +1,7 @@
 //Find any new operations audited in Office 365 in the last 14 days vs the previous 180 days
+
+//Data connector required for this query - Office 365
+
 let existingoperations=
     OfficeActivity
     | where TimeGenerated > ago(180d) and TimeGenerated < ago(14d)

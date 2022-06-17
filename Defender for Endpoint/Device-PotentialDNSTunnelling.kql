@@ -1,4 +1,7 @@
 //Identifies potential DNS tunnelling over HTTPS 
+
+//Data connector required for this query - M365 Defender - Device* tables
+
 //Microsoft Sentinel query
 DeviceNetworkEvents
 | where ActionType == "NetworkSignatureInspected"
@@ -19,6 +22,9 @@ DeviceNetworkEvents
     RemoteUrl
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting license
+
 DeviceNetworkEvents
 | where ActionType == "NetworkSignatureInspected"
 | extend AF = parse_json(AdditionalFields)

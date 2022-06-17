@@ -1,4 +1,8 @@
 //Top 20 departments copying file data to USB drives by file count
+
+//Data connector required for this query - M365 Defender - Device* tables
+//Data connector required for this query - Microsoft Sentinel UEBA
+
 let id=
 IdentityInfo
 | where TimeGenerated > ago (21d)

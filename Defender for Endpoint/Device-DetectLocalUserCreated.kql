@@ -1,4 +1,7 @@
 //Detect when a local user account is created on an endpoint
+
+//Data connector required for this query - M365 Defender - Device* tables
+
 //Microsoft Sentinel query
 DeviceEvents
 | where TimeGenerated > ago(7d)
@@ -12,6 +15,9 @@ DeviceEvents
     Actor=InitiatingProcessAccountName
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting license
+
 DeviceEvents
 | where Timestamp > ago(7d)
 | where ActionType == "UserAccountCreated"

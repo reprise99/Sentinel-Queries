@@ -1,4 +1,7 @@
 //Parse all the relevant entities - hosts, accounts, IP addresses, files, groups, resources and times from Defender for Identity alerts
+
+//Data connector required for this query - Security Alert (free table that other Defender products send alert info to)
+
 SecurityAlert
 | where ProviderName == "Azure Advanced Threat Protection"
 | summarize arg_max(TimeGenerated, *) by VendorOriginalId

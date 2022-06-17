@@ -1,4 +1,7 @@
 //When an Intune admin initiates a remote wipe of a managed device, retrieve all the relevant information about the device
+
+//Data connector required for this query - Intune data sent to Sentinel workspace
+
 IntuneAuditLogs
 | where TimeGenerated > ago (1d)
 | where OperationName == "wipe ManagedDevice"

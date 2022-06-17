@@ -1,4 +1,7 @@
 //Summarize NTLM authentications by which source computers & accounts are connecting to the most destination devices
+
+//Data connector required for this query - M365 Defender - Identity* tables
+
 //Microsoft Sentinel query
 IdentityLogonEvents
 | where TimeGenerated > ago(7d)
@@ -10,6 +13,9 @@ IdentityLogonEvents
 
 //Advanced Hunting query
 IdentityLogonEvents
+
+//Data connector required for this query - Advanced Hunting license
+
 | where Timestamp > ago(7d)
 | where ActionType == "LogonSuccess"
 | where Protocol == "Ntlm"

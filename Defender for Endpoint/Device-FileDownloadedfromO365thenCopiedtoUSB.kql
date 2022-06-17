@@ -1,4 +1,8 @@
 //Detects a user that downloaded a file from O365 and then wrote the same file to USB, matches on both filename and the user
+
+//Data connector required for this query - M365 Defender - Device* tables
+//Data connector required for this query - Office 365
+
 let filedownloads=
     OfficeActivity
     | where TimeGenerated > ago(1d)

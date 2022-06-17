@@ -1,4 +1,7 @@
 //Detect when a user shares multiple files to Azure AD guests over a short time frame.
+
+//Data connector required for this query - Office 365
+
 //Define a time period to check and the threshold of how many files to alert on.
 //In this example it would detect when a user shares 10 or more files to a guest within 30 minutes
 let timeframe=30m;

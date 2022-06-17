@@ -1,4 +1,7 @@
 //Visualize the number of alerts generated per day by each Defender product
+
+//Data connector required for this query - Security Alert (free table that other Defender products send alert info to)
+
 SecurityAlert
 | where TimeGenerated > ago(14d)
 | summarize Count=count() by ProductName, bin(TimeGenerated, 1d)

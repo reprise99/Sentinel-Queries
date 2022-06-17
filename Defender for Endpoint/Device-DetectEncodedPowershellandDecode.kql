@@ -1,4 +1,7 @@
 //Finds encoded PowerShell commands and then decodes the encoded string
+
+//Data connector required for this query - M365 Defender - Device* tables
+
 //Query modified from this post - https://techcommunity.microsoft.com/t5/microsoft-sentinel/finding-base64-encoded-commands/m-p/1891876
 DeviceProcessEvents
 | where ProcessCommandLine contains "powershell" or InitiatingProcessCommandLine contains "powershell"

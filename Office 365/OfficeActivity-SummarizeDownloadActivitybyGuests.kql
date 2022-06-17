@@ -1,4 +1,7 @@
 //Summarize the total count and the list of files downloaded by guests in your Office 365 tenant
+
+//Data connector required for this query - Office 365
+
 let timeframe=7d;
 OfficeActivity
 | where TimeGenerated > ago(timeframe)

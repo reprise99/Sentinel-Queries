@@ -1,4 +1,8 @@
 //When Defender for Cloud detects possible data transfer via DNS tunnel, use DNS logs to find any other devices that have queried the potentially malicious domain
+
+//Data connector required for this query - Security Alert (free table that other Defender products send alert info to)
+//Data connector required for this query - DNS
+
 let maliciousdomain=
     SecurityAlert
     | where AlertName contains "via DNS tunnel"

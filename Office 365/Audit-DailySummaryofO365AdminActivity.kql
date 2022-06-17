@@ -1,4 +1,8 @@
 //Create a daily summary of activities completed by your O365 admins
+
+//Data connector required for this query - Office 365
+//Data connector required for this query - Microsoft Sentinel UEBA
+
 let timerange=14d;
 IdentityInfo
 | where TimeGenerated > ago(21d)

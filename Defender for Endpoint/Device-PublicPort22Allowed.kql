@@ -1,4 +1,7 @@
 //Find successful connections from a private to public network on TCP port 22
+
+//Data connector required for this query - M365 Defender - Device* tables
+
 //Microsoft Sentinel query
 DeviceNetworkEvents
 | where TimeGenerated > ago(1d)
@@ -16,6 +19,9 @@ DeviceNetworkEvents
     RemoteUrl
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting license
+
 DeviceNetworkEvents
 | where Timestamp > ago(1d)
 | where ActionType == "ConnectionSuccess"

@@ -1,4 +1,7 @@
 //Summarize the applications installed into Teams in the last month. Apps are grouped into the scope they were installed to - Team, Chat or User and by name and application id
+
+//Data connector required for this query - Office 365
+
 OfficeActivity
 | where TimeGenerated > ago (30d)
 | where Operation == "AppInstalled"

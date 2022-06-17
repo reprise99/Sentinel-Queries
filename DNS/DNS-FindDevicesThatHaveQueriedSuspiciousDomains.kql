@@ -1,4 +1,7 @@
 //When a domain is flagged by Defender for Cloud (Azure Security Center) as suspicious then find any other clients that have queried that domain in DNS events
+
+//Data connector required for this query - DNS
+
 let suspiciousurl=
 SecurityAlert
 | where AlertName startswith "Communication with suspicious random domain name"

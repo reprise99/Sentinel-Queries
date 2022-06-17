@@ -1,4 +1,8 @@
 //When Defender for Cloud detects a possible DNS lookup to a phishing domain attempt to find if the URL was part of an email phishing attack
+
+//Data connector required for this query - M365 Defender - Email* tables
+//Data connector required for this query - Security Alert (free table that other Defender products send alert info to)
+
 let suspiciousdomains=
     SecurityAlert
     | where AlertName startswith "Communication with possible phishing domain"

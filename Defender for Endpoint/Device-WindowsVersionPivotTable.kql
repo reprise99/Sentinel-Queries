@@ -1,4 +1,7 @@
 //Create a pivot table of all Windows OS versions in your environment
+
+//Data connector required for this query - M365 Defender - Device* tables
+
 //Microsoft Sentinel query
 DeviceInfo
 | where TimeGenerated > ago(30d)
@@ -10,6 +13,9 @@ DeviceInfo
 | sort by OSPlatform desc 
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting license
+
 DeviceInfo
 | where Timestamp > ago(30d)
 | where isnotempty(OSBuild)

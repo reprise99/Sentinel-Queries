@@ -1,4 +1,7 @@
 //Find new devices onboarded to Defender in the last month
+
+//Data connector required for this query - M365 Defender - Device* tables
+
 let knowndevices=
     DeviceNetworkInfo
     | where TimeGenerated > ago (180d) and TimeGenerated < ago(30d)

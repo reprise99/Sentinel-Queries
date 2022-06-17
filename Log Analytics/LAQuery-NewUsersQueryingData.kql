@@ -1,4 +1,7 @@
 //Find users querying your Log Analytics/Sentinel data for the first time
+
+//Data connector required for this query - Log Analytics diagnostic settings enabled on your Sentinel workspace
+
 let knownusers=
     LAQueryLogs
     | where TimeGenerated > ago(180d) and TimeGenerated < ago(1d)

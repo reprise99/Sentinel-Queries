@@ -1,4 +1,7 @@
 //Finds computers that haven't sent a heartbeat in the last 30 days
+
+//Data connector required for this query - Heartbeat (created automatically when you onboard machines to Sentinel)
+
 Heartbeat
 | where TimeGenerated > ago(365d)
 | summarize arg_max(TimeGenerated, *) by Computer

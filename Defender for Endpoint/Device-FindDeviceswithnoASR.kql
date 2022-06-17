@@ -1,4 +1,7 @@
 //Find devices in your environment that have never triggered an ASR rule, you can likely turn on ASR for these devices without causing issues for the users.
+
+//Data connector required for this query - M365 Defender - Device* tables
+
 //Microsoft Sentinel query
 //First find devices that have triggered an Attack Surface Reduction rule, either block or in audit mode.
 let asrdevices=
@@ -21,6 +24,9 @@ DeviceInfo
     LoggedOnUsers
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting license
+
 //First find devices that have triggered an Attack Surface Reduction rule, either block or in audit mode.
 let asrdevices=
     DeviceEvents

@@ -1,4 +1,7 @@
 //Find senders that are potentially spamming your users for the first time. Useful at detecting business email compromise from partner companies.
+
+//Data connector required for this query - M365 Defender - Email* tables
+
 //Set a threshold of the same email being received within a 10 minute period
 //Microsoft Sentinel query
 let threshold = 500;
@@ -22,6 +25,9 @@ EmailEvents
 | where SenderFromAddress !in (knownbulkemail) and RecipientCount > threshold
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting license
+
 let threshold = 500;
 //First create a list of sender addresses that have previously sent you bulk email, hopefully this will let us exclude corporate communications and newsletters etc
 let knownbulkemail=

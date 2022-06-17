@@ -1,4 +1,7 @@
 //Use the inbuilt KQL parse_url function to return the various components of a URL
+
+//Data connector required for this query - M365 Defender - Device* tables
+
 DeviceEvents
 | where ActionType == "BrowserLaunchedToOpenUrl"
 | extend Url = parse_url(RemoteUrl)

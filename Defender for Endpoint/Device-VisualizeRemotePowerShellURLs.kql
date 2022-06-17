@@ -1,4 +1,7 @@
 //Visualize the top 20 remote URLs that your users are connecting to via PowerShell
+
+//Data connector required for this query - M365 Defender - Device* tables
+
 //Microsoft Sentinel query
 DeviceNetworkEvents
 | where TimeGenerated > ago (7d)
@@ -13,6 +16,9 @@ DeviceNetworkEvents
 | render barchart with (title="Remote URLs accessed by Powershell")
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting license
+
 DeviceNetworkEvents
 | where Timestamp > ago (7d)
 //Exclude system and local service processes as this visualization is user focused

@@ -1,4 +1,7 @@
 //Detect SSH traffic that isn't on port 22 connecting to public IP addresses
+
+//Data connector required for this query - M365 Defender - Device* tables
+
 //Microosft Sentinel query
 DeviceNetworkEvents
 | where ActionType == "NetworkSignatureInspected"
@@ -19,6 +22,9 @@ DeviceNetworkEvents
     RemoteUrl
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting license
+
 DeviceNetworkEvents
 | where ActionType == "NetworkSignatureInspected"
 | extend AF = parse_json(AdditionalFields)

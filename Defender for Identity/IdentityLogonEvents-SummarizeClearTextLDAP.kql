@@ -1,4 +1,7 @@
 //Summarize the accounts in your environment using cleartext LDAP connections
+
+//Data connector required for this query - M365 Defender - Identity* tables
+
 //Microsoft Sentinel query
 IdentityLogonEvents
 | where TimeGenerated > ago (30d)
@@ -11,6 +14,9 @@ IdentityLogonEvents
 | sort by ['Distinct destination device count'] desc 
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting license
+
 IdentityLogonEvents
 | where Timestamp > ago (30d)
 | where LogonType == "LDAP cleartext"

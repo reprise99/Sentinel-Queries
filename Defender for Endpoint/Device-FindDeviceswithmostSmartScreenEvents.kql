@@ -1,5 +1,7 @@
 //Find the devices in your environment triggering the most Defender SmartScreen events
 
+//Data connector required for this query - M365 Defender - Device* tables
+
 DeviceEvents
 | where TimeGenerated > ago (30d)
 | where ActionType startswith "SmartScreen"
@@ -12,6 +14,9 @@ DeviceEvents
 | sort by ['Count of SmartScreen Events'] desc 
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting license
+
 DeviceEvents
 | where Timestamp > ago(30d)
 | where ActionType startswith "SmartScreen"

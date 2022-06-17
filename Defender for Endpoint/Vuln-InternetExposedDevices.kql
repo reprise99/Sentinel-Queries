@@ -1,5 +1,8 @@
 //Use logon and network telemetry to find machines exposed to the internet, then count the critical and high severity vulnerabilities on those devices
 //This query only works in Advanced Hunting as the DeviceTvm* tables aren't sent to Sentinel yet
+
+//Data connector required for this query - Advanced Hunting license
+
 //Look for logon events coming from a public IP - query adapted from https://github.com/alexverboon/MDATP/blob/master/AdvancedHunting/Failed%20Logon%20-%20Public%20IP.md
 let publicips = 
     DeviceLogonEvents

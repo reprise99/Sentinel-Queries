@@ -1,4 +1,7 @@
 //Find the top 20 guests who are downloading files from your tenant and calculate the percentage of total downloads from those users. Useful to see if you have a few guests responsible for most of the downloads in your tenant.
+
+//Data connector required for this query - Office 365
+
 //First find the count of all downloads by guests in your tenant
 let totalguestdownloads=
     OfficeActivity

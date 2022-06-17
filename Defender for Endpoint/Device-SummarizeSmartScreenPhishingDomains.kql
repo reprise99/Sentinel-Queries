@@ -1,4 +1,7 @@
 //Summarize the domains that Smartscreen is blocking as phishing attempts
+
+//Data connector required for this query - M365 Defender - Device* tables
+
 DeviceEvents
 | where TimeGenerated > ago (30d)
 | where ActionType startswith "SmartScreen"

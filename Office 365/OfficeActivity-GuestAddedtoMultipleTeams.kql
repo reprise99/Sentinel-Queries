@@ -1,4 +1,7 @@
 //Detect when a guest is added to multiple Teams in a short time frame.
+
+//Data connector required for this query - Office 365
+
 //Define a time period to check and the threshold of how many Teams to alert on.
 let timeframe=15m;
 let threshold=2;

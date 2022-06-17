@@ -1,5 +1,8 @@
 //Find potential network recon on one of your devices by detecting when it connects to more than 10 common ports used to map your network and 10 distinct endpoints within an hour
 //Use that data to then return more details on each IP that device attempted to connect to
+
+//Data connector required for this query - M365 Defender - Device* tables or Advanced Hunting license
+
 //Query works in both Sentinel and Advanced Hunting
 //First look for devices connecting to 10 or more common ports and 10 or more devices within an hour
 let devices=

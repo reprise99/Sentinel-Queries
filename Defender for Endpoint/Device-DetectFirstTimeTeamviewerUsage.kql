@@ -1,4 +1,7 @@
 //Detects Teamviewer being used for the first time on a device
+
+//Data connector required for this query - M365 Defender - Device* tables
+
 //Build a list of known devices using Teamviewer over the last 60 days
 let knowndevices=
 DeviceNetworkEvents

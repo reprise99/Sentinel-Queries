@@ -1,4 +1,7 @@
 //Summarize the total count of downloads from Office 365 for each of your guest domains
+
+//Data connector required for this query - Office 365
+
 OfficeActivity
 | where TimeGenerated > ago(30d)
 | where Operation in ("FileSyncDownloadedFull", "FileDownloaded")

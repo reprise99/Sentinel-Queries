@@ -1,4 +1,8 @@
 //When a malicious email is received, list all the users who received it and all the users who read it
+
+//Data connector required for this query - M365 Defender - Email* tables
+//Data connector required for this query - Office 365
+
 //First find all the users who received the email
 EmailEvents
 | where EmailDirection == "Inbound"

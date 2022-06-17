@@ -1,4 +1,7 @@
 //Summarize the machines in your environment that are triggering the most total ASR and distinct ASR rule events
+
+//Data connector required for this query - M365 Defender - Device* tables
+
 //Microsoft Sentinel query
 DeviceEvents
 | where TimeGenerated > ago (30d)
@@ -12,6 +15,9 @@ DeviceEvents
 | sort by ['Total ASR hit count'] desc 
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting license
+
 DeviceEvents
 | where Timestamp > ago (30d)
 | where ActionType startswith "Asr"

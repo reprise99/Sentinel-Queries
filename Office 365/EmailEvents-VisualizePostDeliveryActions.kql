@@ -1,4 +1,7 @@
 //Visualize any post delivery actions such as email being quarantined or deleted by admins
+
+//Data connector required for this query - M365 Defender - Email* tables
+
 EmailPostDeliveryEvents
 | where TimeGenerated > ago (90d)
 | where Action !in ("None", "Unknown")

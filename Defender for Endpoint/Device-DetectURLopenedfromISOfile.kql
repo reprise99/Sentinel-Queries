@@ -1,5 +1,8 @@
 //Detect when a user mounts an ISO file and then within 20 minutes launches a browser. These events could be unrelated because a BrowserLaunchedToOpenUrl event doesn't confirm if the lnk file was in the ISO file. 
 //The detection is just based on time between mounting an ISO file and then launching a URL.
+
+//Data connector required for this query - M365 Defender - Device* tables
+
 //Microsoft Sentinel query
 //Find events where an ISO file is mounted by detecting the creation of a .iso.lnk file
 DeviceFileEvents
@@ -43,6 +46,9 @@ DeviceFileEvents
     RemotePort
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting license
+
 DeviceFileEvents
 | where Timestamp > ago(1d)
 | where ActionType == "FileCreated"

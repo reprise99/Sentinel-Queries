@@ -1,4 +1,7 @@
 //Search for devices connecting to multiple IP addresses via RDP witin a time window and alert when over a particular threshold
+
+//Data connector required for this query - M365 Defender - Device* tables
+
 let timerange=1d;
 let window=20m;
 let threshold=5;

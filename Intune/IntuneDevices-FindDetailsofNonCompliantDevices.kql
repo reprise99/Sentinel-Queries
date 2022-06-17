@@ -1,4 +1,7 @@
 //When Azure AD flags a device as non compliant, retrieve the details about the devices from Intune
+
+//Data connector required for this query - Intune data sent to Sentinel workspace
+
 //First find the device name from the 'device no longer compliant' action
 let devices=
     AuditLogs

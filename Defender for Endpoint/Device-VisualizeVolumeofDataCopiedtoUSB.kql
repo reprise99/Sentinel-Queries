@@ -1,4 +1,7 @@
 //Visualize how much data is being copied to USB drives per day in your environment over the time range.
+
+//Data connector required for this query - M365 Defender - Device* tables
+
 DeviceEvents
 | where TimeGenerated > ago (21d)
 | project TimeGenerated, ActionType, AdditionalFields, DeviceId, FileName

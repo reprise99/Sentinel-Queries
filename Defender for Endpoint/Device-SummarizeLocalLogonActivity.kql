@@ -1,4 +1,7 @@
 //Summarize the local (non domain) logon activity for your devices for both successful and failed logons. You may have users using a local account to bypass security policy
+
+//Data connector required for this query - M365 Defender - Device* tables
+
 //Microsoft Sentinel query
 DeviceLogonEvents
 | where TimeGenerated > ago(30d)
@@ -25,6 +28,9 @@ DeviceLogonEvents
     ['List of failed local account logons']
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting license
+
 DeviceLogonEvents
 | where Timestamp > ago(30d)
 | where AccountDomain == DeviceName

@@ -1,4 +1,7 @@
 //Detect when a non system account changes the PowerShell execution policy on a device
+
+//Data connector required for this query - M365 Defender - Device* tables
+
 DeviceEvents
 | where ActionType == "PowerShellCommand"
 | where InitiatingProcessFileName == "powershell.exe"

@@ -1,4 +1,7 @@
 //Visualize device compliance (compliant, non-compliant, managed by Config Manager, not evaluated or in grace period) per week over time
+
+//Data connector required for this query - Intune data sent to Sentinel workspace
+
 IntuneDevices
 | where TimeGenerated > ago (180d)
 | summarize arg_max(DeviceName, *) by DeviceName, startofweek(TimeGenerated)

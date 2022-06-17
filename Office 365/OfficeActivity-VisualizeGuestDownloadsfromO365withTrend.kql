@@ -1,4 +1,7 @@
 //Visualize how many files are being downloaded from your Office 365 tenant by guest accounts with trend
+
+//Data connector required for this query - Office 365
+
 let StartDate = now(-90d);
 let EndDate = now();
 OfficeActivity

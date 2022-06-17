@@ -1,4 +1,7 @@
 //When Defender for Identity alerts on user and group reconnaissance, parse the relevant accounts, hosts and groups affected
+
+//Data connector required for this query - Security Alert (free table that other Defender products send alert info to)
+
 SecurityAlert
 | where AlertName == "User and group membership reconnaissance (SAMR)"
 | extend x = todynamic(Entities)

@@ -1,4 +1,7 @@
 //Visualize total guests redeemed in Azure AD vs guests that have been added to a Team
+
+//Data connector required for this query - Office 365
+
 let guestsredeemed=
     AuditLogs
     | where TimeGenerated > ago (90d)

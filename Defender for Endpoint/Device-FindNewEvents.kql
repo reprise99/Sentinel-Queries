@@ -1,4 +1,7 @@
 //Find any new DeviceEvents found in your environment over the last week compared to the last 6 months
+
+//Data connector required for this query - M365 Defender - Device* tables
+
 //First find existing action types over the six months
 let knownevents=
     DeviceEvents

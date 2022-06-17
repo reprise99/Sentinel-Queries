@@ -1,9 +1,25 @@
 //Detect when the same device attempts to connect to multiple devices and is denied within a short time frame
 //This example will alert when the same device attempts to connect to three or more different devices in 30 minutes
+
+//Data connector required for this query - M365 Defender - Device* tables
+
+//Microsoft Sentinel query
 DeviceEvents
 | where ActionType == "FirewallInboundConnectionBlocked"
 | summarize
     ['Count of Devices']=dcount(DeviceName),
     ['List of Devices']=make_set(DeviceName)
     by RemoteIP, bin(TimeGenerated, 30m)
+| where ['Count of Devices'] >= 3
+
+//Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting license
+
+DeviceEvents
+| where ActionType == "FirewallInboundConnectionBlocked"
+| summarize
+    ['Count of Devices']=dcount(DeviceName),
+    ['List of Devices']=make_set(DeviceName)
+    by RemoteIP, bin(Timestamp, 30m)
 | where ['Count of Devices'] >= 3

@@ -1,4 +1,8 @@
 //Parse the IP information from Security Alerts and find other users who have successfully signed on from the same IP addresses
+
+//Data connector required for this query - Security Alert (free table that other Defender products send alert info to)
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 SecurityAlert
 | where ProviderName in ("MCAS", "IPC")
 | extend x = todynamic(Entities)

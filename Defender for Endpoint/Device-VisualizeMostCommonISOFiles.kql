@@ -1,4 +1,7 @@
 //Visualize the most common ISO files being mounted on your devices
+
+//Data connector required for this query - M365 Defender - Device* tables
+
 //Microsoft Sentinel query
 DeviceFileEvents
 | where TimeGenerated > ago(30d)
@@ -12,6 +15,9 @@ DeviceFileEvents
 | render barchart with (title="Most common ISO files being mounted")
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting license
+
 DeviceFileEvents
 | where Timestamp > ago(30d)
 | where ActionType == "FileCreated"

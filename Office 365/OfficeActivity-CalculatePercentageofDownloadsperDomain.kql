@@ -1,4 +1,7 @@
 //Calculate the percentage that each guest domain is contributing to total downloads from your Office 365 tenant
+
+//Data connector required for this query - Office 365
+
 OfficeActivity
 | where TimeGenerated > ago(30d)
 | where Operation in ("FileSyncDownloadedFull", "FileDownloaded")

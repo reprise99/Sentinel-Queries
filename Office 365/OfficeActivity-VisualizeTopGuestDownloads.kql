@@ -1,4 +1,7 @@
 //Visualize the top 20 files downloaded by Azure AD guests over the last month
+
+//Data connector required for this query - Office 365
+
 OfficeActivity
 | where TimeGenerated > ago (30d)
 | where Operation in ("FileSyncDownloadedFull", "FileDownloaded")

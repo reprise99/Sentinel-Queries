@@ -1,4 +1,7 @@
 //Visualize when your devices last contacted Intune
+
+//Data connector required for this query - Intune data sent to Sentinel workspace
+
 IntuneDevices
 | where TimeGenerated > ago(90d)
 | where isnotempty(LastContact)

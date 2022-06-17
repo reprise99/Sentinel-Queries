@@ -1,4 +1,7 @@
 //Summarize all local user accounts (non-domain) per device which have logged on with administrative rights
+
+//Data connector required for this query - M365 Defender - Device* tables
+
 DeviceLogonEvents
 | where TimeGenerated > ago(7d)
 | project

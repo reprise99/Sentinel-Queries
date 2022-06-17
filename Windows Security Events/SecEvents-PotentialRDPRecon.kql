@@ -1,4 +1,7 @@
 //Detect when a user connects to 3 or more unique devices via RDP over a 30 minute period
+
+//Data connector required for this query - Windows Security Events via AMA or Security Events via Legacy Agent
+
 SecurityEvent
 | where TimeGenerated > ago (1d)
 | where EventID == "4624"

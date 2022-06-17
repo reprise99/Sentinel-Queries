@@ -1,5 +1,8 @@
 //Detect when an Excel macro connects to the internet. 
 //Some IPs returned shown may be Microsoft telemetry but these events are still worth investigating.
+
+//Data connector required for this query - M365 Defender - Device* tables
+
 //Microsoft Sentinel query
 DeviceNetworkEvents
 | where InitiatingProcessFileName contains "excel.exe"
@@ -22,6 +25,9 @@ DeviceNetworkEvents
     RemoteUrl
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting license
+
 DeviceNetworkEvents
 | where InitiatingProcessFileName contains "excel.exe"
 | where InitiatingProcessCommandLine contains ".xlsm" or InitiatingProcessCommandLine contains ".xltm"
