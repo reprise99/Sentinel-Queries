@@ -1,6 +1,6 @@
 //When a user reports an email as potential phishing find all other users who received that email
 SecurityAlert
-| where TimeGenerated > ago(1dd)
+| where TimeGenerated > ago(1d)
 | where ProviderName == "OATP"
 | where AlertName has "Email reported by user as malware or phish"
 | mv-expand todynamic(Entities)
@@ -11,7 +11,7 @@ SecurityAlert
 | distinct SenderMailFromAddress, Subject
 | join kind=inner(
     EmailEvents
-    | where TimeGenerated > ago(timerange)
+    | where TimeGenerated > ago(2d)
     | project RecipientEmailAddress, SenderMailFromAddress, Subject
     )
     on SenderMailFromAddress, Subject
