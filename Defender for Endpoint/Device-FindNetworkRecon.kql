@@ -1,0 +1,37 @@
+//Find potential network recon on one of your devices by detecting when it connects to more than 10 common ports used to map your network and 10 distinct endpoints within an hour
+//Use that data to then return more details on each IP that device attempted to connect to
+//Query works in both Sentinel and Advanced Hunting
+//First look for devices connecting to 10 or more common ports and 10 or more devices within an hour
+let devices=
+    DeviceNetworkEvents
+    | where ActionType in ("ConnectionSuccess", "ConnectionFailed")
+    | where RemotePort in ("21", "22", "25", "53", "80", "110", "123", "139", "389", "443", "445", "636", "993", "995", "8080")
+    | where RemoteIPType == "Private"
+    | summarize
+        ['Total connection count']=count(),
+        ['Count of distinct ports']=dcount(RemotePort),
+        ['List of ports']=make_set(RemotePort),
+        ['Count of remote IPs']=dcount(RemoteIP),
+        ['List of remote IPs']=make_set(RemoteIP)
+        by DeviceName, bin(TimeGenerated, 1h)
+    | where ['Count of distinct ports'] >= 10 and ['Count of remote IPs'] >= 10
+    | distinct DeviceName;
+//Take those devices and return more detail on each attempt
+DeviceNetworkEvents
+| where ActionType in ("ConnectionSuccess", "ConnectionFailed")
+| where RemotePort in ("21", "22", "25", "53", "80", "110", "123", "139", "389", "443", "445", "636", "993", "995", "8080")
+| where DeviceName in (devices)
+| where RemoteIPType == "Private"
+| summarize
+    ['Total connection count']=count(),
+    ['Count of distinct ports']=dcount(RemotePort),
+    ['List of ports']=make_set(RemotePort)
+    by DeviceName, RemoteIP, ActionType
+| project-reorder
+    DeviceName,
+    ActionType,
+    RemoteIP,
+    ['Total connection count'],
+    ['Count of distinct ports'],
+    ['List of ports']
+| sort by DeviceName desc
