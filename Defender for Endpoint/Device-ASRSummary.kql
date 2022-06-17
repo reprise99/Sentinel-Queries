@@ -1,4 +1,19 @@
 //Provides a summary of Attack Surface Reduction rules, which ASR rules are being hit and by which processes
+
+//Data connector required for this query - M365 Defender - Device* tables
+
+//Microsoft Sentinel query
+DeviceEvents
+| where TimeGenerated > ago(30d)
+| where ActionType startswith "Asr"
+| where isnotempty(InitiatingProcessCommandLine)
+| summarize ['ASR Hit Count']=count()by ActionType, InitiatingProcessCommandLine
+| sort by ['ASR Hit Count'] desc 
+
+//Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting license
+
 DeviceEvents
 | where TimeGenerated > ago(30d)
 | where ActionType startswith "Asr"
