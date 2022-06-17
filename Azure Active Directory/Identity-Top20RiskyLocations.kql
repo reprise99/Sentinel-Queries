@@ -1,0 +1,22 @@
+//Find the top 20 IP addresses that are unknown to Azure AD, with users using unknown devices and single factor auth
+//Then find the users and applications being accessed from each to help build out conditional access policy
+let top20locations=
+    SigninLogs
+    | where TimeGenerated > ago(30d)
+    | where ResultType == 0
+    | extend DeviceTrustType = tostring(DeviceDetail.trustType)
+    | where NetworkLocationDetails == '[]'
+        and isempty(DeviceTrustType)
+        and AuthenticationRequirement == "singleFactorAuthentication"
+    | summarize Count=count()by IPAddress
+    | top 20 by Count;
+SigninLogs
+| where ResultType == 0
+| where IPAddress in (top20locations)
+| summarize
+    ['Total Signin Count']=count(),
+    ['Distinct User Count']=dcount(UserPrincipalName),
+    ['List of Users']=make_set(UserPrincipalName),
+    ['Distinct Application Count']=dcount(AppDisplayName),
+    ['List of Applications']=make_set(AppDisplayName)
+    by IPAddress
