@@ -1,4 +1,7 @@
 // Detects when a service principal (user, group or app) has been granted access to Key Vault data
+
+//Data connector required for this query - Azure Key Vault
+
 AzureDiagnostics
 | where ResourceType == "VAULTS"
 | where OperationName == "VaultPatch"

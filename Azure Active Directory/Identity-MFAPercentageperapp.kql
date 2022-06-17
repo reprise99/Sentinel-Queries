@@ -1,4 +1,7 @@
 //Calculate the percentage of signins to each of your Azure AD applications that used MFA
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 SigninLogs
 | where TimeGenerated > ago(30d)
 | where ResultType == 0

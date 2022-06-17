@@ -1,4 +1,7 @@
 //Detect when Kerberos preauthentication is enabled or disabled for a user
+
+//Data connector required for this query - Windows Security Events via AMA or Security Events via Legacy Agent
+
 SecurityEvent
 | where EventID == 4738
 | where AccountType == "User"
@@ -7,3 +10,4 @@ SecurityEvent
     UserAccountControl has "2064", strcat("Kerberos preauthentication enabled"),
     "unknown")
 | project TimeGenerated, Actor=SubjectAccount, User=TargetAccount, Action
+

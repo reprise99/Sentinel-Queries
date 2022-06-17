@@ -1,4 +1,8 @@
 //Detect when a user who holds an Azure AD privilege role fails MFA multiple times in a short time period. This example uses 2 failures within 20 minutes.
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+//Data connector required for this query - Microsoft Sentinel UEBA
+
 let privusers=
     IdentityInfo
     | where TimeGenerated > ago(21d)

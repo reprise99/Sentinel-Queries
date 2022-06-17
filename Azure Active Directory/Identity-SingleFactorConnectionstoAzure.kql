@@ -1,4 +1,7 @@
 //Find any single factor sign ins to Azure resources such as the Azure portal
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 //Microsoft Sentinel query
 SigninLogs
 | where TimeGenerated > ago(7d)
@@ -10,6 +13,9 @@ SigninLogs
 | order by ['User Count'] desc
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting with Azure AD P2 License
+
 AADSignInEventsBeta
 | where Timestamp > ago(7d)
 | where Application has "Azure"

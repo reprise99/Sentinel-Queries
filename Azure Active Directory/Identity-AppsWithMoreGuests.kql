@@ -1,4 +1,7 @@
 //Find Azure AD applications that have more guests than members accessing them
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 //Microsoft Sentinel Query
 SigninLogs
 | where TimeGenerated > ago(30d)
@@ -8,6 +11,9 @@ SigninLogs
 | sort by Guests desc 
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting with Azure AD P2 License
+
 AADSignInEventsBeta
 | where Timestamp > ago(30d)
 | where LogonType == @"[""interactiveUser""]"

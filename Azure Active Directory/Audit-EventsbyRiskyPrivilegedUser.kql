@@ -1,5 +1,9 @@
 //When a user holding a privileged role triggers an Azure AD risk event, retrieve the operations completed by that user
 //Lookup the IdentityInfo table for any users holding a privileged role
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+//Data connector required for this query - Microsoft Sentinel UEBA
+
 let privusers=
     IdentityInfo
     | where TimeGenerated > ago(21d)

@@ -1,4 +1,7 @@
 //Detect when a download URL is generated for an Azure virtual machine disk
+
+//Data connector required for this query - Azure Activity 
+
 AzureActivity
 | where OperationNameValue == "MICROSOFT.COMPUTE/DISKS/BEGINGETACCESS/ACTION"
 | where ActivityStatusValue == "Success"

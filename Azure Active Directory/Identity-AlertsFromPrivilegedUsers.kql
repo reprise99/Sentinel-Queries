@@ -1,4 +1,8 @@
 //Query to find security alerts for users who have privileged Azure AD roles
+
+//Data connector required for this query - Microsoft Sentinel UEBA
+//Data connector required for this query - Security Alert (free table that other Defender products send alert info to)
+
 let PrivRoles = dynamic(["Global Administrator", "Security Administrator", "Teams Administrator"]);
 let identityinfo=
     IdentityInfo

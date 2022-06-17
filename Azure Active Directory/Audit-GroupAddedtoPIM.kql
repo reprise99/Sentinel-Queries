@@ -1,4 +1,7 @@
 //Find when an Azure AD group is assigned (either permanent or eligble) to an Azure AD PIM assignment
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
 AuditLogs
 | where OperationName in ("Add eligible member to role in PIM completed (permanent)", "Add member to role in PIM completed (permanent)")
 | where TargetResources[2].type == "Group"

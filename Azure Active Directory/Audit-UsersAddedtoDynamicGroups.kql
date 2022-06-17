@@ -1,4 +1,7 @@
 //Summarize all groups that have had users added to them via dynamic rules
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
 AuditLogs
 | where TimeGenerated > ago(1d)
 | where OperationName == "Add member to group"

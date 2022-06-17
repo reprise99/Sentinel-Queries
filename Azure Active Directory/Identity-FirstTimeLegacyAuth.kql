@@ -1,5 +1,8 @@
 //Find users that have connected successfully via legacy auth for the first time
 //First find users with existing successful legacy auth connections
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 //Microsoft Sentinel query
 let knownusers=
     SigninLogs
@@ -17,6 +20,9 @@ SigninLogs
 | distinct UserPrincipalName, AppDisplayName, ClientAppUsed, IPAddress
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting with Azure AD P2 License
+
 //First find users with existing successful legacy auth connections. Advanced Hunting only stores 30 days of data, but otherwise the same query works
 let knownusers=
     AADSignInEventsBeta

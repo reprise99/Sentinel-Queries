@@ -1,4 +1,7 @@
 //Detect when a user adds delegated or application permissions to an Azure AD app for the first time.
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
 //Look back in the last year to find all users who have added access to an app
 let newusers=
 AuditLogs

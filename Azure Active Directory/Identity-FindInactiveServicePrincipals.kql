@@ -1,4 +1,7 @@
 //Find Azure AD Service Principals that have not successfully signed on for the last 30 days
+
+//Data connector required for this query - Azure Active Directory - Service Principal Signin Logs
+
 AADServicePrincipalSignInLogs
 | where TimeGenerated > ago(180d)
 | where ResultType == 0

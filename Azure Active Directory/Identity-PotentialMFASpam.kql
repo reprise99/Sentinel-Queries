@@ -1,5 +1,8 @@
 //Detect when a user denies MFA several times within a single sign in attempt and then completes MFA.
 //This could be a sign of someone trying to spam your users with MFA prompts until they accept.
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 //Select your threshold of how many times a user denies MFA before accepting
 let threshold=2;
 SigninLogs

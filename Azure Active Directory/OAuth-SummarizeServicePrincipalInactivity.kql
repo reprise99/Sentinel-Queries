@@ -1,4 +1,7 @@
 //Summarize your Azure AD service principals by the last time they signed in, grouped by month
+
+//Data connector required for this query - Azure Active Directory - Service Principal Signin Logs
+
 AADServicePrincipalSignInLogs
 | project TimeGenerated, AppId, ResultType, ServicePrincipalName
 | where TimeGenerated > ago (360d)

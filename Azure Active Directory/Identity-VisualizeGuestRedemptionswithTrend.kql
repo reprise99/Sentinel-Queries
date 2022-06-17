@@ -1,4 +1,7 @@
 //Visualize how many guests are redeeming invites over the time period with trend
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
 let StartDate = now(-180d);
 let EndDate = now();
 AuditLogs

@@ -1,4 +1,7 @@
 // Searches device info table for non server operating systems then return any users who have logged on interactively as an admin as a set per device. Can add exclusions for known IT admin accounts
+
+//Data connector required for this query - M365 Defender - Device* tables
+
 let devices=
     DeviceInfo
     | where TimeGenerated > ago(30d)

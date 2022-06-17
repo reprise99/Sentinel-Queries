@@ -1,4 +1,7 @@
 //Detect when an Azure AD service principal is given access to an Azure RBAC scope, i.e contributor to a subscription or resource group
+
+//Data connector required for this query - Azure Activity 
+
 AzureActivity
 | where OperationNameValue == "MICROSOFT.AUTHORIZATION/ROLEASSIGNMENTS/WRITE"
 | extend ServicePrincipalObjectId = tostring(parse_json(tostring(parse_json(tostring(Properties_d.requestbody)).Properties)).PrincipalId)

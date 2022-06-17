@@ -1,4 +1,7 @@
 //Query to find applications that have had delegated permissions granted to them
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
 AuditLogs
 | where Category == "ApplicationManagement"
 | where OperationName has "Add delegated permission grant"

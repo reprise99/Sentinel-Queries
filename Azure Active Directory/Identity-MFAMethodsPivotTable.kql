@@ -1,4 +1,7 @@
 //Create a pivot table of all non password authentication methods by user. This is useful to migrate users from less secure methods like text message to more secure methods.
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 let isGUID = "[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}";
 SigninLogs
 | where TimeGenerated > ago(30d)

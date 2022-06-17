@@ -1,4 +1,7 @@
 //Detects users who add a service principal to Azure AD for the first time.
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
 let knownusers=
     AuditLogs
     | where TimeGenerated > ago(90d) and TimeGenerated < ago(1d)

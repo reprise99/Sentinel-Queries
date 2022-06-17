@@ -1,4 +1,7 @@
 //Detect when the workspace keys to an Azure log analytics workspace are read
+
+//Data connector required for this query - Azure Activity 
+
 AzureActivity
 | where OperationNameValue == "MICROSOFT.OPERATIONALINSIGHTS/WORKSPACES/SHAREDKEYS/ACTION"
 | extend WorkspaceName = tostring(parse_json(Properties).resource)

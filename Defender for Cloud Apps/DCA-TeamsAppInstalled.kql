@@ -1,4 +1,7 @@
 //Find when an app is installed into Teams using the Defender for Cloud App logs
+
+//Data connector required for this query - M365 Defender - CloudAppEvents
+
 //Microsoft Sentinel query
 CloudAppEvents
 | where Application == "Microsoft Teams"
@@ -10,6 +13,9 @@ CloudAppEvents
 | project TimeGenerated, AppName, AzureADAppId, UserId, AppDistributionMode
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting license
+
 CloudAppEvents
 | where Application == "Microsoft Teams"
 | where ActionType == "AppInstalled"

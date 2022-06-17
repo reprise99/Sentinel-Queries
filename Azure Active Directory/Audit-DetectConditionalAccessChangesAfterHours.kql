@@ -1,4 +1,7 @@
 //Detect changes to Azure AD Conditional Access policies on weekends or outside of business hours
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
 let Saturday = time(6.00:00:00);
 let Sunday = time(0.00:00:00);
 AuditLogs

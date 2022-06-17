@@ -1,4 +1,7 @@
 //Visualize the MFA types used by your users - phone sign in, mobile passcode, push or text message, over time
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 SigninLogs
 | where TimeGenerated > ago (180d)
 | where AuthenticationRequirement == "multiFactorAuthentication"

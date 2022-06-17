@@ -1,4 +1,7 @@
 //Alert on successful self service password resets at suspicious times
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
 AuditLogs
 // extend LocalTime to your time zone
 | extend LocalTime=TimeGenerated + 5h

@@ -1,5 +1,8 @@
 //Summarize guest activity by external Azure AD guests (those that belong to another Azure AD tenant) vs External Guests (such as Gmail) to your tenant
-//For each domain list the total number of signins and distinct user signins
+//For each domain list the total number of signins and distinct user 
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 SigninLogs
 | where TimeGenerated > ago (30d)
 | where UserType == "Guest"

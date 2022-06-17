@@ -1,4 +1,7 @@
 //Calculate the change in size of all your tables from last week to this week
+
+//Data connector required for this query - query will automatically union any data you have
+
 let lastweek=
 union withsource=_TableName *
 | where TimeGenerated > ago(14d) and TimeGenerated < ago(7d)

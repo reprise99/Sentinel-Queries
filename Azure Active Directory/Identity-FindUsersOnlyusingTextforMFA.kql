@@ -1,4 +1,7 @@
 //Find users who are only using text message as their MFA method
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 SigninLogs
 | where TimeGenerated > ago(30d)
 //You can exclude guests if you want, they may be harder to move to more secure methods, comment out the below line to include all users

@@ -1,4 +1,7 @@
 //Detect when a user activates an Azure AD PIM role never seen by them before
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
 AuditLogs
 | where TimeGenerated > ago(180d) and TimeGenerated < ago(1d)
 | where OperationName == "Add member to role completed (PIM activation)"

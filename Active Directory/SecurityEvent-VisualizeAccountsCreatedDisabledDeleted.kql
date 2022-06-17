@@ -1,4 +1,7 @@
 //Visualize Active Directory accounts created, disabled and deleted per day
+
+//Data connector required for this query - Windows Security Events via AMA or Security Events via Legacy Agent
+
 SecurityEvent
 | where TimeGenerated > ago(30d)
 | where AccountType == "User"

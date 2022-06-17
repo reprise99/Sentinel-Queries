@@ -1,4 +1,7 @@
 //Summarize signins to your Azure AD tenant still using Internet Explorer. Data is grouped into each user and which applications they are accessing.
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 SigninLogs
 | where ResultType == 0
 | extend UserAgentDetail = todynamic(parse_user_agent(UserAgent, "browser"))

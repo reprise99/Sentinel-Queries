@@ -1,4 +1,7 @@
 //Create a summary of PIM activations for all your users per week
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
 AuditLogs
 | where TimeGenerated > ago (30d)
 | where OperationName == "Add member to role completed (PIM activation)"

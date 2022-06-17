@@ -1,4 +1,7 @@
 //Visualize the different risk types (e.g password spray, unlikely travel) per month
+
+//Data connector required for this query - Azure Active Directory - AAD User Risk Events
+
 AADUserRiskEvents
 | where TimeGenerated > ago (180d)
 | where isnotempty(RiskEventType)

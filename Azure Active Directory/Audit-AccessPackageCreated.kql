@@ -1,4 +1,7 @@
 //Detect when an Azure AD Entitlement Package is created. You may want to review to see what resources and roles have been included in the package.
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
 AuditLogs
 | where TimeGenerated > ago(1d)
 | where OperationName == "Create access package"

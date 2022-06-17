@@ -1,4 +1,7 @@
 //Find when inbound Azure AD guests access applications for the first time
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 //First find applications that have previously had Azure AD guest signins
 let knownapps=
     SigninLogs

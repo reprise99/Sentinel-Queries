@@ -1,4 +1,7 @@
 //Detect anomalies in the amount of data being ingested into your Sentinel workspace
+
+//Data connector required for this query - Usage (generated automatically on a log analytics workspace)
+
 //Sensitivity = the lower the number the more sensitive the anomaly detection is, i.e it will find more anomalies, default is 1.5
 let sensitivity = 1.5;
 //Threshold = set a threshold to account for low volume anomailies, i.e moving from 1 GB of data to 2 GB. This example uses tables larger than 2 GB every 3 hours as a threshold

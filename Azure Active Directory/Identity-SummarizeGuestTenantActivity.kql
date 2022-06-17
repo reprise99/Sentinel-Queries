@@ -1,4 +1,7 @@
 //Summarize the domain names, the count of users and list of users for each guest tenant connecting to your Azure AD tenant
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 SigninLogs
 | where TimeGenerated > ago (30d)
 | project

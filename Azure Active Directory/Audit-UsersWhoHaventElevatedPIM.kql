@@ -1,4 +1,7 @@
 //Find users who have not elevated any roles in Azure AD PIM in 30 days
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
 AuditLogs
 | where TimeGenerated > ago (365d)
 | project TimeGenerated, OperationName, Result, TargetResources, InitiatedBy

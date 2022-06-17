@@ -1,4 +1,7 @@
 //Calculate the percentage of signins to all your Azure AD apps considered risky. Those requiring single factor authentication, coming from an unknown location and from an unknown device
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 SigninLogs
 | where TimeGenerated > ago (30d)
 | where ResultType == 0

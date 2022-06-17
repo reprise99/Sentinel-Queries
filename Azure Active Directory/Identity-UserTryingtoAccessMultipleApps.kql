@@ -1,5 +1,8 @@
 //Detect users trying to access multiple applications they haven't been granted access to over a short period of time
 //In this example alert when a user attempts to access 2 or more unique applications in 30 minutes
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 SigninLogs
 | where ResultType == "50105"
 | summarize

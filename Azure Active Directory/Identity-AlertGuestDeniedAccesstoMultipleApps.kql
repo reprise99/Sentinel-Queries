@@ -1,5 +1,8 @@
 //Alert when Azure AD guest accounts are denied access (either by Conditional Access or because they aren't granted specific access) to multiple applications in a short time period
 //This query uses 3 or more applications within an hour
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 //Microsoft Sentinel query
 SigninLogs
 | where TimeGenerated > ago (7d)
@@ -12,6 +15,9 @@ SigninLogs
 | where ['Application Count'] >= 3
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting with Azure AD P2 License
+
 AADSignInEventsBeta
 | where Timestamp > ago (7d)
 | where IsGuestUser == 1

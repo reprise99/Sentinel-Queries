@@ -1,4 +1,7 @@
 //Visualize successful self service password resets and account unlocks over time
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
 AuditLogs
 | where TimeGenerated > ago (180d)
 | where OperationName in ("Reset password (self-service)", "Unlock user account (self-service)")

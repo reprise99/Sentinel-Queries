@@ -1,4 +1,7 @@
 //Visualize the severity of your Microsoft Sentinel incidents per month
+
+//Data connector required for this query - Microsoft Sentinel Incidents (generated automatically if you create incidents in Sentinel)
+
 SecurityIncident
 | where TimeGenerated > ago(365d)
 | summarize Count=dcount(IncidentNumber)by Severity, startofmonth(TimeGenerated)

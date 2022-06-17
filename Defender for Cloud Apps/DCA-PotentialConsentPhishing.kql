@@ -1,4 +1,7 @@
 //Detect when a user flags a risky sign in within 8 hours of installing a service principal, could be a sign of OAuth consent phishing. This example uses 8 hours between events.
+
+//Data connector required for this query - M365 Defender - CloudAppEvents
+
 //Microsoft Sentinel query. This query could also use Azure AD audit logs as a trigger but this example uses Defender for Cloud App logs.
 let threshold=8;
 CloudAppEvents
@@ -30,6 +33,9 @@ CloudAppEvents
     ['Service Principal Name']
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting license
+
 let threshold=8;
 CloudAppEvents
 | where ActionType == "Add service principal."

@@ -1,4 +1,7 @@
 //Alert when a user successfully signs in from both a new location and using a new MFA method
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 //Cache all authentication methods and locations to memory using the materialize function for the last 6 months
 let mfahistory = materialize  (
     SigninLogs

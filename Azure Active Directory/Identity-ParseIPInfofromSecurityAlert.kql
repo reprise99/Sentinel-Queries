@@ -1,4 +1,7 @@
 //Query to parse IP information from Security Alerts
+
+//Data connector required for this query - Security Alert (free table that other Defender products send alert info to)
+
 SecurityAlert
 | where AlertName in ("Impossible travel activity", "Atypical Travel", "Anonymous IP address", "Anomalous Token")
 | parse Entities with * 'AadUserId": "' aadid_ '",' *

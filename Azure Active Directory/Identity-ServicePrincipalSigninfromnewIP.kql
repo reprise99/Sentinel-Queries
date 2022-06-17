@@ -1,4 +1,7 @@
 //Detect when an Azure AD service principal signs in from an IP previously not seen
+
+//Data connector required for this query - Azure Active Directory - Service Principal Signin Logs
+
 AADServicePrincipalSignInLogs
 | where TimeGenerated > ago(180d) and TimeGenerated < ago(7d)
 | distinct AppId, IPAddress

@@ -1,4 +1,7 @@
 //Adds a friendly error description to the AADServicePrincipalSignInLogs table for any non successful signins
+
+//Data connector required for this query - Azure Active Directory - Service Principal Signin Logs
+
 AADServicePrincipalSignInLogs
 | where ResultType != "0"
 | extend ErrorDescription = case (

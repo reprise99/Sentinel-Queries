@@ -1,4 +1,7 @@
 //Visualizes conditional access policy failures over time by policy name
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 let start = now(-90d);
 let end = now();
 let timeframe= 12h;

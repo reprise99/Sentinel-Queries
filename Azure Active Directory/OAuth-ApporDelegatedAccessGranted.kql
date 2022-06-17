@@ -1,4 +1,7 @@
 //Detect when either application or delegated access is granted to a service principal in Azure AD
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
 let delegatedaccess=
     AuditLogs
     | where OperationName has "Add delegated permission grant"

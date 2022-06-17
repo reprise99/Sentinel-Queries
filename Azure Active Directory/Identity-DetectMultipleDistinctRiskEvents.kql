@@ -1,4 +1,7 @@
 //Detect when a user flags 3 or more distinct Azure AD risk events within a single day
+
+//Data connector required for this query - Azure Active Directory - AAD User Risk Events
+
 AADUserRiskEvents
 | where TimeGenerated > ago(7d)
 | where RiskState != "dismissed"

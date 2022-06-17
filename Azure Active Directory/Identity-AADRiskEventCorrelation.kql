@@ -1,4 +1,9 @@
 //This query will hunt for real time risk events flagged as medium or high that aren't confirmed safe by Microsoft and then enrich that data with information from the IdentityInfo table
+
+//Data connector required for this query - Azure Active Directory - AAD User Risk Events
+//Data connector required for this query - Azure Active Directory - Signin Logs
+//Data connector required for this query - Microsoft Sentinel UEBA
+
 let id=
     IdentityInfo
     | summarize arg_max(TimeGenerated, *) by AccountUPN;

@@ -1,4 +1,7 @@
 // Detects when an IP address has been added to an Azure Key Vault firewall allow list
+
+//Data connector required for this query - Azure Key Vault
+
 AzureDiagnostics
 | where ResourceType == "VAULTS"
 | where OperationName == "VaultPatch"

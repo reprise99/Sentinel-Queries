@@ -1,4 +1,7 @@
 //Summarize your Bastion usage by which users are connecting to which devices via which protocl (RDP or SSH)
+
+//Data connector required for this query - Azure Bastion
+
 MicrosoftAzureBastionAuditLogs 
 | where TimeGenerated > ago (30d)
 | where Message == "Successfully Connected."

@@ -1,4 +1,7 @@
 //Find Azure AD conditional access policies that have no hits for 'success' or 'failure' over the last month
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 //Check that these policies are configured correctly or still required
 SigninLogs
 | where TimeGenerated > ago (30d)

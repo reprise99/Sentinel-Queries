@@ -1,4 +1,8 @@
 //Finds users who hold a privileged Azure Active Directory role who are signing into applications using single factor
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+//Data connector required for this query - Microsoft Sentinel UEBA
+
 let privusers=
     IdentityInfo
     | where TimeGenerated > ago(21d)

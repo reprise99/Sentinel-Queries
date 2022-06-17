@@ -1,4 +1,8 @@
 // Find users who are assigned a privileged role in Azure AD but haven't activated a role in the last 45 days
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+//Data connector required for this query - Microsoft Sentinel UEBA
+
 IdentityInfo
 | where TimeGenerated > ago(21d)
 | where isnotempty(AssignedRoles)

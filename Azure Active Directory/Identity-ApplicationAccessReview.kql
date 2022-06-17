@@ -1,4 +1,8 @@
 //Query to find users who have access to an application but haven't signed in for 90 days
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+//Data connector required for this query - Microsoft Sentinel UEBA
+
 let signins=
 SigninLogs
 | where TimeGenerated > ago (90d)

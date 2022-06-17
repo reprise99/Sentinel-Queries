@@ -1,4 +1,7 @@
 //Detect Azure AD PIM activiations outside of working hours
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
 let timerange=30d;
 AuditLogs
 // extend LocalTime to your time zone

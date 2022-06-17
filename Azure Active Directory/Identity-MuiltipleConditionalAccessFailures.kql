@@ -1,4 +1,7 @@
 //Alert when a user fails Azure AD Conditional Access policies to 5 or more unique applications within a short time period, this example uses 1 hour.
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 SigninLogs
 | where TimeGenerated > ago (1d)
 | project TimeGenerated, ConditionalAccessPolicies, UserPrincipalName, AppDisplayName

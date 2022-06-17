@@ -1,4 +1,7 @@
 //Summarize the permissions granted to your Azure AD apps over the last year
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
 //Find applications that have been deleted
 let deletedapps=
 AuditLogs

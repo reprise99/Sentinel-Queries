@@ -1,3 +1,7 @@
+//Find guest accounts that haven't signed in for a period of time, this example uses 45 days
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 let timerange=180d;
 let timeframe=45d;
 SigninLogs

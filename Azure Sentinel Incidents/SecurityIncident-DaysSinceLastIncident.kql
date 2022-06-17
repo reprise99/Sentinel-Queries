@@ -1,4 +1,7 @@
 //Calculate how many days since each analytic rule last triggered, useful to determine if rules are still valid
+
+//Data connector required for this query - Microsoft Sentinel Incidents (generated automatically if you create incidents in Sentinel)
+
 SecurityIncident
 | where TimeGenerated > ago(180d)
 | where Status == "New" and ModifiedBy == "Incident created from alert"

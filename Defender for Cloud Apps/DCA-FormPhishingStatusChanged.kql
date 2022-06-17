@@ -1,4 +1,7 @@
 //Alert when the phishing status of a Microsoft Form is changed, this could be a sign one of your accounts has been compromised and being used to host malicious Forms
+
+//Data connector required for this query - M365 Defender - CloudAppEvents
+
 //Microsoft Sentinel query
 CloudAppEvents
 | where TimeGenerated > ago (7d)
@@ -13,6 +16,9 @@ CloudAppEvents
 | project TimeGenerated, Operation, UserId, FormStatus, FormName, FormId
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting license
+
 CloudAppEvents
 | where Timestamp > ago (7d)
 | extend Operation = tostring(RawEventData.Operation)

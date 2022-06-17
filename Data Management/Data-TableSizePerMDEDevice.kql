@@ -1,4 +1,7 @@
 //Calculate the size of the combined Device* tables from Defender for Endpoint by device name
+
+//Data connector required for this query - M365 Defender - Device* tables
+
 union withsource=_TableName Device*
 | where TimeGenerated > ago(7d)
 | summarize

@@ -1,4 +1,7 @@
 //Find Azure AD applications that have had no signins for over 30 days. May be a sign of an app no longer in use or users bypassing SSO.
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 SigninLogs
 | where TimeGenerated > ago (365d)
 | where ResultType == 0

@@ -1,4 +1,7 @@
 //Tracks privileged post creation events on your Azure AD service principals, such as secrets being generated, permissions being added or an admin consenting.
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
 //Events are then summarized by operation and time. Add a specific Application ID to track events for that one app.
 let timeframe=60d;
 let AppAdded=

@@ -1,4 +1,7 @@
 //Visualize sign in attempts to your Azure AD tenant by device trust type
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 SigninLogs
 | where TimeGenerated > ago(30d)
 | extend DeviceTrustType = tostring(DeviceDetail.trustType)

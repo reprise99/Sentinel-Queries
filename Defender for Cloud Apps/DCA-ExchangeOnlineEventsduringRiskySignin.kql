@@ -1,3 +1,7 @@
+//Create a pivot table of all actions taken during a risky sign in
+
+//Data connector required for this query - Advanced Hunting license
+
 //First find the SessionId of any medium or high risk sign ins (where risk level is 50 or 100)
 //Advanced Hunting query, this query doesn't work in Sentinel because SessionId isn't sent over currently
 let riskysignins=

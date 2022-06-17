@@ -1,4 +1,8 @@
 // Detects when a user flags an Azure AD risk event followed by changes to their MFA profile - potentially detecting a bad actor changing MFA details
+
+//Data connector required for this query - Azure Active Directory - AAD User Risk Events
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
 // Timeframe = the minutes between flagging a risk event and MFA details being changed
 let timeframe = 120;
 //Search for real time risk events only and retrieve Correlation Id

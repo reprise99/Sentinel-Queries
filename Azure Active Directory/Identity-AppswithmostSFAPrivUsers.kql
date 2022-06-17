@@ -1,4 +1,8 @@
 //Find the applications that have the most privileged users accessing them using only single factor authentication
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+//Data connector required for this query - Microsoft Sentinel UEBA
+
 let privusers=
     IdentityInfo
     | where TimeGenerated > ago(21d)

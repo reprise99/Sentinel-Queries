@@ -1,4 +1,7 @@
 //Detect when a user is blocked by Conditional Access after failing 3 unique CA policies or 3 unique applications over a 2 hour period
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 SigninLogs
 | where TimeGenerated > ago(1d)
 | where ResultType == "53003"

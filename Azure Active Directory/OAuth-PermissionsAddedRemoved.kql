@@ -1,4 +1,7 @@
 //Query to find OAuth applications where permissions were added and removed within 10 minutes
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
 let PermissionAddedAlert=
     AuditLogs
     | where OperationName has "Add app role assignment to service principal"

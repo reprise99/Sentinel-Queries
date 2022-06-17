@@ -1,4 +1,7 @@
 //Find new events in Defender for Cloud Apps seen in the last week vs the previously 90 days
+
+//Data connector required for this query - M365 Defender - CloudAppEvents
+
 //Microsoft Sentinel query
 //First find all the activities from the last 90 days prior to this week
 let knownactivities=
@@ -26,6 +29,9 @@ CloudAppEvents
 
 
 //Advanced Hunting query, only 30 days of data is retained in Advanced Hunting so we can instead look at events new in the last 3 compared to the prior 30, but you can change the times around if needed
+
+//Data connector required for this query - Advanced Hunting license
+
 //First find all the activities from the last 30 days prior to this week
 let knownactivities=
     CloudAppEvents

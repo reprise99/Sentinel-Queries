@@ -1,5 +1,8 @@
 //Find the top 20 IP addresses that are unknown to Azure AD, with users using unknown devices and single factor auth
 //Then find the users and applications being accessed from each to help build out conditional access policy
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 let top20locations=
     SigninLogs
     | where TimeGenerated > ago(30d)

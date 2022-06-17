@@ -1,4 +1,7 @@
 //Alert when a user starts a paid trial of a M365 product
+
+//Data connector required for this query - M365 Defender - CloudAppEvents
+
 CloudAppEvents
 | extend Operation = tostring(RawEventData.Operation)
 | where Operation == "StartAPaidTrial"

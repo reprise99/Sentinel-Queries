@@ -1,4 +1,7 @@
 // Detects when a service principal has been added to an Azure AD role
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
 AuditLogs
 | where OperationName == "Add member to role"
 | where TargetResources[0].type == "ServicePrincipal"

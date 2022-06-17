@@ -1,4 +1,7 @@
 //Summarize the percentage of signins covered by MFA for your top 20 most popular Azure AD apps
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 //Microsoft Sentinel query
 //First create a list of your top 20 apps by finding distinct user count by application over 30 days
 let top20apps=
@@ -25,6 +28,9 @@ SigninLogs
 | sort by MFAPercentage asc  
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting with Azure AD P2 License
+
 //First create a list of your top 20 apps by finding distinct user count by application over 30 days
 let top20apps=
     AADSignInEventsBeta

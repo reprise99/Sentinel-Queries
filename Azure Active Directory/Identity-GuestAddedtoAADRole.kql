@@ -1,4 +1,7 @@
 //Detects when an Azure AD guest is added to an Azure AD role
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
 AuditLogs
 | where OperationName == "Add member to role"
 | extend Target = tostring(TargetResources[0].userPrincipalName)

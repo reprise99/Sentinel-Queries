@@ -1,4 +1,8 @@
 //Alert when a user triggers an Azure AD risk event followed closely by a mail forward being configured on their mailbox
+
+//Data connector required for this query - Azure Active Directory - AAD User Risk Events
+//Data connector required for this query - M365 Defender - CloudAppEvents
+
 //Choose a threshold of the time between events you want to alert one, this example uses 240 minutes between risky event and mail forward creation
 let threshold=240;
 //First find any real time risk events in Azure AD

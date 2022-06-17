@@ -1,4 +1,7 @@
 //Create a summary showing which of your Azure AD conditional access policies are preventing the most signins and for what reasons
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 SigninLogs
 | where TimeGenerated > ago (7d)
 | project TimeGenerated, ConditionalAccessPolicies, ResultType, ResultDescription

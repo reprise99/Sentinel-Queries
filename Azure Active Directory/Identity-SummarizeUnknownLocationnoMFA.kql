@@ -1,4 +1,7 @@
 //Find the applications with the most signins coming from unknown locations (not defined in Conditional Access) and only requiring single factor authentication
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 SigninLogs
 | where TimeGenerated > ago(30d)
 | where ResultType == 0

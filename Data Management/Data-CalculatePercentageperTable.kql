@@ -1,4 +1,7 @@
 //Calculate the percentage that each table in your Sentinel workspace is contributing to total ingestion for billable data
+
+//Data connector required for this query - Usage (generated automatically on a log analytics workspace)
+
 Usage
 | where TimeGenerated > ago(30d)
 | where IsBillable = true

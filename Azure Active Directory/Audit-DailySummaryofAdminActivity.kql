@@ -1,4 +1,8 @@
 //Create a daily summary of activities completed by your Azure AD privileged users
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+//Data connector required for this query - Microsoft Sentinel UEBA
+
 let timerange=30d;
 IdentityInfo
 | where TimeGenerated > ago(21d)

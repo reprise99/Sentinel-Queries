@@ -1,4 +1,7 @@
 //Visualize signins from External Azure AD guests (those that belong to another Azure AD tenant) vs External Guests (such as Gmail) to your tenant
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 SigninLogs
 | where TimeGenerated > ago (45d)
 | where UserType == "Guest"

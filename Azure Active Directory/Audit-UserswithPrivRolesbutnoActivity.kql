@@ -1,4 +1,8 @@
 //Find users who hold a privileged Azure AD role but haven't completed any activities in Azure AD for 45 days
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+//Data connector required for this query - Microsoft Sentinel UEBA
+
 //Lookup the IdentityInfo table for any users holding a privileged role
 IdentityInfo
 | where TimeGenerated > ago(21d)

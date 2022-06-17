@@ -1,4 +1,7 @@
 //Detect when a service principal is added to Azure AD after working hours or on weekends
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
 let Saturday = time(6.00:00:00);
 let Sunday = time(0.00:00:00);
 AuditLogs

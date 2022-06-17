@@ -1,4 +1,7 @@
 //List the bulk activities attempted by your privileged Azure AD users and parse the results
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
 AuditLogs
 | where OperationName has_all ("(bulk)", "finished")
 | extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)

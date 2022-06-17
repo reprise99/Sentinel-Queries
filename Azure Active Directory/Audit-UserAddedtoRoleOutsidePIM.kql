@@ -1,4 +1,7 @@
 //Alert when a user is added directly to an Azure AD role, bypassing PIM
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
 AuditLogs
 | where OperationName has "Add member to role outside of PIM"
 | extend RoleName = tostring(TargetResources[0].displayName)

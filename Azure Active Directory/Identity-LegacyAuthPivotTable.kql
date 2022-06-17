@@ -1,4 +1,7 @@
 //Create a pivot table showing all your users who have signed in with legacy auth, which applications they are using (such as IMAP or ActiveSync) and the count of each
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 //Microsoft Sentinel query
 SigninLogs
 | where TimeGenerated > ago(30d)
@@ -8,6 +11,9 @@ SigninLogs
 | evaluate pivot(ClientAppUsed, count(), UserPrincipalName)
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting with Azure AD P2 License
+
 AADSignInEventsBeta
 | where Timestamp > ago(30d)
 | where ErrorCode == 0

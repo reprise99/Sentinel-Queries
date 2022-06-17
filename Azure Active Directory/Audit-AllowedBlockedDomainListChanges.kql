@@ -1,4 +1,7 @@
 //Detect when a domain is added or removed to either the allow or block list in Azure AD external identities
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
 AuditLogs
 | where OperationName == "Update policy"
 | extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)

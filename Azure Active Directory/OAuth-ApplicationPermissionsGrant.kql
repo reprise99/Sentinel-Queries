@@ -1,4 +1,7 @@
 //Query to find applications that have had application permissions granted to them
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
 AuditLogs
 | where OperationName has "Add app role assignment to service principal"
 | extend UpdatedPermission = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[1].newValue)))

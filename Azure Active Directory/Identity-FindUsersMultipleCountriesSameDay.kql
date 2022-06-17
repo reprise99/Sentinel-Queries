@@ -1,4 +1,7 @@
 //Find users who have successfully signed into Azure AD from 3 or more countries in the same day
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 //Microsoft Sentinel query
 SigninLogs
 | where TimeGenerated > ago(7d)
@@ -11,6 +14,9 @@ SigninLogs
 | where ['Count of countries'] >= 3
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting with Azure AD P2 License
+
 AADSignInEventsBeta
 | where Timestamp > ago(7d)
 | where ErrorCode == 0

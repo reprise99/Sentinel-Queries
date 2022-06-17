@@ -1,4 +1,7 @@
 //Visualizes the total guest invites sent from your Azure AD tenant vs those redeemed. Data is summarized per week.
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
 let timerange=180d;
 AuditLogs
 | where TimeGenerated > ago (timerange)

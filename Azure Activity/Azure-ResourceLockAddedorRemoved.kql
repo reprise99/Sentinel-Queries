@@ -1,4 +1,7 @@
 //Detect when a resource lock is added or removed from an Azure resource
+
+//Data connector required for this query - Azure Activity 
+
 AzureActivity
 | where OperationNameValue in ("MICROSOFT.AUTHORIZATION/LOCKS/WRITE", "MICROSOFT.AUTHORIZATION/LOCKS/DELETE")
 | where ActivityStatusValue == "Success"

@@ -1,4 +1,7 @@
 //Visualize the most popular domains that have redeemed invites to your Azure AD tenant over the last 30 days.
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
 AuditLogs
 | where TimeGenerated > ago(30d)
 | where OperationName == "Redeem external user invite"

@@ -1,4 +1,7 @@
 //Find sign ins where your users signed into other Azure AD tenants as outbound guests
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 SigninLogs
 | where AADTenantId == HomeTenantId
 | where ResourceTenantId != AADTenantId

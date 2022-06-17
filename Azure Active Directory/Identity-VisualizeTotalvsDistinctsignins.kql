@@ -1,4 +1,7 @@
 //Visualize the difference been total and distinct user sign ins to an app per day
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 //Microsoft Sentinel query
 SigninLogs
 | where TimeGenerated > ago(90d)
@@ -12,6 +15,9 @@ SigninLogs
     ytitle="Count")
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting with Azure AD P2 License
+
 AADSignInEventsBeta
 | where Timestamp > ago(90d)
 | where Application == "Office 365 Exchange Online"

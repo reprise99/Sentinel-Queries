@@ -1,4 +1,7 @@
 //Detect when an Azure AD guest account is assigned to an Azure AD PIM role
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
 AuditLogs
 | where TimeGenerated > ago (1d)
 | where OperationName in ("Add eligible member to role in PIM completed (permanent)", "Add eligible member to role in PIM completed (timebound)", "Add member to role in PIM completed (permanent)", "Add member to role in PIM completed (timebound)")

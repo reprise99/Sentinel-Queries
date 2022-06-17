@@ -1,4 +1,7 @@
 //Alert when a user is assigned to a permanent active Azure AD role
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
 AuditLogs
 | where OperationName in ("Add member to role in PIM completed (permanent)","Add member to role in PIM completed (timebound)")
 | where TargetResources[2].type == "User"

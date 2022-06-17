@@ -1,4 +1,7 @@
 //Detect when a user retrieves keys for Azure storage for the first time compared to the previous time range
+
+//Data connector required for this query - Azure Activity 
+
 let knownusers=
     AzureActivity
     | where TimeGenerated > ago(90d) and TimeGenerated < ago(1d)

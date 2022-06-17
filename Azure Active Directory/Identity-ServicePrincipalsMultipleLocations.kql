@@ -1,4 +1,7 @@
 //Find Azure AD service principals that are logging on from multiple locations, this should be less common than with user accounts
+
+//Data connector required for this query - Azure Active Directory - Service Principal Signin Logs
+
 //Return the IP addresses used to sign in and see if you can build conditional access policies around them
 //Microsoft Sentinel Query
 AADServicePrincipalSignInLogs
@@ -14,6 +17,9 @@ AADServicePrincipalSignInLogs
 | where ['Count of Locations'] >= 2
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting with Azure AD P2 License
+
 AADSpnSignInEventsBeta
 | where Timestamp > ago(30d)
 | where ErrorCode == "0"

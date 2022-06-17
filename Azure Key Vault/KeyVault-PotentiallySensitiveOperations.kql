@@ -1,4 +1,7 @@
 // Detects Key Vault operations that could be malicious
+
+//Data connector required for this query - Azure Key Vault
+
 let operationlist = dynamic(
     ["VaultDelete", "KeyDelete", "SecretDelete", "SecretPurge", "KeyPurge", "SecretBackup", "KeyBackup", "SecretListDeleted", "CertificateCreate", "CertificatePurge"]);
 AzureDiagnostics

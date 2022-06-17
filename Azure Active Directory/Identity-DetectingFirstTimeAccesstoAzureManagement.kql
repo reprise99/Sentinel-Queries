@@ -1,4 +1,7 @@
 //Detects users who have accessed Azure AD Management interfaces, such as Azure AD PowerShell or Graph Explorer, who have not accessed in the previous timeframe. 
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 //Add additional applications to include them in the same query, i.e Defender for Cloud Apps portal.
 //Select a time frame to look back on, i.e find users logging on for the first time today not seen in the prior 60 days
 let timeframe = startofday(ago(60d));

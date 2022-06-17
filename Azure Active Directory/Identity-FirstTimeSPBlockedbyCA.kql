@@ -1,4 +1,7 @@
 //Detect the first time a service principal fails Conditional Access
+
+//Data connector required for this query - Azure Active Directory - Service Principal Signin Logs
+
 //Microsoft Sentinel query
 //First find service principals that have previously failed
 let knownfailures=
@@ -20,6 +23,9 @@ AADServicePrincipalSignInLogs
     IPAddress
 
 //Detect the first time a service principal fails Conditional Access
+
+//Data connector required for this query - Advanced Hunting with Azure AD P2 License
+
 //Advanced Hunting query
 let knownfailures=
     AADSpnSignInEventsBeta

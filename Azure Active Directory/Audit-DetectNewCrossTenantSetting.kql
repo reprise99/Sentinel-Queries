@@ -1,5 +1,9 @@
 //Detect when another Azure AD tenant is added to cross-tenant settings and for each tenant added, retrieve any domain names from your sign in data.
 //First retrieve the event where a cross-tenant setting was added
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 AuditLogs
 | where TimeGenerated > ago(1d)
 | where OperationName == "Add a partner to cross-tenant access setting"

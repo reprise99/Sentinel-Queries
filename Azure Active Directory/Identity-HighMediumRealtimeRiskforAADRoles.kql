@@ -1,4 +1,9 @@
 //Query to find high or medium real time risk events for users who have an assigned Azure AD role
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+//Data connector required for this query - Azure Active Directory - AAD User Risk Events
+//Data connector required for this query - Microsoft Sentinel UEBA
+
 let id=
     IdentityInfo
     | summarize arg_max(TimeGenerated, *) by AccountUPN;

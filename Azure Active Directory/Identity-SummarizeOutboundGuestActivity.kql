@@ -1,4 +1,7 @@
 //Summarize outbound (your users connecting to other tenants) activity by listing the users and which applications they are accessing in each remote tenant
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 SigninLogs
 | where TimeGenerated > ago(30d)
 | where UserType == "Guest"

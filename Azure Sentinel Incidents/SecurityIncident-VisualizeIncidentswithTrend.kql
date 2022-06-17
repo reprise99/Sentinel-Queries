@@ -1,3 +1,7 @@
+//Create a visualization showing the total Sentinel incidents and the trend of incidents over time
+
+//Data connector required for this query - Microsoft Sentinel Incidents (generated automatically if you create incidents in Sentinel)
+
 SecurityIncident
 | summarize arg_min(TimeGenerated, *) by IncidentNumber
 | make-series TotalIncidents=count() default=0 on TimeGenerated in range(ago(90d), now(), 1d)

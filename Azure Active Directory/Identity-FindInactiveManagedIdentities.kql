@@ -1,5 +1,8 @@
 //Find Managed Identity service principals that have not successfully signed in in the last 30 days, for each Managed Identity list the Azure resources it has accessed
 //Hopefully it means the resource has already been decommissioned, if not, check to see if it still requires the access it has been granted
+
+//Data connector required for this query - Azure Active Directory - Managed Identity Signin Logs
+
 //First find any Managed Identities that haven't successfully signed on for 30 days
 AADManagedIdentitySignInLogs
 | where TimeGenerated > ago(365d)

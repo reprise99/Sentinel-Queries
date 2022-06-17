@@ -1,4 +1,7 @@
 //Creates a list of your applications and summarizes successful signins by members vs guests separated to total and distinct signins
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 SigninLogs
 | where TimeGenerated > ago(30d)
 | project TimeGenerated, UserType, ResultType, AppDisplayName, UserPrincipalName

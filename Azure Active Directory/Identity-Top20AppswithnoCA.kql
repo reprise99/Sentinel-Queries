@@ -1,4 +1,7 @@
 //Find the top 20 most popular applications in your tenant that have had no Conditional Access policies (success or failure) applied
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 let apps=
     SigninLogs
     | where TimeGenerated > ago (30d)

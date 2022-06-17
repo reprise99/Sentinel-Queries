@@ -1,4 +1,8 @@
 //Create a pivot table showing all the actions taken by your privileged users
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+//Data connector required for this query - Microsoft Sentinel UEBA
+
 //Lookup the IdentityInfo table for any users holding a privileged role
 let privusers=
     IdentityInfo

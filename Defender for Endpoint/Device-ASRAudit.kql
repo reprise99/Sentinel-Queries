@@ -1,4 +1,7 @@
 //Summarize attack surface reduction audit hits for each device
+
+//Data connector required for this query - M365 Defender - Device* tables
+
 DeviceEvents
 | where TimeGenerated > ago (1d)
 | where ActionType startswith "Asr"

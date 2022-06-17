@@ -1,4 +1,7 @@
 //Summarize accounts (both members and guests) that haven't signed on for over 60 days, and summarize them into the month they last signed in
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 SigninLogs
 | where TimeGenerated > ago (365d)
 | where ResultType == 0

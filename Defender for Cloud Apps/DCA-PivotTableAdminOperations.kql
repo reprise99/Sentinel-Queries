@@ -1,5 +1,8 @@
 //Defender for Cloud Apps tracks administrative actions under the 'isAdminOperation' flag. This query will build a pivot table of all admin operations completed by your users
 //Works in both Sentinel and Advanced Hunting
+
+//Data connector required for this query - Advanced Hunting license or M365 Defender - CloudAppEvents for Sentinel
+
 CloudAppEvents
 | where IsAdminOperation == "true"
 | where AccountType == "Regular"

@@ -1,4 +1,7 @@
 //Find the guests in your tenant connecting to the most applications. They are the biggest risk and the best target for additional controls like Conditional Access.
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 //Microsoft Sentinel query
 SigninLogs
 | where TimeGenerated > ago(30d)
@@ -13,6 +16,9 @@ SigninLogs
 | sort by ['Count of Applications'] desc 
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting with Azure AD P2 License
+
 AADSignInEventsBeta
 | where Timestamp > ago(30d)
 | where ErrorCode == 0

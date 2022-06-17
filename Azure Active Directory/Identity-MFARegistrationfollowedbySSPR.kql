@@ -1,4 +1,8 @@
 //Detects when a user registers MFA details on their account and then completes self service password reset with a short timeframe
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
 let timeframe=4h;
 AuditLogs
 | where TimeGenerated > ago(1d)

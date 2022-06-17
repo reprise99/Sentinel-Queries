@@ -1,4 +1,8 @@
 //Searches OfficeActivity table for anomalies in download actions and then retrives all USB file copy events by those users over the last week
+
+//Data connector required for this query - M365 Defender - Device* tables
+//Data connector required for this query - Office 365
+
 let starttime = 7d;
 let timeframe = 30m;
 let operations = dynamic(["FileSyncDownloadedFull", "FileDownloaded"]);

@@ -1,4 +1,7 @@
 //Detect when a custom security attribute is set on a user
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
 AuditLogs
 | where OperationName == "Update attribute values assigned to a user"
 | extend x = tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[0].displayName)

@@ -1,4 +1,7 @@
 //Visualize legacy auth method (i.e Activesync, IMAP etc) by distinct user count over time
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 //Microsoft Sentinel query
 SigninLogs
 | where TimeGenerated > ago(90d)
@@ -8,6 +11,9 @@ SigninLogs
 | render timechart with (title="Legacy auth methods by distinct user over time")
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting with Azure AD P2 License
+
 AADSignInEventsBeta
 | where Timestamp > ago(30d)
 | where ErrorCode == 0

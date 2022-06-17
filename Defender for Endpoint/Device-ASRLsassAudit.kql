@@ -1,4 +1,7 @@
 //Summarize which processes are triggering Lsass credential theft audit alerts in your attack surface reduction rules
+
+//Data connector required for this query - M365 Defender - Device* tables
+
 //Summarize each device by which processes are triggering the audit alert
 DeviceEvents
 | where TimeGenerated > ago (7d)
@@ -9,7 +12,7 @@ DeviceEvents
 | extend ['Count of Processes']=array_length(LsassAudit)
 | sort by ['Count of Processes'] desc 
 
-//Summarize each process by which devices are triggering the audit alert
+//Change the query to summarize each process by which devices are triggering the audit alert
 DeviceEvents
 | where TimeGenerated > ago (7d)
 | where ActionType == "AsrLsassCredentialTheftAudited"

@@ -1,4 +1,7 @@
 //Create a pivot table showing all conditional access policy outcomes over the last 30 days
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 SigninLogs
 | where TimeGenerated > ago(30d)
 | extend CA = parse_json(ConditionalAccessPolicies)

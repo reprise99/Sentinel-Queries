@@ -1,4 +1,7 @@
 //Visualize which playbooks are interacting with security incidents
+
+//Data connector required for this query - Microsoft Sentinel Incidents (generated automatically if you create incidents in Sentinel)
+
 let timeframe=45d;
 SecurityIncident
 | where TimeGenerated > ago (timeframe)

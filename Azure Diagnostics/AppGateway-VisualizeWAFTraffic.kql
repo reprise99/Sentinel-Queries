@@ -1,4 +1,7 @@
 //Visualize WAF rule actions such as allowed, blocked, detected and matched over time
+
+//Data connector required for this query - Azure Diagnostics (Application Gateways)
+
 AzureDiagnostics
 | where TimeGenerated > ago(30d)
 | where ResourceType == "APPLICATIONGATEWAYS"

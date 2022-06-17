@@ -1,4 +1,7 @@
 //Visualize sign in attempts to your Azure AD tenant by known or unknown network locations
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 SigninLogs
 | where TimeGenerated > ago(30d)
 //If a location it will be populated by its name, i.e 'Corporate Internet', if known the NetworkLocationDetails array is empty so we can find it by searching on '[]'

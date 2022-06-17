@@ -1,4 +1,8 @@
 //Detect when one of your Exchange admins grants themselves access to another users mailbox
+
+//Data connector required for this query - M365 Defender - CloudAppEvents
+
+//Microsoft Sentinel query
 CloudAppEvents
 | extend Operation= tostring(RawEventData.Operation)
 | where Operation == "Add-MailboxPermission"
@@ -8,6 +12,10 @@ CloudAppEvents
 | extend Actor = tostring(RawEventData.UserId)
 | where Actor =~ UserAdded 
 | project TimeGenerated, Actor, TargetMailbox, UserAdded, AccessGranted
+
+//Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting license
 
 CloudAppEvents
 | extend Operation= tostring(RawEventData.Operation)

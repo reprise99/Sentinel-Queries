@@ -1,4 +1,7 @@
 //Visualize the most attacked hostname behind an Azure App Gateway/WAF
+
+//Data connector required for this query - Azure Diagnostics (Application Gateways)
+
 AzureDiagnostics
 | where TimeGenerated > ago(30d)
 | where ResourceType == "APPLICATIONGATEWAYS"

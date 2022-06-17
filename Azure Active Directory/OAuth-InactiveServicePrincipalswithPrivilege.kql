@@ -1,4 +1,7 @@
 //Find any Azure AD service principals that have been granted any .All access in the last year that haven't signed in for 30 days. May include already deleted service principals.
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
 let delegatedaccess=
     AuditLogs
     | where TimeGenerated > ago(365d)

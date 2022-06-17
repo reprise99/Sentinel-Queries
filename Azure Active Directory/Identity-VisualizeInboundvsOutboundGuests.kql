@@ -1,4 +1,7 @@
 //Visualize inbound Azure AD guests (other tenants connecting to your tenant) vs outbound (your users connecting to other tenants)
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 SigninLogs
 | where TimeGenerated > ago (30d)
 | where UserType == "Guest"

@@ -1,4 +1,7 @@
 //Detect when Azure AD Named Locations are changed (either IP or Country) and retrieve the current list 
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
 let updatedip=
     AuditLogs
     | where OperationName == "Update named location"

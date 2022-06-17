@@ -1,4 +1,7 @@
 //Summarize sign in activity from a particular country or countries to your tenant over the last week
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 //Microsoft Sentinel query
 let failureCodes = dynamic([50053, 50126, 50055]);
 let successCodes = dynamic([0, 50055, 50057, 50155, 50105, 50133, 50005, 50076, 50079, 50173, 50158, 50072, 50074, 53003, 53000, 53001, 50129]);
@@ -19,6 +22,9 @@ SigninLogs
 
 
 //Summarize Russian sign in activity to your Azure AD tenant
+
+//Data connector required for this query - Advanced Hunting with Azure AD P2 License
+
 //Advanced Hunting query
 let failureCodes = dynamic([50053, 50126, 50055]);
 let successCodes = dynamic([0, 50055, 50057, 50155, 50105, 50133, 50005, 50076, 50079, 50173, 50158, 50072, 50074, 53003, 53000, 53001, 50129]);

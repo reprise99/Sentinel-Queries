@@ -1,4 +1,7 @@
 //Alert when the redirect URI list is changed for a service principal
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
 AuditLogs
 | where OperationName == "Update service principal"
 | mv-expand TargetResources

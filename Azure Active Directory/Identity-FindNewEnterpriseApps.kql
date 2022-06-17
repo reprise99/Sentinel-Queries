@@ -1,4 +1,7 @@
 //Find new applications your users are signing into in the last month vs the previous 6 months. For each find the first time the app was used, how many total signins and distinct users accessing each one
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 let knownapps=
     SigninLogs
     | where TimeGenerated > ago(180d) and TimeGenerated < ago (30d)

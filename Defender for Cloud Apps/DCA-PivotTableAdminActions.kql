@@ -1,5 +1,8 @@
 //Create a pivot table of all actions in Defender for Cloud Apps by your privileged users over the last 7 days
 //Lookup the IdentityInfo table for any users holding a privileged role
+
+//Data connector required for this query - M365 Defender - CloudAppEvents
+
 //Microsoft Sentinel query
 let privusers=
     IdentityInfo
@@ -20,6 +23,9 @@ CloudAppEvents
 | evaluate pivot(Activity, count(), UserId)
 
 //Advanced hunting query
+
+//Data connector required for this query - Advanced Hunting license
+
 CloudAppEvents
 | where Timestamp > ago(7d)
 | extend Operation = tostring(RawEventData.Operation)

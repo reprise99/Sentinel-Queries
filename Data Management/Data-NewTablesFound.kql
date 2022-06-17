@@ -1,4 +1,7 @@
 //Detect when new tables have been written to in the last week compared to the last 90 days
+
+//Data connector required for this query - query will automatically union any data you have
+
 let existingtables=
     union withsource=_TableName *
     | where TimeGenerated > ago(90d) and TimeGenerated < ago(7d)

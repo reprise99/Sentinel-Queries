@@ -1,4 +1,8 @@
 //Query to identity Security Alerts where they were triggered by a new user agent not seen for the previous 7 days. Update known IP Addresses from "1.1.1" to your corporate IP addresses to exclude
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+//Data connector required for this query - Security Alert (free table that other Defender products send alert info to)
+
 let IPs=
     SecurityAlert
     | project

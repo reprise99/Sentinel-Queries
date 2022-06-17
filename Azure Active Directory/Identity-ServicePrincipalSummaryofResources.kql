@@ -1,4 +1,7 @@
 //Create a summary of which resources each of your service principals are connecting to. The higher the count the potential higher blast radius.
+
+//Data connector required for this query - Azure Active Directory - Service Principal Signin Logs
+
 AADServicePrincipalSignInLogs
 | where TimeGenerated > ago(30d)
 | where ResultType == "0"

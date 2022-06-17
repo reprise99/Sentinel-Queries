@@ -1,5 +1,8 @@
 //Detects when you have audit hits on the "Block all Office applications from creating child processes" ASR rule. 
 //For instance if you want to audit the impact for the MSDT vulnerability - https://msrc-blog.microsoft.com/2022/05/30/guidance-for-cve-2022-30190-microsoft-support-diagnostic-tool-vulnerability/
+
+//Data connector required for this query - M365 Defender - Device* tables
+
 //Microsoft Sentinel query
 DeviceEvents
 | where TimeGenerated > ago (30d)
@@ -14,6 +17,9 @@ DeviceEvents
     InitiatingProcessFileName
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting license
+
 DeviceEvents
 | where Timestamp > ago (30d)
 | where ActionType == "AsrOfficeChildProcessAudited"

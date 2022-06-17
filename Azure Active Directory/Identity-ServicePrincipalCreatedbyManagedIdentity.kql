@@ -1,4 +1,7 @@
 //Detect when an Azure AD service principal is created for a managed identity
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
 AuditLogs
 | where OperationName == "Add service principal"
 | extend Actor = tostring(parse_json(tostring(InitiatedBy.app)).displayName)

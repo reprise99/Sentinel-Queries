@@ -1,4 +1,7 @@
 //Summarize and visualize the roles being activated in Azure AD PIM
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
 AuditLogs
 | where TimeGenerated > ago(30d)
 | where OperationName == "Add member to role completed (PIM activation)"

@@ -1,4 +1,7 @@
 // Detects when an Azure Key Vault firewall is set to allow all by default
+
+//Data connector required for this query - Azure Key Vault
+
 AzureDiagnostics
 | where ResourceType == "VAULTS"
 | where OperationName == "VaultPatch"

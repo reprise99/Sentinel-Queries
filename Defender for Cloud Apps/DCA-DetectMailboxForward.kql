@@ -1,4 +1,7 @@
 //Use the Defender for Cloud Apps logs to detect when a mail forward is created on a mailbox (not an individual mailbox rule). Retrieve the address the mail was forwarded to and whether is both stored and forwarded
+
+//Data connector required for this query - M365 Defender - CloudAppEvents
+
 //Microsoft Sentinel query
 CloudAppEvents
 | where ActionType == "Set-Mailbox"
@@ -18,6 +21,9 @@ CloudAppEvents
     ['Email Stored and Forwarded']
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting license
+
 CloudAppEvents
 | where ActionType == "Set-Mailbox"
 | extend UserId = tostring(RawEventData.UserId)

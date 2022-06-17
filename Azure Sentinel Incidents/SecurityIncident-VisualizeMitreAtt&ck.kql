@@ -1,4 +1,7 @@
 //Visualize the incidents generated in Microsoft Sentinel by MITRE ATT&CK tactics
+
+//Data connector required for this query - Microsoft Sentinel Incidents (generated automatically if you create incidents in Sentinel)
+
 SecurityIncident
 | where TimeGenerated > ago(30d)
 | summarize arg_min(TimeGenerated, *) by IncidentNumber

@@ -1,4 +1,8 @@
 //Detect when MFA details for a user are changed, deleted or registered from an IP address that user has never signed in successfully from
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
 //Cache all successful sign in data for users using materialize operator
 let signindata=materialize (
     SigninLogs

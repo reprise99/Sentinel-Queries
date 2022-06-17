@@ -1,4 +1,7 @@
 //Summarize legacy auth authentications by type (such as ActiveSync, IMAP etc) and which accounts are using those protocols
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 //Microsoft Sentinel query
 union SigninLogs, AADNonInteractiveUserSignInLogs
 | where TimeGenerated > ago(30d)
@@ -8,6 +11,9 @@ union SigninLogs, AADNonInteractiveUserSignInLogs
 | sort by ClientAppUsed asc, ['Count of legacy auth attempts'] desc 
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting with Azure AD P2 License
+
 AADSignInEventsBeta
 | where Timestamp > ago(30d)
 | where ErrorCode == 0

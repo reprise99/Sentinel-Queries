@@ -1,5 +1,10 @@
 //Alerts on users being added to roles on your Azure Sentinel log analytics workspace.
+
+//Data connector required for this query - Azure Activity 
+//Data connector required for this query - Microsoft Sentinel UEBA
+
 //Uses a lookup to a GitHub gist to match Azure role ids to friendly role names and the IdentityInfo to retrieve identity details
+
 let workspaceid="your Sentinel workspace id";
 let timeframe=1d;
 let AZRoles = externaldata(Name: string, Id: string) [@"https://gist.githubusercontent.com/reprise99/363eee70938c9a3d662e3f6da4610fe4/raw/b25b2d7a626396684ab578363888a0e360e7b287/.csv"] with(ignoreFirstRecord=true, format="csv");

@@ -1,4 +1,7 @@
 //Find which of your accounts have logged onto the most devices with local admin credentials. These accounts are potential targets for lateral movement and privilege escalation
+
+//Data connector required for this query - M365 Defender - Device* tables
+
 //Microsoft Sentinel query
 DeviceLogonEvents
 | where TimeGenerated > ago(30d)
@@ -14,6 +17,9 @@ DeviceLogonEvents
 | sort by ['Local Admin Count'] desc  
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting license
+
 DeviceLogonEvents
 | where Timestamp > ago(30d)
 | project DeviceName, ActionType, LogonType, AdditionalFields, InitiatingProcessCommandLine, AccountName, IsLocalAdmin

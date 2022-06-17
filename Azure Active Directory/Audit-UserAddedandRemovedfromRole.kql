@@ -1,4 +1,7 @@
 //Detect when a user is added and removed from an Azure AD role within a short time frame
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
 //Timerange = the amount of data to look back on, timeframe = the time between the role being added and removed
 let timerange=7d;
 let timeframe=4h;

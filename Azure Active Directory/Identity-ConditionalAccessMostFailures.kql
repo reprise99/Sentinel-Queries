@@ -1,4 +1,7 @@
 //Find which users are failing the most Conditional Access policies, retrieve the total failure count, distinct policy count and the names of the failed policies
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 SigninLogs
 | where TimeGenerated > ago (30d)
 | project TimeGenerated, ConditionalAccessPolicies, UserPrincipalName

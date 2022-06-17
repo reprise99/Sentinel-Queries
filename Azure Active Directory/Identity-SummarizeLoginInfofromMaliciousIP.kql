@@ -1,4 +1,8 @@
 //When Azure AD Identity Protection flags an IP Address as malicious, find any successful or failed logon events in your tenant from that IP
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+//Data connector required for this query - Security Alert (free table that other Defender products send alert info to)
+
 //First create a list of success and erorr codes in Azure AD
 let failureCodes = dynamic([50053, 50126, 50055]);
 let successCodes = dynamic([0, 50055, 50057, 50155, 50105, 50133, 50005, 50076, 50079, 50173, 50158, 50072, 50074, 53003, 53000, 53001, 50129]);

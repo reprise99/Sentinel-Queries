@@ -1,4 +1,7 @@
 //Detect when a user adds someone to an Azure AD privileged role for the first time
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
 //First build a set of known users who have completed this action previously
 let knownusers=
     AuditLogs

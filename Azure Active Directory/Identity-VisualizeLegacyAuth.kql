@@ -1,4 +1,7 @@
 //Visualize distinct users allowed to connect via legacy auth vs blocked by conditional access
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 //Microsoft Sentinel query
 SigninLogs
 | where TimeGenerated > ago(180d)
@@ -11,6 +14,9 @@ SigninLogs
 | render timechart with (title="Legacy auth distinct users allowed vs blocked by Conditional Access")
 
 //Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting with Azure AD P2 License
+
 //Visualize distinct users allowed to connect via legacy auth vs blocked by conditional access
 AADSignInEventsBeta
 | where Timestamp > ago(180d)

@@ -1,4 +1,7 @@
 //Find any new operations generated in the Azure AD audit table in the last week compared to the last 90 days
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
 let existingoperations=
     AuditLogs
     | where TimeGenerated > ago(90d) and TimeGenerated < ago(7d)

@@ -1,4 +1,7 @@
 //Make a set of IP addresses that your Azure AD service principals have signed in from
+
+//Data connector required for this query - Azure Active Directory - Service Principal Signin Logs
+
 AADServicePrincipalSignInLogs
 | where TimeGenerated > ago(90d)
 | where ResultType == "0"

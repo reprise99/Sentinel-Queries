@@ -1,4 +1,7 @@
 //Detect anomalies in the amount of conditional access failures by users in your tenant, then visualize those conditional access failures
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 //Starttime and endtime = which period of data to look at, i.e from 21 days ago until today.
 let startdate=21d;
 let enddate=1d;

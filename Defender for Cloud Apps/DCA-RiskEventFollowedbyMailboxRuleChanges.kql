@@ -1,4 +1,8 @@
 //Alert when a user flags an Azure AD risk event followed by creating or updating inbox rules within a short time frame
+
+//Data connector required for this query - Azure Active Directory - AAD User Risk Events
+//Data connector required for this query - M365 Defender - CloudAppEvents
+
 //In this example it will detect when the two events are less than 120 minutes apart
 AADUserRiskEvents
 | where TimeGenerated > ago (1d)

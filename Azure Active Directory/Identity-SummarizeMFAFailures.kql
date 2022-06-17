@@ -1,4 +1,7 @@
 //Summarize the count of the various types of MFA failures (such as user not responding, invalid codes, user declining the authentication)
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 SigninLogs
 | where TimeGenerated > ago (90d)
 | where ResultType == "500121"

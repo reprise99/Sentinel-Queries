@@ -1,4 +1,7 @@
 //Calculate the percentage of signins failing against each of your Conditional Access policies. If the percentage is high it may be worth evaulating the policy if it is fit for purpose.
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
 SigninLogs
 | where TimeGenerated > ago(30d)
 | project ConditionalAccessPolicies

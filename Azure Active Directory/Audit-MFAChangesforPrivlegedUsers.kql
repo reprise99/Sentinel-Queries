@@ -1,4 +1,8 @@
 //Alert when any users who hold a privileged Azure AD role make MFA configuration changes or an admin changes MFA details on a privileged user
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+//Data connector required for this query - Microsoft Sentinel UEBA
+
 //Lookup the IdentityInfo table for any users holding a privileged role
 let privusers=
     IdentityInfo
