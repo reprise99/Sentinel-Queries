@@ -1,0 +1,18 @@
+//Visualize successful vs failed self service password reset attempts in your Azure AD tenant
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
+AuditLogs
+| where TimeGenerated > ago (30d)
+| where LoggedByService == "Self-service Password Management"
+| extend User = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| extend ['User IP Address'] = tostring(parse_json(tostring(InitiatedBy.user)).ipAddress)
+| sort by TimeGenerated asc 
+//Create a list of all SSPR actions that make up a single correlation id which represents one attempts at completing SSPR
+| summarize ['SSPR Actions']=make_list(ResultReason) by CorrelationId, bin(TimeGenerated, 1d)
+//Summarize those lists of actions into those that have a successful password reset and those that don't
+| summarize
+    ['Successful self service password resets']=countif(['SSPR Actions'] has "Successfully completed reset"),
+    ['Failed self service password resets']=countif(['SSPR Actions'] !has "User successfully reset password")
+    by bin(TimeGenerated, 1d) 
+| render timechart with (title="Self service password reset success vs failure", ytitle="Count")
