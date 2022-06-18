@@ -1,0 +1,24 @@
+//Detect a successful self service password reset or account unlock from an IP address that user hasn't successfully signed into from in the last 30 days
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
+//Find successful password reset and account unlocks in the last 30 days
+AuditLogs
+| where TimeGenerated > ago (1d)
+| where OperationName == "Unlock user account (self-service)" and ResultDescription == "Success" or OperationName == "Reset password (self-service)" and ResultDescription == "Successfully completed reset."
+| extend UserPrincipalName = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| extend IPAddress = tostring(parse_json(tostring(InitiatedBy.user)).ipAddress)
+| project
+    ['Reset Unlock or Time']=TimeGenerated,
+    OperationName,
+    UserPrincipalName,
+    IPAddress
+//Take the UserPrincipalName of the event and the IP address, join back to sign on logs to find events where the IP address has not been seen from that user
+| join kind=leftanti 
+    (
+    SigninLogs
+    | where TimeGenerated > ago(30d)
+    | where ResultType == 0
+    )
+    on UserPrincipalName, IPAddress
