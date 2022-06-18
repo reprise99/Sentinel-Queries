@@ -1,0 +1,25 @@
+//Visualize downloads from your Office 365 tenant by trust type (trusted/known by Azure Active Directory vs Unknown)
+
+//Data connector required for this query - Office 365
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
+//Query Azure AD logs to get a listing of each username, IPAddress and trust type
+SigninLogs
+| where TimeGenerated > ago(30d)
+| where ResultType == 0
+| where UserType == "Member"
+| extend DeviceTrustType = tostring(DeviceDetail.trustType)
+| distinct UserPrincipalName, IPAddress, DeviceTrustType
+//Join to Office Activity download on username and IP and find download events
+| join kind=inner(
+    OfficeActivity
+    | where TimeGenerated > ago(30d)
+    | where Operation in ("FileSyncDownloadedFull", "FileDownloaded")
+    )
+    on $left.UserPrincipalName == $right.UserId, $left.IPAddress == $right.ClientIP
+//Summarize download events by whether the device is known or not
+| summarize
+    ['Trusted Devices']=countif(isnotempty(DeviceTrustType)),
+    ['Untrusted Devices']=countif(isempty(DeviceTrustType))
+    by bin(TimeGenerated, 1d)
+| render timechart with (title="Downloads from Office 365 by device trust type")
