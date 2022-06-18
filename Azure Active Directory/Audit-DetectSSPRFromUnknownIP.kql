@@ -3,7 +3,7 @@
 //Data connector required for this query - Azure Active Directory - Audit Logs
 //Data connector required for this query - Azure Active Directory - Signin Logs
 
-//Find successful password reset and account unlocks in the last 30 days
+//Find successful password reset and account unlocks in the last day
 AuditLogs
 | where TimeGenerated > ago (1d)
 | where OperationName == "Unlock user account (self-service)" and ResultDescription == "Success" or OperationName == "Reset password (self-service)" and ResultDescription == "Successfully completed reset."
