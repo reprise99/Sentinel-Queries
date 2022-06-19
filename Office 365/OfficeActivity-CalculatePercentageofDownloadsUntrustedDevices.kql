@@ -1,0 +1,24 @@
+//Find the top 20 users who are downloading files from your tenant from untrusted devices and calculate the percentage of downloads from those users vs all untrusted downloads. Useful to see if you have a few users responsible for most of the downloads in your tenant.
+
+//Data connector required for this query - Office 365
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
+SigninLogs
+| where TimeGenerated > ago(30d)
+| where ResultType == 0
+| where UserType == "Member"
+| extend DeviceTrustType = tostring(DeviceDetail.trustType)
+| distinct UserPrincipalName, IPAddress, DeviceTrustType
+| join kind=inner(
+    OfficeActivity
+    | where TimeGenerated > ago(30d)
+    | where Operation in ("FileSyncDownloadedFull", "FileDownloaded")
+    )
+    on $left.UserPrincipalName == $right.UserId, $left.IPAddress == $right.ClientIP
+| where isempty(DeviceTrustType)
+| summarize Count=count() by UserPrincipalName
+| as T
+| extend Percentage = round(100.0 * Count / toscalar (T
+    | summarize sum(Count)), 2)
+| project-reorder UserPrincipalName, Count, Percentage
+| top 20 by Percentage desc 
