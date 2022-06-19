@@ -1,0 +1,26 @@
+//When Defender for Cloud detects communication with a DNS sinkhole, find the devices and processes initiating the connection
+
+//Data connector required for this query - Security Alert (free table that other Defender products send alert info to)
+//Data connector required for this query - M365 Defender - Device* tables
+
+let domain=
+    SecurityAlert
+    | where TimeGenerated > ago (1d)
+    | where AlertName startswith "Attempted communication with suspicious sinkholed domain"
+    | mv-expand todynamic(Entities)
+    | extend DomainName = tostring(Entities.DomainName)
+    | where isnotempty(DomainName)
+    | distinct DomainName;
+DeviceNetworkEvents
+| where TimeGenerated > ago (7d)
+| where RemoteUrl in~ (domain)
+| project
+    TimeGenerated,
+    ActionType,
+    DeviceName,
+    InitiatingProcessAccountName,
+    InitiatingProcessCommandLine,
+    LocalIP,
+    RemoteIP,
+    RemoteUrl,
+    RemotePort
