@@ -1,0 +1,25 @@
+//Investigate potentially suspicious IP addresses for your Azure AD signins. This query lists any IP address with more failures than successful connections and provides a summary for each with at least one successful signin.
+//This may uncover password spray attacks that have had a successful connections.
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
+//Microsoft Sentinel query
+let failureCodes = dynamic([50053, 50126, 50055]);
+let successCodes = dynamic([0, 50055, 50057, 50155, 50105, 50133, 50005, 50076, 50079, 50173, 50158, 50072, 50074, 53003, 53000, 53001, 50129]);
+SigninLogs
+| where TimeGenerated > ago(7d)
+| where ResultType in(successCodes) or ResultType in(failureCodes)
+| summarize
+    ['Count of successful signins'] = countif((ResultType in(successCodes))),
+    ['Count of distinct successful sign ins'] = dcountif(UserPrincipalName, (ResultType in(successCodes))),
+    ['List of successful users']=make_set_if(UserPrincipalName, (ResultType in(successCodes))),
+    ['Successful result codes'] = make_set_if(ResultType, (ResultType in(successCodes))),
+    ['Count of failed signins']=countif((ResultType in(failureCodes))),
+    ['Count of distinct failed sign ins'] = dcountif(UserPrincipalName, (ResultType in(failureCodes))),
+    ['List of failed users'] = make_set_if(UserPrincipalName, (ResultType in(failureCodes))),
+    ['Failed result codes'] = make_set_if(ResultType, (ResultType in(failureCodes))) 
+    by IPAddress
+//Exclude IP addresses with more successful signins than failed. This is a good way to exclude known locations as they will have lots of failures too, but they will be balanced by more successes.
+//Then find IP addresses with 5 or more distinct failed signins and at least one successful signin
+| where ['Count of failed signins'] > ['Count of successful signins'] and ['Count of distinct failed sign ins'] > ['Count of distinct successful sign ins'] and ['Count of distinct failed sign ins'] >= 5 and ['Count of distinct successful sign ins'] >= 1
+| order by ['Count of distinct successful sign ins'] desc 
