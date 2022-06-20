@@ -1,0 +1,43 @@
+//Find emails that have been reported by your users as spam/phishing that have been rescanned and found to be genuine spam or phishing
+
+//Data connector required for this query - M365 Defender - CloudAppEvents
+
+//Microsoft Sentinel query
+CloudAppEvents
+| where ActionType == "UserSubmission"
+| extend UserId = tostring(RawEventData.UserId)
+| extend RescanVerdict = tostring(parse_json(tostring(RawEventData.RescanResult)).RescanVerdict)
+| extend RescanTimeTimestamp = tostring(parse_json(tostring(RawEventData.RescanResult)).Timestamp)
+| extend Subject = tostring(RawEventData.Subject)
+| extend P1Sender = tostring(RawEventData.P1Sender)
+| extend P2Sender = tostring(RawEventData.P2Sender)
+| where RescanVerdict != "NotSpam"
+| project
+    TimeGenerated,
+    UserId,
+    P1Sender,
+    P2Sender,
+    Subject,
+    RescanVerdict,
+    RescanTimeTimestamp
+
+//Data connector required for this query - Advanced Hunting license
+
+//Advanced Hunting query
+CloudAppEvents
+| where ActionType == "UserSubmission"
+| extend UserId = tostring(RawEventData.UserId)
+| extend RescanVerdict = tostring(parse_json(tostring(RawEventData.RescanResult)).RescanVerdict)
+| extend RescanTimeTimestamp = tostring(parse_json(tostring(RawEventData.RescanResult)).Timestamp)
+| extend Subject = tostring(RawEventData.Subject)
+| extend P1Sender = tostring(RawEventData.P1Sender)
+| extend P2Sender = tostring(RawEventData.P2Sender)
+| where RescanVerdict != "NotSpam"
+| project
+    Timestamp,
+    UserId,
+    P1Sender,
+    P2Sender,
+    Subject,
+    RescanVerdict,
+    RescanTimeTimestamp
