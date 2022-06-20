@@ -1,0 +1,78 @@
+//Find the top 20 of a collection of varied data sets, no real detections in here just interesting data that is captured
+
+//Data connector required for this query - M365 Defender - Device* tables
+
+//Microsft Sentinel query
+
+//Top 20 USB models plugged in
+DeviceEvents
+| where ActionType == "UsbDriveMounted"
+| extend Manufacturer = tostring(AdditionalFields.Manufacturer)
+| extend ProductName = tostring(AdditionalFields.ProductName)
+| where isnotempty(Manufacturer) or isnotempty(Manufacturer)
+| extend ['USB Drive Model']= strcat(Manufacturer, "-", ProductName)
+| summarize Count=count()by ['USB Drive Model']
+| top 20 by Count
+
+//Top 20 users taking screenshots
+DeviceEvents
+| where ActionType == "ScreenshotTaken"
+| where InitiatingProcessAccountName != "system"
+| summarize Count=count() by InitiatingProcessAccountName
+| top 20 by Count
+
+//Top 20 models of monitor being plugged in
+DeviceEvents
+| where ActionType == "PnpDeviceConnected"
+| extend ClassName = tostring(AdditionalFields.ClassName)
+| where ClassName == "Monitor"
+| extend ['Monitor Type'] = tostring(AdditionalFields.DeviceDescription)
+| summarize Count=count()by ['Monitor Type']
+| top 20 by Count
+
+//Top 20 web shortcuts opened
+DeviceEvents
+| where ActionType == "BrowserLaunchedToOpenUrl"
+| summarize Count=count()by RemoteUrl
+| where RemoteUrl startswith "http"
+| top 20 by Count
+
+
+//Advanced Hunting queries
+
+//Data connector required for this query - Advanced Hunting license
+
+//Top 20 USB models plugged in
+DeviceEvents
+| where ActionType == "UsbDriveMounted"
+| extend AF = parse_json(AdditionalFields)
+| extend Manufacturer = tostring(AF.Manufacturer)
+| extend ProductName = tostring(AF.ProductName)
+| where isnotempty(Manufacturer) or isnotempty(Manufacturer)
+| extend ['USB Drive Model']= strcat(Manufacturer, "-", ProductName)
+| summarize Count=count()by ['USB Drive Model']
+| top 20 by Count
+
+//Top 20 users taking screenshots
+DeviceEvents
+| where ActionType == "ScreenshotTaken"
+| where InitiatingProcessAccountName != "system"
+| summarize Count=count() by InitiatingProcessAccountName
+| top 20 by Count
+
+//Top 20 models of monitor being plugged in
+DeviceEvents
+| where ActionType == "PnpDeviceConnected"
+| extend AF = parse_json(AdditionalFields)
+| extend ClassName = tostring(AF.ClassName)
+| where ClassName == "Monitor"
+| extend ['Monitor Type'] = tostring(AF.DeviceDescription)
+| summarize Count=count()by ['Monitor Type']
+| top 20 by Count
+
+//Top 20 web shortcuts opened
+DeviceEvents
+| where ActionType == "BrowserLaunchedToOpenUrl"
+| summarize Count=count()by RemoteUrl
+| where RemoteUrl startswith "http"
+| top 20 by Count
