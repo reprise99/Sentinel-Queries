@@ -1,0 +1,10 @@
+//Detect when an admin adds a new unverified or verified domain into your Azure AD tenant
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
+AuditLogs
+| where OperationName in ("Add verified domain", "Add unverified domain")
+| extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| extend ['Actor IP Address'] = tostring(parse_json(tostring(InitiatedBy.user)).ipAddress)
+| extend Domain = tostring(TargetResources[0].displayName)
+| project TimeGenerated, OperationName, Actor, ['Actor IP Address'], Domain
