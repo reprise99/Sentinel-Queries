@@ -1,0 +1,23 @@
+//Detect when a user clears the security event log on one of your devices
+
+//Data connector required for this query - M365 Defender - Device* tables
+
+DeviceEvents
+| where ActionType == "SecurityLogCleared"
+| project
+    TimeGenerated,
+    DeviceName,
+    InitiatingProcessAccountDomain,
+    InitiatingProcessAccountName
+
+//Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting license
+
+DeviceEvents
+| where ActionType == "SecurityLogCleared"
+| project
+    Timestamp,
+    DeviceName,
+    InitiatingProcessAccountDomain,
+    InitiatingProcessAccountName
