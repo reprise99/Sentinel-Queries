@@ -1,0 +1,7 @@
+//Visualize how many queries you have run in your Sentinel workspace over the last year
+
+LAQueryLogs
+| where TimeGenerated > ago (365d)
+| where AADEmail == "username@domain.com"
+| make-series Count=count() default=0 on TimeGenerated from ago(365d) to now() step 1d
+| render timechart with (title="#365daysofKQL queries run per day", ytitle="Count")
