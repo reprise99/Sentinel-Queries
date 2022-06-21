@@ -1,0 +1,75 @@
+//Find the top 20 of a collection of varied data sets, no real detections in here just interesting data that is captured
+
+//Data connector required for this query - Office 365
+
+//Top 20 files downloaded from your tenant
+OfficeActivity
+| where TimeGenerated > ago(30d)
+| where Operation in ("FileSyncDownloadedFull", "FileDownloaded")
+| summarize Count=count()by OfficeObjectId
+| top 20 by Count
+
+//Top 20 users downloading files from your tenant
+OfficeActivity
+| where TimeGenerated > ago(30d)
+| where Operation in ("FileSyncDownloadedFull", "FileDownloaded")
+| where UserId !contains "#EXT#"
+| summarize Count=count()by UserId
+| top 20 by Count
+
+//Top 20 guests downloading files from your tenant
+OfficeActivity
+| where TimeGenerated > ago(30d)
+| where Operation in ("FileSyncDownloadedFull", "FileDownloaded")
+| where UserId contains "#EXT#"
+| extend ['Guest UserPrincipalName'] = tostring(split(UserId,"#")[0])
+| summarize Count=count()by ['Guest UserPrincipalName']
+| top 20 by Count
+
+//Top 20 downloads from your tenant by guest domain
+OfficeActivity
+| where TimeGenerated > ago(30d)
+| where Operation in ("FileSyncDownloadedFull", "FileDownloaded")
+| where UserId contains "#EXT#"
+| extend ['Guest UserPrincipalName'] = tostring(split(UserId,"#")[0])
+| extend ['Guest Domain'] = tostring(split(['Guest UserPrincipalName'],"_")[-1])
+| summarize Count=count()by ['Guest Domain']
+| top 20 by Count
+
+//Top 20 users sharing files to guests
+OfficeActivity
+| where TimeGenerated > ago(30d)
+| where OfficeWorkload == "OneDrive"
+| where Operation in ("SecureLinkCreated", "AddedToSecureLink")
+| where TargetUserOrGroupType == "Guest" or TargetUserOrGroupName contains "#EXT#"
+| summarize Count=count() by UserId
+| top 20 by Count
+
+//Top 20 most shared files
+OfficeActivity
+| where TimeGenerated > ago(30d)
+| where OfficeWorkload == "OneDrive"
+| where Operation in ("SecureLinkCreated", "AddedToSecureLink")
+| summarize Count=count() by OfficeObjectId
+| top 20 by Count
+
+//Top 20 guests with files shared to them
+OfficeActivity
+| where TimeGenerated > ago(30d)
+| where OfficeWorkload == "OneDrive"
+| where Operation in ("SecureLinkCreated", "AddedToSecureLink")
+| where TargetUserOrGroupType == "Guest" or TargetUserOrGroupName contains "#EXT#"
+| summarize Count=count() by TargetUserOrGroupName
+| top 20 by Count
+
+//Top 20 guests added to Teams by distinct Team name
+OfficeActivity
+| where TimeGenerated > ago(30d)
+| where Operation == "MemberAdded"
+| mv-expand Members
+| extend UserAdded = tostring(Members.UPN)
+| where UserAdded contains "#EXT#"
+| where CommunicationType == "Team"
+| where UserId != "Microsoft Teams Sync"
+| summarize Count=dcount(TeamName) by UserId
+| top 20 by Count
