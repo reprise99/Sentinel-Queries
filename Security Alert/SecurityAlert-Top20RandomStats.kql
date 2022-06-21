@@ -1,0 +1,65 @@
+//Find the top 20 of a collection of varied data sets, no real detections in here just interesting data that is captured
+
+//Data connector required for this query - Security Alert (free table that other Defender products send alert info to)
+
+//Top 20 alerts triggered
+SecurityAlert
+| where TimeGenerated > ago (30d)
+| where ProviderName != "ASI Scheduled Alerts"
+| summarize Count=count() by AlertName
+| top 20 by Count
+
+//Top 20 alerts high severity triggered
+SecurityAlert
+| where TimeGenerated > ago (30d)
+| where ProviderName != "ASI Scheduled Alerts" and AlertSeverity == "High"
+| summarize Count=count() by AlertName
+| top 20 by Count
+
+//Top 20 users generating identity alerts
+SecurityAlert
+| where TimeGenerated > ago (30d)
+| where ProviderName in ("OATP","IPC","Azure Advanced Threat Protection","MCAS")
+| summarize Count=count() by CompromisedEntity
+| where CompromisedEntity != "CompromisedEntity" and isnotempty( CompromisedEntity)
+| top 20 by Count
+
+//Top 20 devices triggering Defender alerts
+SecurityAlert
+| where TimeGenerated > ago (30d)
+| where ProviderName == "MDATP"
+| summarize Count=count() by CompromisedEntity
+| where CompromisedEntity != "CompromisedEntity" and isnotempty( CompromisedEntity)
+| top 20 by Count
+
+//Top 20 accounts by distinct alerts
+SecurityAlert
+| where TimeGenerated > ago (30d)
+| where ProviderName in ("OATP","IPC","Azure Advanced Threat Protection","MCAS")
+| summarize Count=dcount(AlertName) by CompromisedEntity
+| where CompromisedEntity != "CompromisedEntity" and isnotempty( CompromisedEntity)
+| top 20 by Count
+
+//Top 20 devices by distinct alerts
+SecurityAlert
+| where TimeGenerated > ago (30d)
+| where ProviderName == "MDATP"
+| summarize Count=dcount(AlertName) by CompromisedEntity
+| where CompromisedEntity != "CompromisedEntity" and isnotempty( CompromisedEntity)
+| top 20 by Count
+
+//Top 20 users generating high severity identity alerts
+SecurityAlert
+| where TimeGenerated > ago (30d)
+| where ProviderName in ("OATP","IPC","Azure Advanced Threat Protection","MCAS") and AlertSeverity == "High"
+| summarize Count=count() by CompromisedEntity
+| where CompromisedEntity != "CompromisedEntity" and isnotempty( CompromisedEntity)
+| top 20 by Count
+
+//Top 20 devices triggering high severity Defender alerts
+SecurityAlert
+| where TimeGenerated > ago (30d)
+| where ProviderName == "MDATP" and AlertSeverity == "High"
+| summarize Count=count() by CompromisedEntity
+| where CompromisedEntity != "CompromisedEntity" and isnotempty( CompromisedEntity)
+| top 20 by Count
