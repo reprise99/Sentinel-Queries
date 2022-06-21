@@ -85,7 +85,6 @@ SigninLogs
 | summarize Count=count() by ['User Domain']
 | top 20 by Count
 
-
 //Top 20 guest domains accessing your tenant by distinct applications accessed
 SigninLogs
 | where TimeGenerated > ago (30d)
