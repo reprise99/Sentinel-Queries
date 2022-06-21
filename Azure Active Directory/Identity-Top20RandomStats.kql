@@ -1,0 +1,97 @@
+//Find the top 20 of a collection of varied data sets, no real detections in here just interesting data that is captured
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
+//Microsoft Sentinel query
+
+//Top 20 users signing into your tenant
+SigninLogs
+| where TimeGenerated > ago (30d)
+| where ResultType == 0
+| where UserType == "Member"
+| summarize Count=count() by UserPrincipalName
+| top 20 by Count
+
+//Top 20 locations signing into your tenant
+SigninLogs
+| where TimeGenerated > ago (30d)
+| where ResultType == 0
+| where UserType == "Member"
+| summarize Count=count() by Location
+| where isnotempty(Location)
+| top 20 by Count
+
+//Top 20 users by MFA prompts
+SigninLogs
+| where TimeGenerated > ago (30d)
+| where ResultType == 0
+| where UserType == "Member"
+| where AuthenticationRequirement == "multiFactorAuthentication"
+| mv-expand todynamic(AuthenticationDetails)
+| project TimeGenerated, AuthenticationDetails, UserPrincipalName
+| extend AuthenticationMethod = tostring(AuthenticationDetails.authenticationMethod)
+| where AuthenticationMethod in ("Mobile app notification","Text message","OATH verification code")
+| summarize Count=count()by UserPrincipalName
+| top 20 by Count
+
+//Top 20 users by distinct applications accessed
+SigninLogs
+| where TimeGenerated > ago (30d)
+| where ResultType == 0
+| where UserType == "Member"
+| summarize Count=dcount(AppDisplayName) by UserPrincipalName
+| top 20 by Count
+
+//Top 20 users accessing distinct locations accessed
+SigninLogs
+| where TimeGenerated > ago (30d)
+| where ResultType == 0
+| where UserType == "Member"
+| summarize Count=dcount(Location) by UserPrincipalName
+| top 20 by Count
+
+//Top 20 applications by distinct users accessing them
+SigninLogs
+| where TimeGenerated > ago (30d)
+| where ResultType == 0
+| where UserType == "Member"
+| summarize Count=dcount(UserPrincipalName) by AppDisplayName
+| where AppDisplayName != "Windows Sign In"
+| top 20 by Count
+
+//Top 20 applications by distinct guests accessing them
+SigninLogs
+| where TimeGenerated > ago (30d)
+| where ResultType == 0
+| where UserType == "Guest"
+| summarize Count=dcount(UserPrincipalName) by AppDisplayName
+| top 20 by Count
+
+//Top 20 guests by distinct applications accessed by them
+SigninLogs
+| where TimeGenerated > ago (30d)
+| where ResultType == 0
+| where UserType == "Guest"
+| summarize Count=dcount(AppDisplayName) by UserPrincipalName
+| top 20 by Count
+
+//Top 20 guest domains accessing your tenant
+SigninLogs
+| where TimeGenerated > ago (30d)
+| where ResultType == 0
+| where UserType == "Guest"
+| where AADTenantId != HomeTenantId and HomeTenantId != ResourceTenantId
+| extend ['User Domain'] = tostring(split(UserPrincipalName, "@")[1])
+| summarize Count=count() by ['User Domain']
+| top 20 by Count
+
+
+//Top 20 guest domains accessing your tenant by distinct applications accessed
+SigninLogs
+| where TimeGenerated > ago (30d)
+| where ResultType == 0
+| where UserType == "Guest"
+| where AADTenantId != HomeTenantId and HomeTenantId != ResourceTenantId
+| extend ['User Domain'] = tostring(split(UserPrincipalName, "@")[1])
+| summarize Count=dcount(AppDisplayName) by ['User Domain']
+| top 20 by Count
