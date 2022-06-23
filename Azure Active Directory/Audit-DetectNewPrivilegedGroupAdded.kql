@@ -1,0 +1,13 @@
+//Detect when a group is added to Azure AD with the 'Azure AD roles can be assigned to this group' flag enabled
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
+AuditLogs
+| where TimeGenerated > ago(90d)
+| where OperationName == "Add group"
+| where parse_json(tostring(TargetResources[0].modifiedProperties))[1].displayName == "IsAssignableToRole"
+| where parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[1].newValue))[0] == true
+| extend GroupName = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[0].newValue))[0])
+| extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| extend ['Actor IP Address'] = tostring(parse_json(tostring(InitiatedBy.user)).ipAddress)
+| project TimeGenerated, OperationName, GroupName, Actor, ['Actor IP Address']
