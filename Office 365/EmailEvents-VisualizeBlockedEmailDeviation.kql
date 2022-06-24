@@ -1,0 +1,20 @@
+//Visualize the deviation of email being blocked to your Office 365 tenant per day
+//Query adapted from https://github.com/samikroy/kql-store/blob/main/Deviation%20in%20Security%20Events.md
+
+//Data connector required for this query - M365 Defender - Email* tables
+
+//Find the average blocked email per day
+let AverageBlockedEmail = toscalar(EmailEvents
+| where TimeGenerated > ago(250d)
+| where DeliveryAction == "Blocked"
+| summarize Count=count() by bin(TimeGenerated, 1d)
+| summarize avg(Count));
+//Find the total count of blocked email per day
+EmailEvents
+| where TimeGenerated > ago(250d)
+| where DeliveryAction == "Blocked"
+| summarize Count=count() by bin(TimeGenerated, 1d)
+| extend Deviation = (Count - AverageBlockedEmail) / AverageBlockedEmail
+| project-away Count
+//Visualize the deviation per day
+| render columnchart with (title="Deviation of email blocked per day")
