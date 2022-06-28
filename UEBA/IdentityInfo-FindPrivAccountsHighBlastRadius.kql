@@ -1,0 +1,9 @@
+//Find user accounts that hold an Azure AD privileged role and are considered to have a high blast radius
+
+//Data connector required for this query - Microsoft Sentinel UEBA
+
+IdentityInfo
+| where TimeGenerated > ago(30d)
+| summarize arg_max(TimeGenerated, *) by AccountUPN
+| where isnotempty(AssignedRoles) and AssignedRoles != "[]"
+| where BlastRadius == "High"

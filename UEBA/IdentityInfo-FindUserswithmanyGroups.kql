@@ -1,0 +1,11 @@
+//Find user accounts that are members of over 150 groups. These can cause issues with SAML claims.
+//See https://docs.microsoft.com/en-us/azure/active-directory/hybrid/how-to-connect-fed-group-claims
+
+//Data connector required for this query - Microsoft Sentinel UEBA
+
+IdentityInfo
+| where TimeGenerated > ago(30d)
+| summarize arg_max(TimeGenerated, *) by AccountUPN
+| extend ['Group Count']=array_length(GroupMembership)
+| sort by ['Group Count'] desc 
+| where ['Group Count'] > 150
