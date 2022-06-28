@@ -1,0 +1,8 @@
+//Find Azure AD guest accounts that are considered to have a high blast radius
+
+//Data connector required for this query - Microsoft Sentinel UEBA
+
+IdentityInfo
+| where TimeGenerated > ago(30d)
+| summarize arg_max(TimeGenerated, *) by AccountUPN
+| where UserType == "Guest" and BlastRadius == "High"
