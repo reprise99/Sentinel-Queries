@@ -1,0 +1,38 @@
+//Detect when a user has been potentially comrpomised but is stopped by MFA number matching or otherwise denied. Even if stopped by MFA the users credentials need to be rotated.
+//This could be a sign of someone trying to spam your users with MFA prompts until they accept.
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
+SigninLogs
+| project
+    TimeGenerated,
+    AuthenticationRequirement,
+    AuthenticationDetails,
+    UserPrincipalName,
+    CorrelationId,
+    ResultType
+| where ResultType == 500121
+| mv-expand todynamic(AuthenticationDetails)
+| extend AuthResult = tostring(parse_json(AuthenticationDetails).authenticationStepResultDetail)
+| where AuthResult in ("MFA denied; user did not select the correct number", "MFA denied; user declined the authentication","MFA denied; user did not respond to mobile app notification")
+//Create a list of denied MFA challenges by sign in attempt (single CorrelationId)
+| summarize ['Result Types']=make_list(AuthResult) by CorrelationId, UserPrincipalName
+//Find results where there are at least 3 failures within the same sign in, i.e three denies, three did not respond events or three did not select the correct number
+| where array_length( ['Result Types']) > 2
+
+SigninLogs
+| project
+    TimeGenerated,
+    AuthenticationRequirement,
+    AuthenticationDetails,
+    UserPrincipalName,
+    CorrelationId,
+    ResultType
+| where ResultType == 500121
+| mv-expand todynamic(AuthenticationDetails)
+| extend AuthResult = tostring(parse_json(AuthenticationDetails).authenticationStepResultDetail)
+| where AuthResult in ("MFA denied; user did not select the correct number", "MFA denied; user declined the authentication","MFA denied; user did not respond to mobile app notification")
+//Create a list of denied MFA challenges by UserPrincipalName and 10 minute window (to account for multiple sign in attempts)
+| summarize ['Result Types']=make_list(AuthResult) by UserPrincipalName, bin(TimeGenerated, 10m)
+//Find results where there are at least 3 failures within the same sign in, i.e three denies, three did not respond events or three did not select the correct number
+| where array_length( ['Result Types']) > 2
