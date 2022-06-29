@@ -2,6 +2,7 @@
 
 //Data connector required for this query - Azure Active Directory - Signin Logs
 
+//This query finds any time a user denies an authentication, enters the wrong number or just doesn't respond three or more times in a single sign in event
 SigninLogs
 | project
     TimeGenerated,
@@ -19,6 +20,7 @@ SigninLogs
 //Find results where there are at least 3 failures within the same sign in, i.e three denies, three did not respond events or three did not select the correct number
 | where array_length( ['Result Types']) > 2
 
+//This is the same query but grouped by username and 10 minute period, in case the attacker is starting a new authentication flow and generates a new CorrelationId
 SigninLogs
 | project
     TimeGenerated,
