@@ -1,0 +1,10 @@
+//Summarize accounts in our environment that have the same employee id (i.e regular and admin accounts)
+
+//Data connector required for this query - Microsoft Sentinel UEBA
+
+IdentityInfo
+| where TimeGenerated > ago(30d)
+| summarize arg_max(TimeGenerated, *) by AccountUPN
+| where isnotempty(EmployeeId)
+| summarize ['Count of accounts']=dcount(AccountUPN), ['List of accounts']=make_set(AccountUPN) by EmployeeId
+| sort by ['Count of accounts'] desc 

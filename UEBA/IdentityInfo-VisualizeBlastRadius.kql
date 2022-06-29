@@ -1,0 +1,11 @@
+//Visualize accounts by blast radius level
+
+//Data connector required for this query - Microsoft Sentinel UEBA
+
+IdentityInfo
+| where TimeGenerated > ago(30d)
+| summarize arg_max(TimeGenerated, *) by AccountUPN
+| where isnotempty(BlastRadius)
+| summarize Count=count()by BlastRadius
+| order by Count
+| render piechart with (title="Accounts by Microsoft Sentinel EUBA blast radius")

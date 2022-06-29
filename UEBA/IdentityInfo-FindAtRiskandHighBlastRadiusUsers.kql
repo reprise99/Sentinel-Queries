@@ -1,0 +1,9 @@
+//Find accounts that are considered to have a high blast radius and currently at risk
+
+//Data connector required for this query - Microsoft Sentinel UEBA
+
+IdentityInfo
+| where TimeGenerated > ago(30d)
+| summarize arg_max(TimeGenerated, *) by AccountUPN
+| where BlastRadius == "High"
+| where RiskState == "AtRisk"
