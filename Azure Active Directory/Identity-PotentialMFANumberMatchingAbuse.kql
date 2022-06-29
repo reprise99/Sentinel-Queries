@@ -1,5 +1,4 @@
 //Detect when a user has been potentially comrpomised but is stopped by MFA number matching or otherwise denied. Even if stopped by MFA the users credentials need to be rotated.
-//This could be a sign of someone trying to spam your users with MFA prompts until they accept.
 
 //Data connector required for this query - Azure Active Directory - Signin Logs
 
