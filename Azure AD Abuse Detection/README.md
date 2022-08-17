@@ -302,7 +302,9 @@ AuditLogs
 | where isnotempty(['Actor Service Principal ObjectId'])
 | extend ['Subject Service Principal Name'] = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[1].newValue)))
 | extend ['Subject Service Principal ObjectId'] = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[0].newValue)))
-| project TimeGenerated, OperationName, ['Actor Service Principal Name'], ['Actor Service Principal ObjectId'], ['Subject Service Principal Name'], ['Subject Service Principal ObjectId']
+| extend ['Target Service Principal Name'] = tostring(TargetResources[0].displayName)
+| extend ['Target Service Principal ObjectId'] = tostring(TargetResources[0].id)
+| project TimeGenerated, OperationName, ['Actor Service Principal Name'], ['Actor Service Principal ObjectId'], ['Subject Service Principal Name'], ['Subject Service Principal ObjectId'], ['Target Service Principal Name'], ['Target Service Principal ObjectId']
 ```
 
 ### Control / Prevention
