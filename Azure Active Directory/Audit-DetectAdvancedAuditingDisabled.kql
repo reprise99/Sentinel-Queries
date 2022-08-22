@@ -1,0 +1,26 @@
+//Detect when Advanced Auditing is disabled for a user
+//Reference - https://www.mandiant.com/resources/remediation-and-hardening-strategies-microsoft-365-defend-against-apt29-v13
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
+AuditLogs
+| where OperationName == "Update user"
+| where Result == "success"
+| extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| extend targetResources=parse_json(TargetResources)
+| extend Target = tostring(TargetResources[0].userPrincipalName)
+| extend ['Target ObjectId'] = tostring(TargetResources[0].id)
+| mv-apply tr = targetResources on (
+    extend targetResource = tr.displayName
+    | mv-apply mp = tr.modifiedProperties on (
+        where mp.displayName == "LicenseAssignmentDetail"
+        | extend NewValue = tostring(mp.newValue)
+        ))
+| mv-expand todynamic(NewValue)
+| where parse_json(tostring(NewValue.DisabledPlans))[0] == "2f442157-a11c-46b9-ae5b-6e39ff4e5849"
+| project
+    TimeGenerated,
+    Actor,
+    Target,
+    ['Target ObjectId'],
+    Activity="Advanced Auditing Disabled"
