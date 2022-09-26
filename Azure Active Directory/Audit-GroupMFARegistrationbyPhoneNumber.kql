@@ -1,0 +1,29 @@
+//Groups MFA phone registration events into the number that was registered, can be useful to detect threat actors registering multiple accounts to the same numbers for persistence
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
+AuditLogs
+| where TimeGenerated > ago(90d)
+| where TargetResources has "PhoneNumber"
+| where OperationName has "Update user"
+| where TargetResources has "StrongAuthenticationMethod"
+| extend InitiatedBy = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| extend UserPrincipalName = tostring(TargetResources[0].userPrincipalName)
+| extend targetResources=parse_json(TargetResources)
+| mv-apply tr = targetResources on (
+    extend targetResource = tr.displayName
+    | mv-apply mp = tr.modifiedProperties on (
+    where mp.displayName == "StrongAuthenticationUserDetails"
+    | extend NewValue = tostring(mp.newValue)
+    ))
+| project TimeGenerated, NewValue, UserPrincipalName,InitiatedBy
+| mv-expand todynamic(NewValue)
+| mv-expand NewValue.[0]
+| extend AlternativePhoneNumber = tostring(NewValue.AlternativePhoneNumber)
+| extend Email = tostring(NewValue.Email)
+| extend PhoneNumber = tostring(NewValue.PhoneNumber)
+| extend VoiceOnlyPhoneNumber = tostring(NewValue.VoiceOnlyPhoneNumber)
+| project TimeGenerated, UserPrincipalName, InitiatedBy,PhoneNumber, AlternativePhoneNumber, VoiceOnlyPhoneNumber, Email
+| where isnotempty(PhoneNumber)
+| summarize ['Count of Users']=dcount(UserPrincipalName), ['List of Users']=make_set(UserPrincipalName) by PhoneNumber
+| sort by ['Count of Users'] desc 
