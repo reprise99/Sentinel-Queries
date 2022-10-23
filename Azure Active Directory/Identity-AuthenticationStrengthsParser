@@ -1,0 +1,15 @@
+//mv-apply parser to retrieve the Authentication requirements for an Azure AD Sign in
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
+SigninLogs
+| mv-apply arp = todynamic(AuthenticationRequirementPolicies) on 
+    (extend requirementProvider = tostring(arp.requirementProvider)
+    )
+| project  
+    TimeGenerated,
+    UserPrincipalName,
+    AppDisplayName,
+    AuthenticationRequirement,
+    requirementProvider,
+    CorrelationId
