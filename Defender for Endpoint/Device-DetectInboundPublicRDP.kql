@@ -1,0 +1,17 @@
+//Detects inbound RDP network connections from  public IP addresses
+
+//Data connector required for this query - M365 Defender - Device* tables or Advanced Hunting license
+
+//Works in both Microsoft Sentinel and Advanced Hunting
+DeviceNetworkEvents
+| where ActionType == "InboundConnectionAccepted"
+| where LocalIPType == "Private" and RemoteIPType == "Public"
+| where LocalPort == 3389 or InitiatingProcessCommandLine =~ "svchost.exe -k termsvcs -s TermService"
+| project
+    TimeGenerated,
+    DeviceName,
+    DeviceId,
+    LocalIP,
+    LocalPort,
+    RemoteIP,
+    InitiatingProcessCommandLine
