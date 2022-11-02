@@ -1,0 +1,28 @@
+//Find devices that have had no inbound web connections in the last 30 days to help build firewall policy
+
+//Microsoft Sentinel query
+
+let devices=
+DeviceNetworkEvents
+| where TimeGenerated > ago (30d)
+| where ActionType == "InboundConnectionAccepted"
+| where LocalPort in ("80","443","8080")
+| distinct DeviceId;
+DeviceInfo
+| where TimeGenerated > ago (30d)
+| distinct DeviceId, DeviceName
+| where DeviceId !in (devices)
+
+
+//Advanced Hunting query
+
+let devices=
+DeviceNetworkEvents
+| where Timestamp > ago (30d)
+| where ActionType == "InboundConnectionAccepted"
+| where LocalPort in ("80","443","8080")
+| distinct DeviceId;
+DeviceInfo
+| where Timestamp > ago (30d)
+| distinct DeviceId, DeviceName
+| where DeviceId !in (devices)

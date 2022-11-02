@@ -1,0 +1,20 @@
+//Summary of inbound traffic, will find the total count, distcount count of devices and the list of inbound devices per port
+
+//Microsoft Sentinel query
+
+DeviceNetworkEvents
+| where TimeGenerated > ago (30d)
+| where ActionType == "InboundConnectionAccepted"
+| where LocalPort in ("22","80","139","443","445","3389","8080")
+| summarize ['Total Count']=count(), ['Distinct Count of Inbound Devices']=dcount(RemoteIP), ['List of Inbound Devices']=make_set(RemoteIP) by DeviceName, LocalPort
+| sort by DeviceName asc, LocalPort asc 
+
+//Advanced Hunting query
+
+//Summary of inbound traffic, will find the total count, distcount count of devices and the list of inbound devices per port
+DeviceNetworkEvents
+| where Timestamp > ago (30d)
+| where ActionType == "InboundConnectionAccepted"
+| where LocalPort in ("22","80","139","443","445","3389","8080")
+| summarize ['Total Count']=count(), ['Distinct Count of Inbound Devices']=dcount(RemoteIP), ['List of Inbound Devices']=make_set(RemoteIP) by DeviceName, LocalPort
+| sort by DeviceName asc, LocalPort asc 
