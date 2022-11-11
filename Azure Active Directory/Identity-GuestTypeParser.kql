@@ -1,0 +1,11 @@
+//Adds logic to your SigninLogs to determine whether guest authentications are inbound (guests accessing your tenant) or outbound (your users accessing other tenants)
+
+//Data connector required for this query - Azure Active Directory - Sign in Logs
+
+SigninLogs
+| where TimeGenerated > ago (1d)
+| where UserType == "Guest"
+| project TimeGenerated, UserPrincipalName, AppDisplayName, ResultType, IPAddress, HomeTenantId, ResourceTenantId, AADTenantId
+| extend ['Guest Type']=case(AADTenantId != HomeTenantId and HomeTenantId != ResourceTenantId, strcat("Inbound Guest"),
+                             AADTenantId == HomeTenantId and ResourceTenantId != AADTenantId, strcat("Outbound Guest"),
+"unknown")
