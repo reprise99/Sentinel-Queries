@@ -4,7 +4,7 @@
 
 Usage
 | where TimeGenerated > ago(30d)
-| where IsBillable = true
+| where IsBillable == "true"
 | summarize ['Table size in GB']=sum(Quantity / 1024) by DataType
 | as T
 | extend Percentage = round(100.0 * ['Table size in GB'] / toscalar (T
