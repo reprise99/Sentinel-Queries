@@ -1,0 +1,23 @@
+// Calculate the percentage of sign ins requiring authentication strengths, MFA and single factor auth to all of your applications
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
+SigninLogs
+| where TimeGenerated > ago(30d)
+| where ResultType == 0
+| summarize
+    ['Total Signin Count']=count(),
+    ['Total Authentication Strength Count']=countif(AuthenticationRequirementPolicies has 'Authentication Strength(s)' and AuthenticationRequirement == "multiFactorAuthentication"),
+    ['Total MFA Count']=countif(AuthenticationRequirementPolicies !has 'Authentication Strength(s)' and AuthenticationRequirement == "multiFactorAuthentication"),
+    ['Total non MFA Count']=countif(AuthenticationRequirement == "singleFactorAuthentication")
+    by AppDisplayName
+| project
+    AppDisplayName,
+    ['Total Signin Count'],
+    ['Total Authentication Strength Count'],
+    ['Authentication Strength Percentage']=(todouble(['Total Authentication Strength Count']) * 100 / todouble(['Total Signin Count'])),
+    ['Total MFA Count'],
+    ['MFA Percentage']=(todouble(['Total MFA Count']) * 100 / todouble(['Total Signin Count'])),
+    ['Total non MFA Count'],
+    ['Non MFA Percentage']=(todouble(['Total non MFA Count']) * 100 / todouble(['Total Signin Count']))
+| sort by ['Total Signin Count'] desc
