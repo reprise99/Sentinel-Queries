@@ -1,0 +1,15 @@
+//Find sign ins that have triggered multiple unique conditional access policy successes - maybe a chance to rationalize policy
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
+SigninLogs
+| where TimeGenerated > ago (30d)
+| mv-apply ca=todynamic(ConditionalAccessPolicies) on (
+    where ca.result == "success"
+    | extend PolicyName = tostring(ca.displayName)
+    )
+| summarize
+    ['Count of Poicies Applied']=dcount(PolicyName),
+    ['List of Policies Applied']=make_set(PolicyName)
+    by CorrelationId, UserPrincipalName
+| where ['Count of Poicies Applied'] >= 2
