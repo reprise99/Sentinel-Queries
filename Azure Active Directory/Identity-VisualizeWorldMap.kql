@@ -1,0 +1,14 @@
+//Visualize your sign ins over a world map
+//This visualization is only supported in Kusto.Explorer, not the web app
+//You can install it here - https://learn.microsoft.com/en-us/azure/data-explorer/kusto/tools/kusto-explorer
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
+SigninLogs
+| where TimeGenerated > ago (90d)
+| extend BeginLat = toreal(parse_json(tostring(LocationDetails.geoCoordinates)).latitude)
+| extend BeginLon = toreal(parse_json(tostring(LocationDetails.geoCoordinates)).longitude)
+| summarize Count=count() by BeginLon, BeginLat
+| project-reorder BeginLon, BeginLat, Count
+| where isnotempty(BeginLon)
+| render scatterchart with (kind=map)
