@@ -1,0 +1,13 @@
+//Find when a new Azure AD tenant is created by a user in your tenant
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
+AuditLogs
+| where OperationName == "Create Company"
+| where Result == "success"
+| extend Type = tostring(TargetResources[0].type)
+| where Type == "Directory"
+| extend ['Actor IP Address'] = tostring(parse_json(tostring(InitiatedBy.user)).ipAddress)
+| extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| extend ['New Tenant Id'] = tostring(TargetResources[0].id)
+| project TimeGenerated, OperationName, Actor, ['Actor IP Address'], ['New Tenant Id']
