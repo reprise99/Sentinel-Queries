@@ -52,7 +52,8 @@ SigninLogs
     | summarize Results=make_set(ResultType) by CorrelationId, UserPrincipalName, IPAddress
     | where Results has_all (0, 50199)
     ) 
-    on UserPrincipalName, IPAddress;
+    on UserPrincipalName, IPAddress
+    | distinct CorrelationId;
 SigninLogs
 | where CorrelationId in (suspiciousids)
 | project TimeGenerated, UserPrincipalName, Location, IPAddress, UserAgent, ResultType
