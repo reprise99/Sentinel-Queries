@@ -22,16 +22,16 @@ let knownusers=
 SigninLogs
 | where TimeGenerated > ago (30d) and TimeGenerated < ago(1d)
 | where ResultType in (0,50199)
-| summarize Results=make_set(ResultType) by CorrelationId
+| summarize Results=make_set(ResultType) by CorrelationId, UserPrincipalName
 | where Results has_all (0, 50199)
 | distinct UserPrincipalName;
 let suspiciousids=
 SigninLogs
 | where TimeGenerated > ago (1d)
 | where ResultType in (0,50199)
-| summarize Results=make_set(ResultType) by CorrelationId
+| summarize Results=make_set(ResultType) by CorrelationId, UserPrincipalName
 | where Results has_all (0, 50199)
-| where UserPrincipalName != (knownusers)
+| where UserPrincipalName !in (knownusers)
 | distinct CorrelationId;
 SigninLogs
 | where CorrelationId in (suspiciousids)
