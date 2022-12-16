@@ -1,4 +1,4 @@
-//Detect potential device code phishing by finding sign ins with both a error 50199 (additional approval required) and error code 0 (success) within 5 minutes
+//Detect potential device code phishing by finding sign ins with both a error 50199 (additional approval required) and error code 0 (success) within 15 minutes
 
 //Data connector required for this query - Azure Active Directory - Signin Logs
 
@@ -6,7 +6,7 @@ let suspiciousids=
 SigninLogs
 | where TimeGenerated > ago (1d)
 | where ResultType in (0,50199)
-| summarize Results=make_set(ResultType) by CorrelationId, bin(TimeGenerated, 5m)
+| summarize Results=make_set(ResultType) by CorrelationId, bin(TimeGenerated, 15m)
 | where Results has_all (0, 50199)
 | distinct CorrelationId;
 SigninLogs
