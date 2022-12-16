@@ -1,5 +1,7 @@
 //Detect potential device code phishing by finding sign ins with both a error 50199 (additional approval required) and error code 0 (success) within 15 minutes
 
+//Depending on the size of your tenant - or if you have developers or devices using these flows you may get false positives. The second query looks for new users triggering this sign on flow not previously seen in the last 30 days
+
 //Data connector required for this query - Azure Active Directory - Signin Logs
 
 let suspiciousids=
@@ -8,6 +10,26 @@ SigninLogs
 | where ResultType in (0,50199)
 | summarize Results=make_set(ResultType) by CorrelationId, bin(TimeGenerated, 15m)
 | where Results has_all (0, 50199)
+| distinct CorrelationId;
+SigninLogs
+| where CorrelationId in (suspiciousids)
+| project TimeGenerated, UserPrincipalName, Location, IPAddress, UserAgent, ResultType
+
+
+let knownusers=
+SigninLogs
+| where TimeGenerated > ago (30d) and TimeGenerated < ago(1d)
+| where ResultType in (0,50199)
+| summarize Results=make_set(ResultType) by CorrelationId, bin(TimeGenerated, 15m)
+| where Results has_all (0, 50199)
+| distinct UserPrincipalName;
+let suspiciousids=
+SigninLogs
+| where TimeGenerated > ago (1d)
+| where ResultType in (0,50199)
+| summarize Results=make_set(ResultType) by CorrelationId, bin(TimeGenerated, 15m)
+| where Results has_all (0, 50199)
+| where UserPrincipalName != (knownusers)
 | distinct CorrelationId;
 SigninLogs
 | where CorrelationId in (suspiciousids)
