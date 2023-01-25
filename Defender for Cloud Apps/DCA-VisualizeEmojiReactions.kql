@@ -27,6 +27,9 @@ CloudAppEvents
 | where ActionType == @"ReactedToMessage"
 | where Application == @"Microsoft Teams"
 | extend React = tostring(RawEventData.MessageReactionType)
+| where isnotempty(React)
+| project React
+| extend React = tostring(split(React,"_")[-1])
 | summarize Count=count() by React
 | sort by Count desc
 | take 25
