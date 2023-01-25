@@ -1,0 +1,33 @@
+//Visualize the most popular emoji reactions used in your tenant, because, why not?
+
+//Top 25 used in the query, you can remove that line if you want them all
+
+//Data connector required for this query - M365 Defender - CloudAppEvents
+
+//Microsoft Sentinel query
+CloudAppEvents
+| where TimeGenerated > ago (30d)
+| where RawEventData.Operation == "ReactedToMessage"
+| where RawEventData.Workload == "MicrosoftTeams"
+| extend React = tostring(RawEventData.MessageReactionType)
+| where isnotempty(React)
+| project React
+| extend React = tostring(split(React,"_")[-1])
+| summarize Count=count() by React
+| sort by Count desc
+| take 25
+| render barchart 
+
+//Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting license
+
+CloudAppEvents
+| where Timestamp > ago (30d)
+| where ActionType == @"ReactedToMessage"
+| where Application == @"Microsoft Teams"
+| extend React = tostring(RawEventData.MessageReactionType)
+| summarize Count=count() by React
+| sort by Count desc
+| take 25
+| render columnchart 
