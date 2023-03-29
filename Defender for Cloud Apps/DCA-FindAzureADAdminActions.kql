@@ -1,0 +1,22 @@
+//Use the Defender for Cloud Apps logs to detect when an action is taken in Azure Active Directory that is considered an admin operation
+
+//Data connector required for this query - M365 Defender - CloudAppEvents
+
+//Microsoft Sentinel query
+CloudAppEvents
+| where Application == "Office 365"
+| extend Workload=RawEventData.Workload
+| where Workload == "AzureActiveDirectory"
+| where IsAdminOperation == "true"
+| project TimeGenerated, ActionType, AccountDisplayName, ActivityType, RawEventData
+
+//Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting license
+
+CloudAppEvents
+| where Application == "Office 365"
+| extend Workload=RawEventData.Workload
+| where Workload == "AzureActiveDirectory"
+| where IsAdminOperation == "1"
+| project Timestamp, ActionType, AccountDisplayName, ActivityType, RawEventData
