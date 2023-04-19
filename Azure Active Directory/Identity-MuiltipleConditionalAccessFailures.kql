@@ -14,3 +14,18 @@ SigninLogs
     ['Count of Failed Application']=dcount(AppDisplayName)
     by UserPrincipalName, bin(TimeGenerated, 1h)
 | where ['Count of Failed Application'] >= 5
+
+//Data connector required for this query - Advanced Hunting - AADSignInEventsBeta
+
+AADSignInEventsBeta
+| where Timestamp > ago (1d)
+| project Timestamp, ConditionalAccessPolicies, AccountUpn, Application
+| extend ConditionalAccessPolicies = parse_json(ConditionalAccessPolicies)
+| extend CAResult = tostring(ConditionalAccessPolicies.result)
+| extend CAPolicyName = tostring(ConditionalAccessPolicies.displayName)
+| where CAResult == "failure"
+| summarize
+    ['List of Failed Application']=make_set(Application),
+    ['Count of Failed Application']=dcount(Application)
+    by AccountUpn, bin(Timestamp, 1h)
+| where ['Count of Failed Application'] >= 5
