@@ -1,0 +1,18 @@
+//Detect when a user reports suspicious MFA activity via the updated user risk integration
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
+SigninLogs
+| where ResultType == 500121
+| mv-expand todynamic(AuthenticationDetails)
+| extend AuthResultDetail=AuthenticationDetails.authenticationStepResultDetail
+| where AuthResultDetail == "SuspiciousActivityReported"
+| project TimeGenerated, UserPrincipalName, ResultType, AppDisplayName, AuthResultDetail, Location, IPAddress, UserAgent, CorrelationId
+
+//These events are also written to Azure AD Identity Protection
+
+//Data connector required for this query - Azure Active Directory Identity Protection
+
+AADUserRiskEvents
+| where RiskEventType == "userReportedSuspiciousActivity"
+| project TimeGenerated, UserPrincipalName, DetectionTimingType, RiskEventType, RiskState
