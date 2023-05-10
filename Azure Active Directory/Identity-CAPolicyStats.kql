@@ -2,7 +2,7 @@
 
 //Data connector required for this query - Azure Active Directory - Signin Logs
 
-igninLogs
+SigninLogs
 | project ConditionalAccessPolicies
 | mv-expand ConditionalAccessPolicies
 | extend CAResult = tostring(ConditionalAccessPolicies.result)
