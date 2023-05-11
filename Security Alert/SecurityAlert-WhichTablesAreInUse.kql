@@ -1,0 +1,16 @@
+//Find which data sources are being used the most, by calculating which analytics rules are querying which tables when alerts are generated
+
+//This will not account for the use of functions and may double handle table names occasionally, so it can be used as just a rough guide
+
+//Data connector required for this query - Security Alert (free table that other Defender products send alert info to)
+
+let tablenames = search *
+   | summarize make_set($table);
+SecurityAlert
+| where TimeGenerated > ago (30d)
+| where ProviderName == "ASI Scheduled Alerts"
+| summarize arg_max(TimeGenerated, *) by SystemAlertId
+| extend Query = tostring(parse_json(ExtendedProperties).Query)
+| mv-apply table=toscalar(tablenames) to typeof(string) on (where Query contains ['table'])
+| summarize QueryCount = count()by ['table'], AlertName
+| order by QueryCount
