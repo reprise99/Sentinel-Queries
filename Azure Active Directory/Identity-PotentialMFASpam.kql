@@ -15,7 +15,8 @@ SigninLogs
 //Include only authentications that require MFA
 | where AuthenticationRequirement == "multiFactorAuthentication"
 //Extend authentication result description
-| extend AuthResult = tostring(parse_json(AuthenticationDetails)[1].authenticationStepResultDetail)
+| mv-expand todynamic(AuthenticationDetails)
+| extend AuthResult = tostring(parse_json(AuthenticationDetails).authenticationStepResultDetail)
 //Find results that include both denined and completed MFA
 | where AuthResult in ("MFA completed in Azure AD", "MFA denied; user declined the authentication","MFA denied; user did not respond to mobile app notification")
 //Create a list of completed and denied MFA challenges per correlation id
@@ -42,7 +43,8 @@ SigninLogs
 //Include only authentications that require MFA
 | where AuthenticationRequirement == "multiFactorAuthentication"
 //Extend authentication result description
-| extend AuthResult = tostring(parse_json(AuthenticationDetails)[1].authenticationStepResultDetail)
+| mv-expand todynamic(AuthenticationDetails)
+| extend AuthResult = tostring(parse_json(AuthenticationDetails).authenticationStepResultDetail)
 //Find results that include both denined and completed MFA
 | where AuthResult in ("MFA completed in Azure AD", "MFA denied; user declined the authentication","MFA denied; user did not respond to mobile app notification")
 //Create a list of completed and denied MFA challenges per user principal name over 10 minute periods
@@ -64,7 +66,9 @@ SigninLogs
     UserPrincipalName,
     CorrelationId
 | where AuthenticationRequirement == "multiFactorAuthentication"
-| extend AuthResult = tostring(parse_json(AuthenticationDetails)[1].authenticationStepResultDetail)
+//Extend authentication result description
+| mv-expand todynamic(AuthenticationDetails)
+| extend AuthResult = tostring(parse_json(AuthenticationDetails).authenticationStepResultDetail)
 | where AuthResult in ("MFA denied; user declined the authentication","MFA denied; user did not respond to mobile app notification")
 | summarize ['Result Types']=make_list(AuthResult), ['Result Count']=count() by UserPrincipalName, bin(TimeGenerated, 60m)
 //Find hits with greater than 3 failures in an hour
