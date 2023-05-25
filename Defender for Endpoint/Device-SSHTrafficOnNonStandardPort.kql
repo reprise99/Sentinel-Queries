@@ -11,7 +11,8 @@ DeviceNetworkEvents
 | where NetworkSignature == "SSH" and RemotePort != 22
 //Exclude traffic where the remote IP is a private/local IP address, you can remove this if also interested in that traffic
 | where not(ipv4_is_private(RemoteIP))
-| project
+//Exclude traffic where the remote IP is a Link Local address
+| where not(ipv4_is_match(RemoteIP,'169.0.0.0/8')) | project
     TimeGenerated,
     DeviceName,
     NetworkSignature,
@@ -33,6 +34,8 @@ DeviceNetworkEvents
 | where NetworkSignature == "SSH" and RemotePort != 22
 //Exclude traffic where the remote IP is a private/local IP address, you can remove this if also interested in that traffic
 | where not(ipv4_is_private(RemoteIP))
+//Exclude traffic where the remote IP is a Link Local address
+| where not(ipv4_is_match(RemoteIP,'169.0.0.0/8')) 
 | project
     Timestamp,
     DeviceName,
