@@ -15,5 +15,5 @@ OfficeActivity
     ['Target Mailbox DisplayName']=OfficeObjectId,
     ['User Granted Access']=UserGivenAccess,
     ['Access Type']=AccessRights
-| where Actor != "NT AUTHORITY\\SYSTEM (Microsoft.Exchange.Servicehost)"
+| where tolower(Actor) != "nt authority\\system (microsoft.exchange.servicehost)"
 | sort by TimeGenerated desc 
