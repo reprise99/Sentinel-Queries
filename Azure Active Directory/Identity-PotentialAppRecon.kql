@@ -22,7 +22,7 @@ SigninLogs
 
 AADSignInEventsBeta
 | where Timestamp > ago (1d)
-| where ErrorCode  in ("50105", "53003")
+| where ErrorCode in ("50105", "53003")
 | summarize
     TotalCount=count(),
     ['Total Distinct Failed Apps']=make_set(Application),
