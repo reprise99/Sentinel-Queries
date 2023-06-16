@@ -1,0 +1,49 @@
+//Detect AADInternals use, where we see a domain changed from managed to federated, and the issuer contains any.sts or the issuer suffix is 8 characters, a combination of letters and numbers
+
+//Data connector required for this query - M365 Defender - CloudAppEvents
+
+CloudAppEvents
+| where ActionType == "Set domain authentication."
+| extend Actor = tostring(RawEventData.UserId)
+| extend mp=parse_json(RawEventData.ModifiedProperties)
+| extend DomainName = tostring(parse_json(tostring(RawEventData.Target))[0].ID)
+| mv-apply mp on (
+where mp.Name == "IssuerUri"
+| extend Issuer=mp.NewValue
+)
+| extend mp=parse_json(RawEventData.ModifiedProperties)
+| mv-apply mp on (
+where mp.Name == "LiveType"
+| extend OldDomainType = mp.OldValue
+| extend NewDomainType = mp.NewValue
+)
+| project TimeGenerated, Actor, DomainName, OldDomainType, NewDomainType, Issuer
+| parse Issuer with * @'://' Issuer @'"' *
+| extend IssuerSuffix = split(Issuer, '/')[-1]
+| where OldDomainType has "Managed" and NewDomainType has "Federated"
+| where Issuer has "any.sts" or IssuerSuffix matches regex "^[a-zA-Z0-9]{8}$"
+
+//Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting license
+
+CloudAppEvents
+| where ActionType == "Set domain authentication."
+| extend Actor = tostring(RawEventData.UserId)
+| extend mp=parse_json(RawEventData.ModifiedProperties)
+| extend DomainName = tostring(parse_json(tostring(RawEventData.Target))[0].ID)
+| mv-apply mp on (
+where mp.Name == "IssuerUri"
+| extend Issuer=mp.NewValue
+)
+| extend mp=parse_json(RawEventData.ModifiedProperties)
+| mv-apply mp on (
+where mp.Name == "LiveType"
+| extend OldDomainType = mp.OldValue
+| extend NewDomainType = mp.NewValue
+)
+| project Timestamp, Actor, DomainName, OldDomainType, NewDomainType, Issuer
+| parse Issuer with * @'://' Issuer @'"' *
+| extend IssuerSuffix = split(Issuer, '/')[-1]
+| where OldDomainType has "Managed" and NewDomainType has "Federated"
+| where Issuer has "any.sts" or IssuerSuffix matches regex "^[a-zA-Z0-9]{8}$"
