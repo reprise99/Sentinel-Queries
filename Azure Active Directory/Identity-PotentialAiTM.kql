@@ -1,0 +1,39 @@
+//Looks for potential AiTM phishing by finding sign ins with the following properties - has error codes 50074 (MFA required), 50140 (keep me signed in prompt) and 0 (success)
+//It also looks for high or medium risk events and where there are multiple session id's per correlation id (per single sign in flow)
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
+//Microsoft Sentinel doesn't track SessionId like Advanced Hunting does so you may end up with a few more false positives
+let isGuid = '[({]?[a-fA-F0-9]{8}[-]?([a-fA-F0-9]{4}[-]?){3}[a-fA-F0-9]{12}[})]?';
+SigninLogs
+| where AppDisplayName == "OfficeHome"
+| where not(UserPrincipalName matches regex isGuid)
+| summarize
+    ErrorCodes=make_set(ResultType),
+    RiskLevels=make_set_if(RiskLevelDuringSignIn, RiskLevelDuringSignIn != "none"),
+    RiskTypes=make_set_if(RiskEventTypes, RiskEventTypes != "[]")
+    by CorrelationId, UserPrincipalName
+| where ErrorCodes has_all (0, 50140, 50074)
+    and RiskLevels has_any ("medium", "high")
+    or array_length(RiskTypes) > 0
+
+//Advanced Hunting query, includes SessionId's 
+
+//Data connector required for this query - Advanced Hunting with Azure AD P2 License
+
+Advanced Hunting query
+
+let isGuid = '[({]?[a-fA-F0-9]{8}[-]?([a-fA-F0-9]{4}[-]?){3}[a-fA-F0-9]{12}[})]?';
+AADSignInEventsBeta
+| where Application == "OfficeHome"
+| where not(AccountUpn matches regex isGuid)
+| summarize
+    ErrorCodes=make_set(ErrorCode),
+    RiskLevels=make_set_if(RiskLevelDuringSignIn, isnotempty(RiskLevelDuringSignIn)),
+    RiskTypes=make_set_if(RiskEventTypes, isnotempty(RiskEventTypes)),
+    SessionIds=make_set_if(SessionId, isnotempty(SessionId))
+    by CorrelationId, AccountUpn
+| where ErrorCodes has_all (0, 50140, 50074)
+    and RiskLevels has_any ("50", "100") 
+    or array_length(RiskTypes) > 0
+    and array_length(SessionIds) >= 2
