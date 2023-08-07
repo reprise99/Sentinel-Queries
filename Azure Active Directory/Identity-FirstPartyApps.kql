@@ -24,4 +24,4 @@ data
 | parse Apps with AppName @'\u003c/td\u003e\n\u003ctd\u003e' AppId
 | project AppName=tostring(AppName), AppId=tostring(AppId);
 union firstPartyApps1,firstPartyApps2
-| sort by AppName desc 
+| sort by AppName asc 
