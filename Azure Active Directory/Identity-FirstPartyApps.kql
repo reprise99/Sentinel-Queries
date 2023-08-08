@@ -1,27 +1,10 @@
-//Creates a temporary table of the list of Microsoft first party apps listed on - https://learn.microsoft.com/en-us/troubleshoot/azure/active-directory/verify-first-party-apps-sign-in
-//It ingests the raw markdown into Kusto and then parses the names and guids out
+//Create a temporary table of first party apps from the following sources which are updated daily in the following order
+//        1. Microsoft Graph (apps where appOwnerOrganizationId is Microsoft)
+//        2. Microsoft Learn doc (https://learn.microsoft.com/troubleshoot/azure/active-directory/verify-first-party-apps-sign-in)
+//        3. Custom list of apps (./customdata/MysteryApps.csv) - Community contributed list of Microsoft apps and their app ids
 //You can then look up / join this to any data that does not have the friendly name or just use it as a reference
 
-let data = externaldata (rawData: string) [
-    h@'https://github.com/MicrosoftDocs/SupportArticles-docs/blob/main/support/azure/active-directory/verify-first-party-apps-sign-in.md'
-    ] with(format='raw');
-let firstPartyApps1=
-data
-| parse rawData with * @"Application IDs\u003c/th\u003e\n\u003c/tr\u003e\n\u003c/thead\u003e\n\u003ctbody\u003e\n\u003ctr\u003e\n\u003ctd\u003e" Apps @"\u003c/td\u003e\n\u003c/tr\u003e\n\u003c/tbody\u003e\n\u003c/table\u003e\n\u003ch2 tabindex=\" *
-| project Apps
-| extend Apps=split(Apps,@"\u003c/td\u003e\n\u003c/tr\u003e\n\u003ctr\u003e\n\u003ctd\u003e")
-| mv-expand Apps
-| parse Apps with AppName @'\u003c/td\u003e\n\u003ctd\u003e' AppId
-| extend AppId=split(AppId,@'\u003cbr\u003e')
-| mv-expand AppId
-| project AppName=tostring(AppName), AppId=tostring(AppId);
-let firstPartyApps2=
-data
-| parse rawData with * @"Microsoft tenant-owned applications (tenant ID: 72f988bf-86f1-41af-91ab-2d7cd011db47).\u003c/p\u003e\n\u003ctable\u003e\n\u003cthead\u003e\n\u003ctr\u003e\n\u003cth\u003eApplication Name\u003c/th\u003e\n\u003cth\u003eApplication IDs\u003c/th\u003e\n\u003c/tr\u003e\n\u003c/thead\u003e\n\u003ctbody\u003e\n\u003ctr\u003e\n\u003ctd\u003e" Apps @'\u003c/td\u003e\n\u003c/tr\u003e\n\u003c/tbody\' *
-| project Apps
-| extend Apps=split(Apps,@"\u003c/td\u003e\n\u003c/tr\u003e\n\u003ctr\u003e\n\u003ctd\u003e")
-| mv-expand Apps
-| parse Apps with AppName @'\u003c/td\u003e\n\u003ctd\u003e' AppId
-| project AppName=tostring(AppName), AppId=tostring(AppId);
-union firstPartyApps1,firstPartyApps2
-| sort by AppName asc 
+let FirstPartyApps = externaldata (AppId:guid,AppDisplayName:string,AppOwnerOrganizationId:guid,Source:string) [
+    h@'https://raw.githubusercontent.com/merill/microsoft-info/main/_info/MicrosoftApps.json'
+    ] with(format='multijson');
+FirstPartyApps
