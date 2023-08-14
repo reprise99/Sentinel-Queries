@@ -1,0 +1,37 @@
+//Visualize the standard deviation of MFA failures per day using toscalar()
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
+//Microsoft Sentinel query
+
+let AverageMFAFailures = toscalar(SigninLogs
+| where TimeGenerated > ago(60d)
+| where ResultType == 500121
+| summarize Count=count() by bin(TimeGenerated, 1d)
+| summarize avg(Count));
+SigninLogs
+| where TimeGenerated > ago(60d)
+| where ResultType == 500121
+| summarize Count=count() by bin(TimeGenerated, 1d)
+| extend Deviation = (Count - AverageMFAFailures) / AverageMFAFailures
+| project-away Count
+//Visualize the deviation per day
+| render columnchart with (title="Deviation of MFA failures per day")
+
+//Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting with Azure AD P2 License
+
+let AverageMFAFailures = toscalar(AADSignInEventsBeta
+| where Timestamp > ago(30d)
+| where ErrorCode == 500121
+| summarize Count=count() by bin(Timestamp, 1d)
+| summarize avg(Count));
+AADSignInEventsBeta
+| where Timestamp > ago(30d)
+| where ErrorCode == 500121
+| summarize Count=count() by bin(Timestamp, 1d)
+| extend Deviation = (Count - AverageMFAFailures) / AverageMFAFailures
+| project-away Count
+//Visualize the deviation per day
+| render columnchart with (title="Deviation of MFA failures per day")

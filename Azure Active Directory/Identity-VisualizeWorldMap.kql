@@ -1,6 +1,6 @@
 //Visualize your sign ins over a world map
-//This visualization is only supported in Kusto.Explorer, not the web app
-//You can install it here - https://learn.microsoft.com/en-us/azure/data-explorer/kusto/tools/kusto-explorer
+//This visualization is supported in the Kusto Explorer app or the Web UI
+//You can install the app here - https://learn.microsoft.com/en-us/azure/data-explorer/kusto/tools/kusto-explorer
 
 //Data connector required for this query - Azure Active Directory - Signin Logs
 
