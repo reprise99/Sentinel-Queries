@@ -36,3 +36,28 @@ AADSignInEventsBeta
 | extend ['Count of SessionIds']=array_length(SessionIds)
 | extend ['Count of RiskTypes']=array_length(RiskTypes)
 | where ['Count of SessionIds'] >= 2 and ['Count of RiskTypes'] > 0
+
+//If you want to make a detection rule for this in Advanced Hunting you will just need to first find the suspicious correlationIds, then go back and find them so M365 Defender can map the fields properly
+//Advanced Hunting needs a timestamp to create a detection. You could alternatively add a first/last event time to the query, but I prefer this way
+
+let ids=
+AADSignInEventsBeta
+| where Application == "OfficeHome"
+| where AccountUpn has "@"
+| summarize
+    LatestTimestamp = max(Timestamp), // Include the latest timestamp
+    ErrorCodes=make_set(ErrorCode),
+    RiskLevels=make_set_if(RiskLevelDuringSignIn, isnotempty(RiskLevelDuringSignIn)),
+    RiskTypes=make_set_if(RiskEventTypes, isnotempty(RiskEventTypes)),
+    SessionIds=make_set_if(SessionId, isnotempty(SessionId))
+    by CorrelationId, AccountUpn
+| where ErrorCodes has_all (0, 50140, 50074)
+    and RiskLevels has_any ("50", "100") 
+| extend ['Count of SessionIds']=array_length(SessionIds)
+| extend ['Count of RiskTypes']=array_length(RiskTypes)
+| extend ReportId = "DefaultReportId" // Extend with a default ReportId or use an existing column
+| where ['Count of SessionIds'] >= 2 and ['Count of RiskTypes'] > 0
+| project Timestamp = LatestTimestamp, ReportId, CorrelationId, AccountUpn, ErrorCodes, RiskLevels, ['Count of SessionIds'], ['Count of RiskTypes']
+| distinct CorrelationId;
+AADSignInEventsBeta
+| where CorrelationId in (ids)
