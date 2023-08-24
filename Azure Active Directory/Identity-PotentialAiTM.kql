@@ -55,9 +55,7 @@ AADSignInEventsBeta
     and RiskLevels has_any ("50", "100") 
 | extend ['Count of SessionIds']=array_length(SessionIds)
 | extend ['Count of RiskTypes']=array_length(RiskTypes)
-| extend ReportId = "DefaultReportId" // Extend with a default ReportId or use an existing column
 | where ['Count of SessionIds'] >= 2 and ['Count of RiskTypes'] > 0
-| project Timestamp = LatestTimestamp, ReportId, CorrelationId, AccountUpn, ErrorCodes, RiskLevels, ['Count of SessionIds'], ['Count of RiskTypes']
 | distinct CorrelationId;
 AADSignInEventsBeta
 | where CorrelationId in (ids)
