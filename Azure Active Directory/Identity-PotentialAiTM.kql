@@ -45,7 +45,6 @@ AADSignInEventsBeta
 | where Application == "OfficeHome"
 | where AccountUpn has "@"
 | summarize
-    LatestTimestamp = max(Timestamp),
     ErrorCodes=make_set(ErrorCode),
     RiskLevels=make_set_if(RiskLevelDuringSignIn, isnotempty(RiskLevelDuringSignIn)),
     RiskTypes=make_set_if(RiskEventTypes, isnotempty(RiskEventTypes)),
