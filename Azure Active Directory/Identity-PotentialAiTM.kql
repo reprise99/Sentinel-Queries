@@ -45,17 +45,18 @@ AADSignInEventsBeta
 | where Application == "OfficeHome"
 | where AccountUpn has "@"
 | summarize
-    LatestTimestamp = max(Timestamp), // Include the latest timestamp
+    LatestTimestamp = max(Timestamp),
     ErrorCodes=make_set(ErrorCode),
     RiskLevels=make_set_if(RiskLevelDuringSignIn, isnotempty(RiskLevelDuringSignIn)),
     RiskTypes=make_set_if(RiskEventTypes, isnotempty(RiskEventTypes)),
     SessionIds=make_set_if(SessionId, isnotempty(SessionId))
     by CorrelationId, AccountUpn
 | where ErrorCodes has_all (0, 50140, 50074)
-    and RiskLevels has_any ("50", "100") 
+    and RiskLevels has_any ("50", "100")
 | extend ['Count of SessionIds']=array_length(SessionIds)
 | extend ['Count of RiskTypes']=array_length(RiskTypes)
 | where ['Count of SessionIds'] >= 2 and ['Count of RiskTypes'] > 0
 | distinct CorrelationId;
 AADSignInEventsBeta
 | where CorrelationId in (ids)
+| summarize arg_min(Timestamp, *) by CorrelationId //grab the first event per correlationid to allow Advanced Hunting field mapping
