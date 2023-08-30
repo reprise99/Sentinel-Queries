@@ -1,0 +1,40 @@
+//Detects when a user has a medium or high risk sign in followed by that user successfully registering MFA on another user within 4 hours
+//This may detect an adversary registering MFA on behalf of your users using a compromised admin account
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
+SigninLogs
+| where RiskLevelDuringSignIn in~ ("medium", "high")
+| project
+    ['Risky Signin Time']=TimeGenerated,
+    UserPrincipalName,
+    SigninIP=IPAddress,
+    RiskLevelDuringSignIn,
+    RiskEventTypes,
+    SigninResult=ResultType
+| join kind=inner (
+    AuditLogs
+    | where OperationName == "Admin registered security info" and Result == "success"
+    | extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+    | extend Target = tostring(TargetResources[0].userPrincipalName)
+    | project
+        ['MFA Change Time']=TimeGenerated,
+        OperationName,
+        ResultReason,
+        Actor,
+        Target,
+        TargetResources
+    )
+    on $left.UserPrincipalName == $right.Actor
+| where ['MFA Change Time'] between (['Risky Signin Time'] .. timespan(4h))
+| project
+    ['Risky Signin Time'],
+    ['MFA Change Time'],
+    Actor,
+    Target,
+    SigninIP,
+    SigninResult,
+    OperationName,
+    ResultReason,
+    TargetResources
