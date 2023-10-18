@@ -1,4 +1,4 @@
-//Query the list of Known Exploited Vulnerabilities provided by CISA - https://www.cisa.gov/known-exploited-vulnerabilities-catalog and find any have vulnerabilities known to be used with ransomware
+//Query the list of Known Exploited Vulnerabilities provided by CISA - https://www.cisa.gov/known-exploited-vulnerabilities-catalog and find any that have vulnerabilities known to be used with ransomware
 
 //Data connector required for this query - Advanced Hunting license
 
