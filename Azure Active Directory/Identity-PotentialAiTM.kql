@@ -11,10 +11,11 @@ SigninLogs
 | summarize
     ErrorCodes=make_set(ResultType),
     RiskLevels=make_set_if(RiskLevelDuringSignIn, RiskLevelDuringSignIn != "none"),
-    RiskTypes=make_set_if(RiskEventTypes, RiskEventTypes != "[]")
+    RiskTypes=make_set_if(RiskEventTypes, RiskEventTypes != "[]"),
+    IPs = make_set(IPAddress)
     by CorrelationId, UserPrincipalName
-| where ErrorCodes has_all (0, 50140, 50074)
-    and RiskLevels has_any ("medium", "high")
+| where ErrorCodes has_all (0, 50140, 50074) // If conditional Access Blocks the SignIn attempt change the has_all to has_all (53000, 50074)
+    and RiskLevels has_any ("medium", "high") // Depending on your organisation low can be included since some AiTM attempts are only classified as low.
 | extend ['Count of RiskTypes']=array_length(RiskTypes)
 | where ['Count of RiskTypes'] > 0
 
@@ -29,10 +30,11 @@ AADSignInEventsBeta
     ErrorCodes=make_set(ErrorCode),
     RiskLevels=make_set_if(RiskLevelDuringSignIn, isnotempty(RiskLevelDuringSignIn)),
     RiskTypes=make_set_if(RiskEventTypes, isnotempty(RiskEventTypes)),
-    SessionIds=make_set_if(SessionId, isnotempty(SessionId))
+    SessionIds=make_set_if(SessionId, isnotempty(SessionId)),
+    IPs = make_set_if(IPAddress, isnotempty(IPAddress))
     by CorrelationId, AccountUpn
-| where ErrorCodes has_all (0, 50140, 50074)
-    and RiskLevels has_any ("50", "100") 
+| where ErrorCodes has_all (0, 50140, 50074) // If conditional Access Blocks the SignIn attempt change the has_all to has_all (53000, 50074)
+    and RiskLevels has_any ("50", "100") // Depending on your organisation a lower risk level can be included since some AiTM attempts are only classified as low.
 | extend ['Count of SessionIds']=array_length(SessionIds)
 | extend ['Count of RiskTypes']=array_length(RiskTypes)
 | where ['Count of SessionIds'] >= 2 and ['Count of RiskTypes'] > 0
@@ -48,7 +50,8 @@ AADSignInEventsBeta
     ErrorCodes=make_set(ErrorCode),
     RiskLevels=make_set_if(RiskLevelDuringSignIn, isnotempty(RiskLevelDuringSignIn)),
     RiskTypes=make_set_if(RiskEventTypes, isnotempty(RiskEventTypes)),
-    SessionIds=make_set_if(SessionId, isnotempty(SessionId))
+    SessionIds=make_set_if(SessionId, isnotempty(SessionId)),
+    IPs = make_set_if(IPAddress, isnotempty(IPAddress))
     by CorrelationId, AccountUpn
 | where ErrorCodes has_all (0, 50140, 50074)
     and RiskLevels has_any ("50", "100")
