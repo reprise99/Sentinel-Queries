@@ -1,0 +1,43 @@
+//Detect when a successful self service password (SSPR) event is followed by a medium or high risk sign in within 2 hours
+//Threat actors are known to socially engineer helpdesk staff to update MFA methods to allow them to complete SSPR
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
+//Looks back 7 days by default for events within 2 hours of each other, but you can update to suit
+
+let successCodes = dynamic([0, 50055, 50057, 50155, 50105, 50133, 50005, 50076, 50079, 50173, 50158, 50072, 50074, 53003, 53000, 53001, 50129]);
+AuditLogs
+| where TimeGenerated > ago(7d)
+| where OperationName == "Reset password (self-service)"
+| where ResultDescription == "Successfully completed reset."
+| extend UserPrincipalName = tostring(TargetResources[0].userPrincipalName)
+| project-rename PasswordResetTime=TimeGenerated
+| project UserPrincipalName, PasswordResetTime, OperationName
+| join kind=inner(
+SigninLogs
+    | where TimeGenerated > ago(7d)
+    | where ResultType in (successCodes)
+    | where RiskLevelDuringSignIn in ("high", "medium")
+    | project
+        RiskTime=TimeGenerated,
+        UserPrincipalName,
+        ResultType,
+        ResultDescription,
+        AppDisplayName,
+        IPAddress,
+        Location,
+        UserAgent
+    )
+    on UserPrincipalName
+| extend ['Time Between Events']=datetime_diff('minute', PasswordResetTime, RiskTime)
+| project-reorder
+    PasswordResetTime,
+    RiskTime,
+    ['Time Between Events'],
+    UserPrincipalName,
+    OperationName,
+    ResultType,
+    ResultDescription,
+    AppDisplayName
+| where ['Time Between Events'] <= 120

@@ -1,0 +1,39 @@
+//Query the list of Known Exploited Vulnerabilities provided by CISA - https://www.cisa.gov/known-exploited-vulnerabilities-catalog and find any devices that have vulnerabilities known to be used with ransomware
+
+//Data connector required for this query - Advanced Hunting license
+
+
+let KEV=
+externaldata(cveID: string, vendorProject: string, product: string, vulnerabilityName: string, dateAdded: datetime, shortDescription: string, requiredAction: string, dueDate: datetime, knownRansomwareCampaignUse:string,notes:string)
+[
+h@'https://www.cisa.gov/sites/default/files/csv/known_exploited_vulnerabilities.csv'
+]
+with(format='csv',ignorefirstrecord=true);
+DeviceTvmSoftwareVulnerabilities
+| project DeviceName, OSPlatform, cveID=CveId
+| join kind=inner KEV on cveID
+| where knownRansomwareCampaignUse =~ "Known"
+| summarize ['Vulnerabilities']=make_set(cveID) by DeviceName
+| extend ['Count of Known Exploited Vulnerabilities'] = array_length(['Vulnerabilities'])
+| sort by ['Count of Known Exploited Vulnerabilities']
+
+
+//This version looks specifically for internet facing devices
+
+let KEV=
+externaldata(cveID: string, vendorProject: string, product: string, vulnerabilityName: string, dateAdded: datetime, shortDescription: string, requiredAction: string, dueDate: datetime, knownRansomwareCampaignUse:string,notes:string)
+[
+h@'https://www.cisa.gov/sites/default/files/csv/known_exploited_vulnerabilities.csv'
+]
+with(format='csv',ignorefirstrecord=true);
+let publicdevices=
+DeviceInfo
+| where IsInternetFacing
+| summarize arg_max(Timestamp, *) by DeviceId
+| distinct DeviceName;
+DeviceTvmSoftwareVulnerabilities
+| project DeviceName, OSPlatform, cveID=CveId
+| join kind=inner KEV on cveID
+| where knownRansomwareCampaignUse =~ "Known"
+| where DeviceName in (publicdevices)
+| summarize ['Vulnerabilities']=make_set(cveID), ['Count of Known Exploited Vulnerabilities']=dcount(cveID) by DeviceName

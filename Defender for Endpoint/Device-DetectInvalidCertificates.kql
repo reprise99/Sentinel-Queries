@@ -1,0 +1,9 @@
+//Detect invalid certificates
+
+//Data connector required for this query - M365 Defender - Device* tables
+
+DeviceEvents
+| where ActionType == "AntivirusReport"
+| extend ParsedAdditionalFields = parse_json(AdditionalFields)
+| evaluate bag_unpack(ParsedAdditionalFields)
+| where Signer startswith "INVALID"

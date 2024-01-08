@@ -7,7 +7,7 @@
 let failureCodes = dynamic([50053, 50126, 50055]);
 let successCodes = dynamic([0, 50055, 50057, 50155, 50105, 50133, 50005, 50076, 50079, 50173, 50158, 50072, 50074, 53003, 53000, 53001, 50129]);
 SigninLogs
-| where TimeGenerated > ago(7d)
+| where TimeGenerated > ago(30d)
 | where ResultType in(successCodes) or ResultType in(failureCodes)
 | summarize
     ['Count of successful signins'] = countif((ResultType in(successCodes))),
@@ -17,12 +17,13 @@ SigninLogs
     ['Count of failed signins']=countif((ResultType in(failureCodes))),
     ['Count of distinct failed sign ins'] = dcountif(UserPrincipalName, (ResultType in(failureCodes))),
     ['List of failed users'] = make_set_if(UserPrincipalName, (ResultType in(failureCodes))),
-    ['Failed result codes'] = make_set_if(ResultType, (ResultType in(failureCodes))) 
+    ['Failed result codes'] = make_set_if(ResultType, (ResultType in(failureCodes))),
+    ['First successful login'] = maxif(TimeGenerated, (ResultType in(successCodes)))
     by IPAddress
 //Exclude IP addresses with more successful signins than failed. This is a good way to exclude known locations as they will have lots of failures too, but they will be balanced by more successes.
 //Then find IP addresses with 5 or more distinct failed signins and at least one successful signin
 | where ['Count of failed signins'] > ['Count of successful signins'] and ['Count of distinct failed sign ins'] > ['Count of distinct successful sign ins'] and ['Count of distinct failed sign ins'] >= 5 and ['Count of distinct successful sign ins'] >= 1
-| order by ['Count of distinct successful sign ins'] desc 
+| order by ['Count of distinct successful sign ins'] desc
 
 //Data connector required for this query - Advanced Hunting with Azure AD P2 License
 

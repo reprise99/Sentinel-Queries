@@ -1,0 +1,11 @@
+//Create a temporary table of first party apps from the following sources which are updated daily in the following order
+//        1. Microsoft Graph (apps where appOwnerOrganizationId is Microsoft)
+//        2. Microsoft Learn doc (https://learn.microsoft.com/troubleshoot/azure/active-directory/verify-first-party-apps-sign-in)
+//        3. Custom list of apps (./customdata/MysteryApps.csv) - Community contributed list of Microsoft apps and their app ids
+//You can then look up / join this to any data that does not have the friendly name or just use it as a reference
+//See https://github.com/merill/microsoft-info for the reference source
+
+let FirstPartyApps = externaldata (AppId:guid,AppDisplayName:string,AppOwnerOrganizationId:guid,Source:string) [
+    h@'https://raw.githubusercontent.com/merill/microsoft-info/main/_info/MicrosoftApps.json'
+    ] with(format='multijson');
+FirstPartyApps

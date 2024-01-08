@@ -1,0 +1,24 @@
+//Combined Azure Resource Graph and Log Analytics query - https://learn.microsoft.com/en-us/azure/azure-monitor/logs/azure-monitor-data-explorer-proxy#combine-azure-resource-graph-tables-with-a-log-analytics-workspace
+//This looks for all Windows devices in Resource Graph and attempts to determine current log status
+
+arg("").Resources 
+| where type == "microsoft.compute/virtualmachines"
+| extend OSType= tostring(parse_json(tostring(parse_json(tostring(properties.storageProfile)).osDisk)).osType)
+| extend VMStatus = tostring(parse_json(tostring(parse_json(tostring(parse_json(tostring(properties.extended)).instanceView)).powerState)).displayStatus)
+| where OSType contains "Windows"
+| where VMStatus == "VM running"
+| join kind=fullouter  (
+    Heartbeat
+    | where TimeGenerated > ago(30d)
+    | where OSType contains "Windows" and isnotempty( Resource)
+    | summarize arg_max(TimeGenerated, *) by ResourceId
+    | project-rename LastLogTime=TimeGenerated
+    )
+    on $left.name == $right.Resource
+| extend Status = case(isempty(id) and isnotempty(LastLogTime), strcat("Logs exist for this device, but it is no longer in Resource Graph - has it been decomissioned? ❓"),
+                        isnotempty(id) and isempty(LastLogTime), strcat("Logs do not exist for this device, but it is in Resource Graph - do you need to onboard it? ❌"),
+                        isnotempty(id) and isnotempty(LastLogTime), strcat("Logs exist for this machine and it is in Resource Graph ✅" ),
+                        "unknown"
+                        )
+| extend DaysSinceLastLog=datetime_diff('day',now(),LastLogTime)
+| project ResoureceGraphName=name, ResoureceGraphId=id,HeartBeatName=Resource,HeartBeatResourceId=ResourceId, Status, DaysSinceLastLog, LastLogTime

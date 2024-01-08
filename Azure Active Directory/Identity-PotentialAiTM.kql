@@ -1,0 +1,64 @@
+//Looks for potential AiTM phishing by finding sign ins with the following properties - has error codes 50074 (MFA required), 50140 (keep me signed in prompt) and 0 (success)
+//It also looks for high or medium risk events and where there are multiple session id's per correlation id (per single sign in flow)
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
+//Microsoft Sentinel doesn't track SessionId like Advanced Hunting does so you may end up with a few more false positives
+
+SigninLogs
+| where AppDisplayName == "OfficeHome"
+| where UserPrincipalName has "@"
+| summarize
+    ErrorCodes=make_set(ResultType),
+    RiskLevels=make_set_if(RiskLevelDuringSignIn, RiskLevelDuringSignIn != "none"),
+    RiskTypes=make_set_if(RiskEventTypes, RiskEventTypes != "[]"),
+    IPs = make_set(IPAddress)
+    by CorrelationId, UserPrincipalName
+| where ErrorCodes has_all (0, 50140, 50074) // If conditional Access Blocks the SignIn attempt change the has_all to has_all (53000, 50074)
+    and RiskLevels has_any ("medium", "high") // Depending on your organisation low can be included since some AiTM attempts are only classified as low.
+| extend ['Count of RiskTypes']=array_length(RiskTypes)
+| where ['Count of RiskTypes'] > 0
+
+//Advanced Hunting query, includes SessionId's 
+
+//Data connector required for this query - Advanced Hunting with Azure AD P2 License
+
+AADSignInEventsBeta
+| where Application == "OfficeHome"
+| where AccountUpn has "@"
+| summarize
+    ErrorCodes=make_set(ErrorCode),
+    RiskLevels=make_set_if(RiskLevelDuringSignIn, isnotempty(RiskLevelDuringSignIn)),
+    RiskTypes=make_set_if(RiskEventTypes, isnotempty(RiskEventTypes)),
+    SessionIds=make_set_if(SessionId, isnotempty(SessionId)),
+    IPs = make_set_if(IPAddress, isnotempty(IPAddress))
+    by CorrelationId, AccountUpn
+| where ErrorCodes has_all (0, 50140, 50074) // If conditional Access Blocks the SignIn attempt change the has_all to has_all (53000, 50074)
+    and RiskLevels has_any ("50", "100") // Depending on your organisation a lower risk level can be included since some AiTM attempts are only classified as low.
+| extend ['Count of SessionIds']=array_length(SessionIds)
+| extend ['Count of RiskTypes']=array_length(RiskTypes)
+| where ['Count of SessionIds'] >= 2 and ['Count of RiskTypes'] > 0
+
+//If you want to make a detection rule for this in Advanced Hunting you will just need to first find the suspicious correlationIds, then go back and find them so M365 Defender can map the fields properly
+//Advanced Hunting needs a timestamp to create a detection. You could alternatively add a first/last event time to the query, but I prefer this way
+
+let ids=
+AADSignInEventsBeta
+| where Application == "OfficeHome"
+| where AccountUpn has "@"
+| summarize
+    ErrorCodes=make_set(ErrorCode),
+    RiskLevels=make_set_if(RiskLevelDuringSignIn, isnotempty(RiskLevelDuringSignIn)),
+    RiskTypes=make_set_if(RiskEventTypes, isnotempty(RiskEventTypes)),
+    SessionIds=make_set_if(SessionId, isnotempty(SessionId)),
+    IPs = make_set_if(IPAddress, isnotempty(IPAddress))
+    by CorrelationId, AccountUpn
+| where ErrorCodes has_all (0, 50140, 50074)
+    and RiskLevels has_any ("50", "100")
+| extend ['Count of SessionIds']=array_length(SessionIds)
+| extend ['Count of RiskTypes']=array_length(RiskTypes)
+| where ['Count of SessionIds'] >= 2 and ['Count of RiskTypes'] > 0
+| distinct CorrelationId;
+AADSignInEventsBeta
+| where CorrelationId in (ids)
+| summarize arg_min(Timestamp, *) by CorrelationId //grab the first event per correlationid to allow Advanced Hunting field mapping

@@ -1,0 +1,35 @@
+//Find potentially compromised accounts trying to pivot into other apps by detecting 3 or more distinct Conditional Access failures or 3 or more failures to apps the account has no access to
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
+SigninLogs
+| where TimeGenerated > ago (1d)
+| where ResultType in ("50105", "53003")
+| summarize
+    TotalCount=count(),
+    ['Total Distinct Failed Apps']=make_set(AppDisplayName),
+    ['List of distinct failed CA Apps']=make_set_if(AppDisplayName, ResultType == 53003),
+    ['List of distinct no access Apps']=make_set_if(AppDisplayName, ResultType == 50105)
+    by UserPrincipalName, bin(TimeGenerated, 1h)
+| extend
+    ['Count of distinct failed CA Apps']=array_length(['List of distinct failed CA Apps']),
+    ['Count of distinct failed no access Apps']=array_length(['List of distinct no access Apps'])
+| where ['Count of distinct failed CA Apps'] >= 3 or ['Count of distinct failed no access Apps'] >= 3
+
+//Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting with Azure AD P2 License
+
+AADSignInEventsBeta
+| where Timestamp > ago (1d)
+| where ErrorCode in ("50105", "53003")
+| summarize
+    TotalCount=count(),
+    ['Total Distinct Failed Apps']=make_set(Application),
+    ['List of distinct failed CA Apps']=make_set_if(Application, ErrorCode == 53003),
+    ['List of distinct no access Apps']=make_set_if(Application, ErrorCode == 50105)
+    by AccountUpn, bin(Timestamp, 1h)
+| extend
+    ['Count of distinct failed CA Apps']=array_length(['List of distinct failed CA Apps']),
+    ['Count of distinct failed no access Apps']=array_length(['List of distinct no access Apps'])
+| where ['Count of distinct failed CA Apps'] >= 3 or ['Count of distinct failed no access Apps'] >= 3

@@ -1,0 +1,15 @@
+//Query your Azure Active Directory audit logs for any phone numbers that have been registered to multiple users for MFA
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
+AuditLogs
+| where TimeGenerated > ago (30d)
+| where Result == "success"
+| where Identity == "Azure Credential Configuration Endpoint Service"
+| where OperationName == "Update user"
+| extend UserPrincipalName = tostring(TargetResources[0].userPrincipalName)
+| extend PhoneNumber = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[1].newValue))[0].PhoneNumber)
+| where isnotempty(PhoneNumber)
+| summarize Users=make_set(UserPrincipalName) by PhoneNumber
+| extend CountofUsers=array_length(Users)
+| where CountofUsers > 1

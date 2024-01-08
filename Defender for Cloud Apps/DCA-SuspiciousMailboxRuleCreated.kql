@@ -1,0 +1,36 @@
+//Use the Defender for Cloud Apps logs to detect when an inbox rule is created where the name only has special characters, i.e '..' or '.....' this is a common threat actor TTP
+
+//Data connector required for this query - M365 Defender - CloudAppEvents
+
+//Microsoft Sentinel query
+CloudAppEvents
+| where Application == "Microsoft Exchange Online"
+| where ActionType == "New-InboxRule"
+| mv-apply p=todynamic(ActivityObjects) on 
+(
+where p.Name == "Name"
+| extend RuleName=p.Value
+)
+| where isnotempty(RuleName)
+| where RuleName matches regex @"^[^a-zA-Z0-9]*$"
+| extend AccountUpn=tostring(RawEventData.UserId)
+| extend SessionId=tostring(RawEventData.SessionId)
+| project TimeGenerated, Application, ActionType, AccountUpn, RuleName, SessionId, IPAddress
+
+//Advanced Hunting query
+
+//Data connector required for this query - Advanced Hunting license
+
+CloudAppEvents
+| where Application == "Microsoft Exchange Online"
+| where ActionType == "New-InboxRule"
+| mv-apply p=todynamic(ActivityObjects) on 
+(
+where p.Name == "Name"
+| extend RuleName=p.Value
+)
+| where isnotempty(RuleName)
+| where RuleName matches regex @"^[^a-zA-Z0-9]*$"
+| extend AccountUpn=tostring(RawEventData.UserId)
+| extend SessionId=tostring(RawEventData.SessionId)
+| project Timestamp, Application, ActionType, AccountUpn, RuleName, SessionId, IPAddress

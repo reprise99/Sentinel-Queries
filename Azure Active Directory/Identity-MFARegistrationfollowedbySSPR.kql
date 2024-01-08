@@ -6,7 +6,7 @@
 let timeframe=4h;
 AuditLogs
 | where TimeGenerated > ago(1d)
-| where OperationName in ("User changed default security info", "User registered all required security info", "User registered security info")
+| where OperationName in~ ("User changed default security info", "User registered all required security info", "User registered security info","Admin registered security info")
 | extend User = tostring(TargetResources[0].userPrincipalName)
 | project SecurityInfoTime=TimeGenerated, User, OperationName
 | join kind=inner (

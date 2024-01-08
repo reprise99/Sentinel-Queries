@@ -1,0 +1,38 @@
+//Detects when a user has a medium or high risk sign in requiring MFA registration (error 50079/50072) followed by successful MFA registration within 2 hours
+//This may detect an adversary registering MFA on behalf of your users
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
+SigninLogs
+| where TimeGenerated > ago (7d)
+| where RiskLevelDuringSignIn in ("medium", "high")
+| where ResultType in ("50079","50072")
+| project
+    RiskTime=TimeGenerated,
+    UserPrincipalName,
+    IPAddress,
+    Location,
+    ResultType,
+    ResultDescription
+| join kind=inner(
+    AuditLogs
+    | where TimeGenerated > ago (7d)
+    | where OperationName == "User registered security info"
+    | where Result == "success"
+    | extend UserPrincipalName = tostring(TargetResources[0].userPrincipalName)
+    )
+    on UserPrincipalName
+| project-rename MFATime=TimeGenerated, MFAResult=ResultDescription1
+| where (MFATime - RiskTime) between (0min .. 2h)
+| extend TimeDelta=MFATime-RiskTime
+| project
+    RiskTime,
+    MFATime,
+    TimeDelta,
+    UserPrincipalName,
+    IPAddress,
+    Location,
+    ResultType,
+    ResultDescription,
+    MFAResult
+

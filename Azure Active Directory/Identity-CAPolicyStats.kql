@@ -1,0 +1,74 @@
+//Create a table of stats for your CA policies, showing which were successful, failed, not in use or applied and which are in report only mode
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
+SigninLogs
+| project ConditionalAccessPolicies
+| mv-expand ConditionalAccessPolicies
+| extend CAResult = tostring(ConditionalAccessPolicies.result)
+| extend ['Policy Name'] = tostring(ConditionalAccessPolicies.displayName)
+| project CAResult, ['Policy Name']
+| summarize
+    TotalCount=count(),
+    ['Total Success Count']=countif(CAResult == "success"),
+    ['Total Failure Count']=countif(CAResult == "failure"),
+    ['Total Not Enabled Count']=countif(CAResult == "notEnabled"),
+    ['Total Not Applied Count']=countif(CAResult == "notApplied"),
+    ['Total Report Only Count']=countif(CAResult startswith "reportOnly")
+    by ['Policy Name']
+| extend
+    ['Failure Percentage'] = round(todouble(['Total Failure Count']) * 100 / todouble(TotalCount), 2),
+    ['Success Percentage'] = round(todouble(['Total Success Count']) * 100 / todouble(TotalCount), 2),
+    ['Not Enabled Percentage']=round(todouble(['Total Not Enabled Count']) * 100 / todouble(TotalCount), 2),
+    ['Not Applied Percentage']=round(todouble(['Total Not Applied Count']) * 100 / todouble(TotalCount), 2),
+    ['Report Only Percentage']=round(todouble(['Total Report Only Count']) * 100 / todouble(TotalCount), 2)
+| project-reorder
+    ['Policy Name'],
+    TotalCount,
+    ['Total Success Count'],
+    ['Success Percentage'],
+    ['Total Failure Count'],
+    ['Failure Percentage'],
+    ['Total Not Applied Count'],
+    ['Not Applied Percentage'],
+    ['Total Not Enabled Count'],
+    ['Not Enabled Percentage'],
+    ['Total Report Only Count'],
+    ['Report Only Percentage']
+
+//Data connector required for this query - Advanced Hunting with Azure AD P2 License
+
+AADSignInEventsBeta
+| where LogonType == @"[""interactiveUser""]"
+| project ConditionalAccessPolicies
+| mv-expand ConditionalAccessPolicies=todynamic(ConditionalAccessPolicies)
+| extend CAResult = tostring(ConditionalAccessPolicies.result)
+| extend ['Policy Name'] = tostring(ConditionalAccessPolicies.displayName)
+| project CAResult, ['Policy Name']
+| summarize
+    TotalCount=count(),
+    ['Total Success Count']=countif(CAResult == "success"),
+    ['Total Failure Count']=countif(CAResult == "failure"),
+    ['Total Not Enabled Count']=countif(CAResult == "notEnabled"),
+    ['Total Not Applied Count']=countif(CAResult == "notApplied"),
+    ['Total Report Only Count']=countif(CAResult startswith "reportOnly")
+    by ['Policy Name']
+| extend
+    ['Failure Percentage'] = round(todouble(['Total Failure Count']) * 100 / todouble(TotalCount), 2),
+    ['Success Percentage'] = round(todouble(['Total Success Count']) * 100 / todouble(TotalCount), 2),
+    ['Not Enabled Percentage']=round(todouble(['Total Not Enabled Count']) * 100 / todouble(TotalCount), 2),
+    ['Not Applied Percentage']=round(todouble(['Total Not Applied Count']) * 100 / todouble(TotalCount), 2),
+    ['Report Only Percentage']=round(todouble(['Total Report Only Count']) * 100 / todouble(TotalCount), 2)
+| project-reorder
+    ['Policy Name'],
+    TotalCount,
+    ['Total Success Count'],
+    ['Success Percentage'],
+    ['Total Failure Count'],
+    ['Failure Percentage'],
+    ['Total Not Applied Count'],
+    ['Not Applied Percentage'],
+    ['Total Not Enabled Count'],
+    ['Not Enabled Percentage'],
+    ['Total Report Only Count'],
+    ['Report Only Percentage']
