@@ -12,7 +12,7 @@ Select Import dashboard from file
 
 ![image](https://github.com/reprise99/Sentinel-Queries/assets/88635951/2f5ce68a-a1a1-46b8-8019-7394abf19644)
 
-Download and import the JSON found in this repo, you can name your dashboard whatever you like
+Download and import the JSON found in this repo (raw link https://raw.githubusercontent.com/reprise99/Sentinel-Queries/main/CISA%20Insights/dashboard-CISA%20KEV%20Insights.json), you can name your dashboard whatever you like
 
 You should then be able to explore the dashboard
 
