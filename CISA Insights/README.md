@@ -2,7 +2,7 @@
 
 The following dashboard can be used in Azure Data Explorer to visualize and provide insights to the CISA Known Exploitable Vulnerability data found here - https://www.cisa.gov/known-exploited-vulnerabilities-catalog
 
-To access this dashboard you can sign up to a free Kusto cluter at https://aka.ms, or use an existing paid or free cluster
+To access this dashboard you can sign up to a free Kusto cluter at https://aka.ms/KustoFree, or use an existing paid or free cluster
 
 Select Dashboards on the left
 
