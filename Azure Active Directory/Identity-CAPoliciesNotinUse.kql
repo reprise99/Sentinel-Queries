@@ -1,0 +1,13 @@
+//Find any CA policies that are not actively in use (no success or failure events)
+
+//Data connector required for this query - Azure Active Directory - Signin Logs
+
+//Microsoft Sentinel query
+SigninLogs
+| where TimeGenerated > ago(180d)
+| where UserType == "Member"
+| mv-expand todynamic(ConditionalAccessPolicies)
+| extend CAResult=tostring(ConditionalAccessPolicies.result), CAName=tostring(ConditionalAccessPolicies.displayName)
+| summarize TotalCount=count(),ResultSet=make_set(CAResult) by CAName
+| where not(ResultSet has_any ("success","failure"))
+| sort by CAName asc 
