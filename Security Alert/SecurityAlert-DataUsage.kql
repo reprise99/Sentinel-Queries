@@ -1,5 +1,5 @@
 //This query looks at all your tables and then finds them in the SecurtiyAlert table and LAQueryLogs tables to try to determine if data sources are being actively hunted on and alerted on
-//This may not be perfect due to the use of functions in alerts and queries but is a good starting point for optimization
+//This may not be perfect due to the use of functions in alerts and queries but is a good starting point for optimization. Also if you use Azure dashboards they will 'run' the queries so may be artifically inflating the query count, though looking at a dashboard is still valuable!
 
 let tablenames = search *
    | summarize make_set($table);
