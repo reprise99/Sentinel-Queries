@@ -1,0 +1,21 @@
+//This query looks at all your tables and then finds them in the SecurtiyAlert table and LAQueryLogs tables to try to determine if data sources are being actively hunted on and alerted on
+//This may not be perfect due to the use of functions in alerts and queries but is a good starting point for optimization
+
+let tablenames = search *
+   | summarize make_set($table);
+let alerts=
+SecurityAlert
+| where TimeGenerated > ago (30d)
+| where ProviderName == "ASI Scheduled Alerts"
+| summarize arg_max(TimeGenerated, *) by SystemAlertId
+| extend Query = tostring(parse_json(ExtendedProperties).Query)
+| mv-apply table=toscalar(tablenames) to typeof(string) on (where Query contains ['table'])
+| summarize AlertCount = count()by ['table']
+| order by AlertCount;
+LAQueryLogs
+| where TimeGenerated > ago (30d)
+| mv-apply table=toscalar(tablenames) to typeof(string) on (where QueryText contains ['table'])
+| summarize QueryCount = count()by ['table']
+| order by QueryCount
+| join kind=fullouter (alerts) on table
+| project-away table1
