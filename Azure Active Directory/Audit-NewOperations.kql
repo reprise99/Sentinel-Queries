@@ -1,13 +1,14 @@
-//Find any new operations generated in the Azure AD audit table in the last week compared to the last 90 days
+//Find any new operations generated in the Azure AD audit table in the last two weeks compared to the last 180 days, you can adjust the time periods 
+//e.g. change 180d to 90d and 14d to 7d would find new events in the last week not seen in the 90 prior to that
 
 //Data connector required for this query - Azure Active Directory - Audit Logs
 
-let existingoperations=
-    AuditLogs
-    | where TimeGenerated > ago(90d) and TimeGenerated < ago(7d)
-    | distinct OperationName;
 AuditLogs
-| where TimeGenerated > ago(7d)
-| summarize Count=count() by OperationName, Category
-| where OperationName !in (existingoperations)
-| sort by Count desc 
+| where TimeGenerated > ago (180d) and TimeGenerated < ago(14d)
+| distinct OperationName, LoggedByService
+| join kind=rightanti(
+    AuditLogs
+    | where TimeGenerated > ago(14d)
+    | summarize TotalCount=count(), FirstSeen=min(TimeGenerated), LastSeen=max(TimeGenerated) by OperationName, LoggedByService
+    )
+    on OperationName, LoggedByService
