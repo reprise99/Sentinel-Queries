@@ -1,4 +1,4 @@
-//Finds Azure AD audit events from users who hold admin privileges (based on PIM activations in the last 60 days) and then finds any events in the last 7 days that have elevated risk associated to them
+//Finds Azure AD audit events from users who hold admin privileges (based on PIM activations in the last 60 days) and then finds any audit events events from those users in the last 7 days that have elevated risk associated to them
 //This query is part of The Definitive Guide to KQL: Using Kusto Query Language for Operations, Defending, and Threat Hunting - https://aka.ms/KQLMSPress and was contributed by Corissa K - https://www.linkedin.com/in/corissakoopmans/
 
 //Data connector required for this query - Azure Active Directory - Audit Logs
