@@ -1,0 +1,24 @@
+//Finds Azure AD audit events from users who hold admin privileges (based on PIM activations in the last 60 days) and then finds any events in the last 7 days that have elevated risk associated to them
+//This query is part of The Definitive Guide to KQL: Using Kusto Query Language for Operations, Defending, and Threat Hunting - https://aka.ms/KQLMSPress and was contributed by Corissa K - https://www.linkedin.com/in/corissakoopmans/
+
+//Data connector required for this query - Azure Active Directory - Audit Logs
+
+let privroles = pack_array("Application Administrator","Authentication Administrator","Cloud Application Administrator","Conditional Access Administrator","Exchange Administrator","Global Administrator","Helpdesk Administrator","Hybrid Identity Administrator","Password Administrator","Privileged Authentication Administrator","Privileged Role Administrator","Security Administrator","SharePoint Administrator","User Administrator");
+let privusers = AuditLogs 
+| where TimeGenerated > ago(60d) and ActivityDisplayName == 'Add member to role completed (PIM activation)' and Category == "RoleManagement" 
+| extend Caller = tostring(InitiatedBy.user.userPrincipalName) 
+| extend Role = tostring(TargetResources[0].displayName) 
+| where Role in (privroles) 
+| distinct Caller;
+let Activity =  AuditLogs
+    | mv-expand ParsedFields = parse_json(TargetResources)
+    | extend Target = tostring(ParsedFields.userPrincipalName), DisplayName = tostring(ParsedFields.displayName)
+    | project TimeGenerated, Target, DisplayName, ParsedFields, OperationName;
+    let RiskyUsers = SigninLogs
+    | where RiskLevelDuringSignIn == "high"
+    | where RiskState == "atRisk"
+    | project TimeGenerated,UserPrincipalName, UserDisplayName, RiskDetail, RiskLevelDuringSignIn, RiskState;
+    Activity
+    | join kind=inner(RiskyUsers) on $left.DisplayName==$right.UserDisplayName
+    | where TimeGenerated >= ago(7d) and UserPrincipalName in~ (privusers)
+    | distinct UserDisplayName, RiskDetail, RiskLevelDuringSignIn, OperationName
