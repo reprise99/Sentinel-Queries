@@ -1,0 +1,15 @@
+//Using regex for searching for MFA phone number changes can be a valuable hunting strategy for understanding user compromise. Regex can be used to look for particular patterns for phone numbers, for instance if your business is in Europe, then USA formatted numbers may be suspicious
+//This query is part of The Definitive Guide to KQL: Using Kusto Query Language for Operations, Defending, and Threat Hunting - https://aka.ms/KQLMSPress and was contributed by Marius F - https://www.linkedin.com/in/mariussagdal/
+
+//Data connector required for this query - Defender for Cloud Apps
+
+CloudAppEvents 
+| where Timestamp >= datetime("Insert date") 
+| where ActionType == "Update user." and RawEventData contains "StrongAuthentication" 
+| extend target = RawEventData.ObjectId 
+| mvexpand ModifiedProperties = parse_json(RawEventData.ModifiedProperties) 
+| where ModifiedProperties matches regex @"\+\d{1,3}\s*\d{9,}" 
+| mvexpand ModifiedProperties = parse_json(ModifiedProperties) 
+| where ModifiedProperties contains "NewValue" and ModifiedProperties matches regex @"\+\d{1,3}\s*\d{9,}" 
+| extend PhoneNumber = extract(@"\+\d{1,3}\s*\d{9,}", 0, tostring(ModifiedProperties)) 
+| project Timestamp, target, PhoneNumber
