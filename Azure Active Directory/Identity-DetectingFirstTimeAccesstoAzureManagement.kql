@@ -18,4 +18,9 @@ SigninLogs
     )
     on UserPrincipalName, AppDisplayName
 | where ResultType == 0
-| project TimeGenerated, UserPrincipalName, ResultType, AppDisplayName, IPAddress, Location, UserAgent
+// Enrich Results with Identity Information
+| join kind=inner (IdentityInfo
+    | where TimeGenerated > timeframe
+    | summarize arg_max(TimeGenerated, *) by AccountUPN
+    | project AccountUPN, Department, AccountCreationTime) on $left.UserPrincipalName == $right.AccountUPN
+| project TimeGenerated, UserPrincipalName, ResultType, AppDisplayName, IPAddress, Location, UserAgent, Department, AccountCreationTime
