@@ -1,0 +1,9 @@
+// Line breaks are for legibility only.
+POST https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token HTTP/1.1
+Host: login.microsoftonline.com
+Content-Type: application/x-www-form-urlencoded
+tenantId=1daa4fd5-b537-46b2-b92b-556628c922ed
+client_id=46c8c30e-e2dd-444d-9a56-37f74d4743c7
+&scope=https%3A%2F%2Fgraph.microsoft.com%2F.default
+&client_secret=zim8Q~S4pgON7.rXR8U2N4lE6XzUgDKwadS.Hajx
+&grant_type=client_credential
