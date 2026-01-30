@@ -1,0 +1,13 @@
+// Title: PowerShell Abuse Detection
+// Description: Detects suspicious PowerShell usage involving encoding, obfuscation, and downloading scripts.
+// Author: Taiwo Coker
+// Created: 2025-07-06
+// Tags: PowerShell, Obfuscation, Threat Hunting, Base64, WebRequest
+// Tactics: Execution, Defense Evasion
+// Techniques: T1059.001, T1140, T1105
+
+DeviceProcessEvents
+| where FileName == "powershell.exe" or FileName == "pwsh.exe"
+| where ProcessCommandLine has_any ("-enc", "IEX", "Invoke-Expression", "Invoke-WebRequest", "FromBase64String")
+| where Timestamp > ago(7d)
+| project Timestamp, DeviceName, FileName, ProcessCommandLine, InitiatingProcessAccountName, ReportId
