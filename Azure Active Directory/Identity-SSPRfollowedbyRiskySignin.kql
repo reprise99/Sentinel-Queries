@@ -30,7 +30,7 @@ SigninLogs
         UserAgent
     )
     on UserPrincipalName
-| extend ['Time Between Events']=datetime_diff('minute', PasswordResetTime, RiskTime)
+| extend ['Time Between Events']=datetime_diff('minute', RiskTime, PasswordResetTime)
 | project-reorder
     PasswordResetTime,
     RiskTime,
