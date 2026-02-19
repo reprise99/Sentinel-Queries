@@ -1,0 +1,17 @@
+//Find messages where the SendAs or SendOnBehalfOf right was used
+OfficeActivity 
+| where Operation in ("SendAs", "SendOnBehalfOf")
+//Extract the Item table to find the MessageId
+| mv-expand todynamic(Item)
+| extend InternetMessageId = tostring(Item.InternetMessageId)
+//Trim extra rows created by mv-expand
+| where isnotnull(InternetMessageId )
+| project TimeGenerated, Operation, SendAsUserSmtp, UserId, Client_IPAddress, OfficeWorkload, RecordType, InternetMessageId,MailboxOwnerUPN
+//inner join will filter EmailEvents to just those with the InternetMessageId
+|join kind=inner (
+    EmailEvents
+    | extend tostring(InternetMessageId)
+    //Exposing the RecipientEmailAddress
+    | project EmailAction, RecipientEmailAddress, SenderMailFromAddress, Subject, InternetMessageId
+    ) on InternetMessageId
+|project TimeGenerated, Operation, EmailAction, SendAsUserSmtp, UserId, RecipientEmailAddress, Subject, MailboxOwnerUPN, SenderMailFromAddress
